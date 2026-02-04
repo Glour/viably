@@ -82,3 +82,46 @@ async def test_empty_templates_list(client: AsyncClient) -> None:
     data = response.json()["data"]
     assert "templates" in data
     assert len(data["templates"]) == 0
+
+
+# =============================================================================
+# User Story 2: Filter Templates by Category
+# =============================================================================
+
+
+@pytest.mark.asyncio
+async def test_list_templates_by_category(
+    client: AsyncClient, multiple_templates: list[Template]
+) -> None:
+    """Test filtering templates by category."""
+    # Filter telegram_bot
+    response = await client.get("/api/templates?category=telegram_bot")
+    assert response.status_code == 200
+    data = response.json()["data"]
+    templates = data["templates"]
+
+    assert len(templates) == 2
+    for template in templates:
+        assert template["category"] == "telegram_bot"
+
+    # Filter api_service
+    response = await client.get("/api/templates?category=api_service")
+    assert response.status_code == 200
+    data = response.json()["data"]
+    templates = data["templates"]
+
+    assert len(templates) == 1
+    assert templates[0]["category"] == "api_service"
+    assert templates[0]["slug"] == "api-service"
+
+
+@pytest.mark.asyncio
+async def test_filter_invalid_category(
+    client: AsyncClient, multiple_templates: list[Template]
+) -> None:
+    """Test filtering by non-existent category returns empty list."""
+    response = await client.get("/api/templates?category=nonexistent")
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert len(data["templates"]) == 0

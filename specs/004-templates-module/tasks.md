@@ -109,14 +109,14 @@
 
 ### Tests for User Story 2
 
-- [ ] T020 [P] [US2] Create test `test_list_templates_by_category` in `tests/test_templates.py`
-- [ ] T021 [P] [US2] Create test `test_filter_invalid_category` in `tests/test_templates.py`
+- [x] T020 [P] [US2] Create test `test_list_templates_by_category` in `tests/test_templates.py`
+- [x] T021 [P] [US2] Create test `test_filter_invalid_category` in `tests/test_templates.py`
 
 ### Implementation for User Story 2
 
-- [ ] T022 [US2] Add `category` parameter to `list_templates()` in `app/templates/service.py`
-- [ ] T023 [US2] Add `category` query parameter to `GET /api/templates` in `app/templates/routes.py`
-- [ ] T024 [US2] Verify all US2 tests pass
+- [x] T022 [US2] Add `category` parameter to `list_templates()` in `app/templates/service.py` (done in T015)
+- [x] T023 [US2] Add `category` query parameter to `GET /api/templates` in `app/templates/routes.py` (done in T016)
+- [x] T024 [US2] Verify all US2 tests pass
 
 **Checkpoint**: User Story 2 complete - category filtering works.
 
