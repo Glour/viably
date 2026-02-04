@@ -2,8 +2,8 @@
 
 import uuid
 
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
+from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 
 from app.core.database import Base
@@ -27,16 +27,18 @@ class Template(Base):
     credit_cost = Column(Integer, nullable=False, default=0)
 
     # Configuration schema (JSON Schema format)
-    config_schema = Column(JSONB, nullable=False, default=dict)
+    # Using JSON type which maps to JSONB in PostgreSQL, JSON in SQLite
+    config_schema = Column(JSON, nullable=False, default=dict)
 
     # Code template and prompts
-    code_template = Column(JSONB, nullable=True, default=dict)
+    code_template = Column(JSON, nullable=True, default=dict)
     prompt_template = Column(Text, nullable=False)
 
     # Metadata
     preview_image_url = Column(Text, nullable=True)
-    features = Column(ARRAY(Text), default=list)
-    tags = Column(ARRAY(Text), default=list)
+    # Using JSON for arrays for SQLite compatibility in tests
+    features = Column(JSON, default=list)
+    tags = Column(JSON, default=list)
 
     # Stats
     usage_count = Column(Integer, default=0, nullable=False)

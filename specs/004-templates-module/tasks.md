@@ -80,18 +80,18 @@
 
 ### Tests for User Story 1
 
-- [ ] T011 [P] [US1] Create test `test_list_templates` in `tests/test_templates.py`
-- [ ] T012 [P] [US1] Create test `test_templates_sorted_by_order` in `tests/test_templates.py`
-- [ ] T013 [P] [US1] Create test `test_inactive_template_not_in_list` in `tests/test_templates.py`
-- [ ] T014 [P] [US1] Create test `test_empty_templates_list` in `tests/test_templates.py`
+- [x] T011 [P] [US1] Create test `test_list_templates` in `tests/test_templates.py`
+- [x] T012 [P] [US1] Create test `test_templates_sorted_by_order` in `tests/test_templates.py`
+- [x] T013 [P] [US1] Create test `test_inactive_template_not_in_list` in `tests/test_templates.py`
+- [x] T014 [P] [US1] Create test `test_empty_templates_list` in `tests/test_templates.py`
 
 ### Implementation for User Story 1
 
-- [ ] T015 [US1] Implement `list_templates()` function in `app/templates/service.py` - returns all active templates sorted by sort_order, then usage_count
-- [ ] T016 [US1] Implement `GET /api/templates` endpoint in `app/templates/routes.py` - basic list without filters
-- [ ] T017 [US1] Add module exports to `app/templates/__init__.py`
+- [x] T015 [US1] Implement `list_templates()` function in `app/templates/service.py` - returns all active templates sorted by sort_order, then usage_count
+- [x] T016 [US1] Implement `GET /api/templates` endpoint in `app/templates/routes.py` - basic list without filters
+- [x] T017 [US1] Add module exports to `app/templates/__init__.py`
 - [ ] T018 [US1] Run seed script to populate initial templates
-- [ ] T019 [US1] Verify all US1 tests pass
+- [x] T019 [US1] Verify all US1 tests pass
 
 **Checkpoint**: User Story 1 complete - users can browse all active templates.
 
