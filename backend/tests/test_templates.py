@@ -273,3 +273,65 @@ async def test_template_has_valid_schema(
     assert schema["type"] == "object"
     assert "properties" in schema
     assert "required" in schema
+
+
+# =============================================================================
+# User Story 5: View Template Usage Statistics
+# =============================================================================
+
+
+@pytest.mark.asyncio
+async def test_usage_count_in_list(
+    client: AsyncClient, multiple_templates: list[Template]
+) -> None:
+    """Test usage_count is included in template list response."""
+    response = await client.get("/api/templates")
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    templates = data["templates"]
+
+    # All templates should have usage_count field
+    for template in templates:
+        assert "usage_count" in template
+        assert isinstance(template["usage_count"], int)
+        assert template["usage_count"] >= 0
+
+
+@pytest.mark.asyncio
+async def test_usage_count_in_detail(
+    client: AsyncClient, test_template: Template
+) -> None:
+    """Test usage_count is included in template detail response."""
+    response = await client.get(f"/api/templates/{test_template.id}")
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+
+    assert "usage_count" in data
+    assert isinstance(data["usage_count"], int)
+    assert data["usage_count"] >= 0
+
+
+@pytest.mark.asyncio
+async def test_increment_usage_count(
+    db_session: AsyncSession, test_template: Template
+) -> None:
+    """Test increment_usage_count atomically increments the counter."""
+    from app.templates.service import increment_usage_count
+
+    initial_count = test_template.usage_count
+
+    # Increment usage count
+    await increment_usage_count(test_template.id, db_session)
+
+    # Refresh template from database
+    await db_session.refresh(test_template)
+
+    assert test_template.usage_count == initial_count + 1
+
+    # Increment again
+    await increment_usage_count(test_template.id, db_session)
+    await db_session.refresh(test_template)
+
+    assert test_template.usage_count == initial_count + 2
