@@ -15,6 +15,7 @@ from app.auth.models import User
 from app.auth.service import create_access_token, generate_referral_code, hash_password
 from app.core.database import Base, get_db
 from app.main import app
+from app.templates.models import Template
 from app.users.models import CreditTransaction
 
 # Test database URL (in-memory SQLite for testing)
@@ -180,3 +181,123 @@ async def user_with_today_bonus(db_session: AsyncSession, test_user: User) -> Us
     db_session.add(bonus)
     await db_session.commit()
     return test_user
+
+
+# Template fixtures
+
+
+@pytest_asyncio.fixture
+async def test_template(db_session: AsyncSession) -> Template:
+    """Create a single test template."""
+    template = Template(
+        id=uuid.uuid4(),
+        name="Test Template",
+        slug="test-template",
+        description="A test template for unit tests",
+        category="telegram_bot",
+        credit_cost=5,
+        config_schema={
+            "type": "object",
+            "properties": {
+                "bot_name": {"type": "string", "title": "Bot Name"},
+            },
+            "required": ["bot_name"],
+        },
+        prompt_template="Create a bot named {{bot_name}}",
+        features=["Feature 1", "Feature 2"],
+        tags=["test", "telegram"],
+        usage_count=10,
+        is_active=True,
+        sort_order=1,
+        created_at=datetime.now(timezone.utc),
+    )
+    db_session.add(template)
+    await db_session.commit()
+    await db_session.refresh(template)
+    return template
+
+
+@pytest_asyncio.fixture
+async def inactive_template(db_session: AsyncSession) -> Template:
+    """Create an inactive test template."""
+    template = Template(
+        id=uuid.uuid4(),
+        name="Inactive Template",
+        slug="inactive-template",
+        description="An inactive template",
+        category="telegram_bot",
+        credit_cost=3,
+        config_schema={"type": "object", "properties": {}},
+        prompt_template="Inactive prompt",
+        features=[],
+        tags=["inactive"],
+        usage_count=0,
+        is_active=False,
+        sort_order=99,
+        created_at=datetime.now(timezone.utc),
+    )
+    db_session.add(template)
+    await db_session.commit()
+    await db_session.refresh(template)
+    return template
+
+
+@pytest_asyncio.fixture
+async def multiple_templates(db_session: AsyncSession) -> list[Template]:
+    """Create multiple test templates for list/filter tests."""
+    templates = [
+        Template(
+            id=uuid.uuid4(),
+            name="FAQ Bot",
+            slug="faq-bot",
+            description="Simple Q&A bot",
+            category="telegram_bot",
+            credit_cost=3,
+            config_schema={"type": "object", "properties": {}},
+            prompt_template="FAQ prompt",
+            features=["Inline keyboard"],
+            tags=["telegram", "faq"],
+            usage_count=100,
+            is_active=True,
+            sort_order=1,
+            created_at=datetime.now(timezone.utc),
+        ),
+        Template(
+            id=uuid.uuid4(),
+            name="Shop Bot",
+            slug="shop-bot",
+            description="E-commerce bot with catalog",
+            category="telegram_bot",
+            credit_cost=5,
+            config_schema={"type": "object", "properties": {}},
+            prompt_template="Shop prompt",
+            features=["Product catalog", "Cart"],
+            tags=["telegram", "ecommerce"],
+            usage_count=50,
+            is_active=True,
+            sort_order=2,
+            created_at=datetime.now(timezone.utc),
+        ),
+        Template(
+            id=uuid.uuid4(),
+            name="API Service",
+            slug="api-service",
+            description="REST API service template",
+            category="api_service",
+            credit_cost=10,
+            config_schema={"type": "object", "properties": {}},
+            prompt_template="API prompt",
+            features=["REST endpoints"],
+            tags=["api", "backend"],
+            usage_count=25,
+            is_active=True,
+            sort_order=3,
+            created_at=datetime.now(timezone.utc),
+        ),
+    ]
+    for template in templates:
+        db_session.add(template)
+    await db_session.commit()
+    for template in templates:
+        await db_session.refresh(template)
+    return templates

@@ -55,14 +55,16 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T003 Create Template SQLAlchemy model in `app/templates/models.py` per data-model.md
-- [ ] T004 Generate Alembic migration for templates table: `alembic revision --autogenerate -m "add templates table"`
-- [ ] T005 Apply migration: `alembic upgrade head`
-- [ ] T006 [P] Create TemplateListItem Pydantic schema in `app/templates/schemas.py`
-- [ ] T007 [P] Create TemplateDetail Pydantic schema in `app/templates/schemas.py`
-- [ ] T008 Create seed.py with 6 initial templates (FAQ Bot, Shop Bot, Notification Bot, Support Bot, Poll Bot, Booking Bot) in `app/templates/seed.py`
-- [ ] T009 Register templates router in `app/main.py`
-- [ ] T010 Create test fixtures in `tests/conftest.py` for templates (template fixture, multiple templates fixture)
+- [x] T003 Create Template SQLAlchemy model in `app/templates/models.py` per data-model.md
+- [x] T004 Generate Alembic migration for templates table: `alembic revision --autogenerate -m "add templates table"`
+- [x] T005 Apply migration: `alembic upgrade head`
+- [x] T006 [P] Create TemplateListItem Pydantic schema in `app/templates/schemas.py`
+- [x] T007 [P] Create TemplateDetail Pydantic schema in `app/templates/schemas.py`
+- [x] T008 Create seed.py with 6 initial templates (FAQ Bot, Shop Bot, Notification Bot, Support Bot, Poll Bot, Booking Bot) in `app/templates/seed.py`
+- [x] T009 Register templates router in `app/main.py`
+- [x] T010 Create test fixtures in `tests/conftest.py` for templates (template fixture, multiple templates fixture)
+
+→ Artifacts: [models.py](backend/app/templates/models.py), [schemas.py](backend/app/templates/schemas.py), [seed.py](backend/app/templates/seed.py), [migration](backend/alembic/versions/4064d14c6ac4_add_templates_table.py)
 
 **Checkpoint**: Foundation ready - Template model, schemas, seed data, and test fixtures in place.
 
