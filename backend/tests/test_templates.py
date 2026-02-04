@@ -199,3 +199,77 @@ async def test_search_combined_with_category(
 
     assert len(templates) == 1
     assert templates[0]["slug"] == "api-service"
+
+
+# =============================================================================
+# User Story 4: View Template Details
+# =============================================================================
+
+
+@pytest.mark.asyncio
+async def test_get_template_by_id(client: AsyncClient, test_template: Template) -> None:
+    """Test GET /api/templates/{id} returns template details by UUID."""
+    response = await client.get(f"/api/templates/{test_template.id}")
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+
+    assert data["id"] == str(test_template.id)
+    assert data["name"] == test_template.name
+    assert data["slug"] == test_template.slug
+    assert data["category"] == test_template.category
+    assert data["credit_cost"] == test_template.credit_cost
+    assert "config_schema" in data
+    assert data["config_schema"]["type"] == "object"
+    assert "features" in data
+    assert "tags" in data
+    assert "usage_count" in data
+
+
+@pytest.mark.asyncio
+async def test_get_template_by_slug(client: AsyncClient, test_template: Template) -> None:
+    """Test GET /api/templates/{slug} returns template details by slug."""
+    response = await client.get(f"/api/templates/{test_template.slug}")
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+
+    assert data["id"] == str(test_template.id)
+    assert data["slug"] == test_template.slug
+
+
+@pytest.mark.asyncio
+async def test_get_template_not_found(client: AsyncClient) -> None:
+    """Test GET /api/templates/{id} returns 404 for non-existent template."""
+    fake_id = str(uuid.uuid4())
+    response = await client.get(f"/api/templates/{fake_id}")
+
+    assert response.status_code == 404
+    assert "not found" in response.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_inactive_template_returns_404(
+    client: AsyncClient, inactive_template: Template
+) -> None:
+    """Test GET /api/templates/{id} returns 404 for inactive template."""
+    response = await client.get(f"/api/templates/{inactive_template.id}")
+
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_template_has_valid_schema(
+    client: AsyncClient, test_template: Template
+) -> None:
+    """Test template config_schema is valid JSON Schema structure."""
+    response = await client.get(f"/api/templates/{test_template.id}")
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    schema = data["config_schema"]
+
+    # Verify JSON Schema structure
+    assert schema["type"] == "object"
+    assert "properties" in schema
+    assert "required" in schema

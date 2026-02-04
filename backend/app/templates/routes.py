@@ -1,11 +1,13 @@
 """FastAPI routes for templates module."""
 
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.templates.schemas import TemplateListItem, TemplatesListResponse
-from app.templates.service import list_templates
+from app.templates.schemas import TemplateDetail, TemplateListItem, TemplatesListResponse
+from app.templates.service import get_template_by_id, get_template_by_slug, list_templates
 
 router = APIRouter()
 
@@ -35,3 +37,33 @@ async def get_templates(
             templates=[TemplateListItem.model_validate(t) for t in templates]
         ).model_dump()
     }
+
+
+@router.get("/{template_id}", response_model=dict)
+async def get_template(
+    template_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Get template details by ID or slug.
+
+    Accepts either a UUID or a slug as the template identifier.
+
+    Args:
+        template_id: Template UUID or slug.
+        db: Database session.
+
+    Returns:
+        Full template details including config_schema.
+
+    Raises:
+        404: Template not found or inactive.
+    """
+    # Try to parse as UUID, otherwise treat as slug
+    try:
+        uuid_id = UUID(template_id)
+        template = await get_template_by_id(uuid_id, db)
+    except ValueError:
+        # Not a valid UUID, treat as slug
+        template = await get_template_by_slug(template_id, db)
+
+    return {"data": TemplateDetail.model_validate(template).model_dump()}

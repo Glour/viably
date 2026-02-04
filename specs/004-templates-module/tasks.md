@@ -160,18 +160,20 @@
 
 ### Tests for User Story 4
 
-- [ ] T031 [P] [US4] Create test `test_get_template_by_id` in `tests/test_templates.py`
-- [ ] T032 [P] [US4] Create test `test_get_template_by_slug` in `tests/test_templates.py`
-- [ ] T033 [P] [US4] Create test `test_get_template_not_found` in `tests/test_templates.py`
-- [ ] T034 [P] [US4] Create test `test_inactive_template_returns_404` in `tests/test_templates.py`
-- [ ] T035 [P] [US4] Create test `test_template_has_valid_schema` in `tests/test_templates.py`
+- [x] T031 [P] [US4] Create test `test_get_template_by_id` in `tests/test_templates.py`
+- [x] T032 [P] [US4] Create test `test_get_template_by_slug` in `tests/test_templates.py`
+- [x] T033 [P] [US4] Create test `test_get_template_not_found` in `tests/test_templates.py`
+- [x] T034 [P] [US4] Create test `test_inactive_template_returns_404` in `tests/test_templates.py`
+- [x] T035 [P] [US4] Create test `test_template_has_valid_schema` in `tests/test_templates.py`
 
 ### Implementation for User Story 4
 
-- [ ] T036 [US4] Implement `get_template_by_id()` function in `app/templates/service.py`
-- [ ] T037 [US4] Implement `get_template_by_slug()` function in `app/templates/service.py`
-- [ ] T038 [US4] Implement `GET /api/templates/{template_id}` endpoint in `app/templates/routes.py` - supports both UUID and slug
-- [ ] T039 [US4] Verify all US4 tests pass
+- [x] T036 [US4] Implement `get_template_by_id()` function in `app/templates/service.py`
+- [x] T037 [US4] Implement `get_template_by_slug()` function in `app/templates/service.py`
+- [x] T038 [US4] Implement `GET /api/templates/{template_id}` endpoint in `app/templates/routes.py` - supports both UUID and slug
+- [x] T039 [US4] Verify all US4 tests pass
+
+→ Artifacts: Updated [service.py](backend/app/templates/service.py), [routes.py](backend/app/templates/routes.py)
 
 **Checkpoint**: User Story 4 complete - template details accessible by ID or slug.
 

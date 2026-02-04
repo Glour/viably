@@ -1,6 +1,9 @@
 """Business logic for templates module."""
 
-from sqlalchemy import select
+from uuid import UUID
+
+from fastapi import HTTPException, status
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.templates.models import Template
@@ -37,3 +40,79 @@ async def list_templates(
 
     result = await db.execute(query)
     return list(result.scalars().all())
+
+
+async def get_template_by_id(template_id: UUID, db: AsyncSession) -> Template:
+    """Get template by ID.
+
+    Args:
+        template_id: Template UUID.
+        db: Database session.
+
+    Returns:
+        Template object.
+
+    Raises:
+        HTTPException 404: If template not found or inactive.
+    """
+    query = select(Template).where(
+        Template.id == template_id,
+        Template.is_active == True,  # noqa: E712
+    )
+    result = await db.execute(query)
+    template = result.scalar_one_or_none()
+
+    if template is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Template not found",
+        )
+
+    return template
+
+
+async def get_template_by_slug(slug: str, db: AsyncSession) -> Template:
+    """Get template by slug.
+
+    Args:
+        slug: Template slug.
+        db: Database session.
+
+    Returns:
+        Template object.
+
+    Raises:
+        HTTPException 404: If template not found or inactive.
+    """
+    query = select(Template).where(
+        Template.slug == slug,
+        Template.is_active == True,  # noqa: E712
+    )
+    result = await db.execute(query)
+    template = result.scalar_one_or_none()
+
+    if template is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Template not found",
+        )
+
+    return template
+
+
+async def increment_usage_count(template_id: UUID, db: AsyncSession) -> None:
+    """Increment template usage counter atomically.
+
+    Called when a project is created with this template.
+
+    Args:
+        template_id: Template UUID.
+        db: Database session.
+    """
+    stmt = (
+        update(Template)
+        .where(Template.id == template_id)
+        .values(usage_count=Template.usage_count + 1)
+    )
+    await db.execute(stmt)
+    await db.commit()
