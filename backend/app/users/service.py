@@ -123,7 +123,15 @@ async def get_daily_bonus_info(
     now = datetime.now(timezone.utc)
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
 
-    if last_bonus is None or last_bonus.created_at < today_start:
+    # Handle timezone-naive datetimes from SQLite (used in tests)
+    if last_bonus is not None and last_bonus.created_at.tzinfo is None:
+        last_bonus_time = last_bonus.created_at.replace(tzinfo=timezone.utc)
+    elif last_bonus is not None:
+        last_bonus_time = last_bonus.created_at
+    else:
+        last_bonus_time = None
+
+    if last_bonus_time is None or last_bonus_time < today_start:
         # No bonus today - available now
         next_bonus_at = None
     else:
