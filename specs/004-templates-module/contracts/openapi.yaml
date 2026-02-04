@@ -1,0 +1,268 @@
+openapi: 3.1.0
+info:
+  title: Templates API
+  description: API for browsing and viewing template details
+  version: 1.0.0
+
+servers:
+  - url: /api
+    description: API base path
+
+paths:
+  /templates:
+    get:
+      operationId: listTemplates
+      summary: List all active templates
+      description: |
+        Returns a list of all active templates, optionally filtered by category or search term.
+        Templates are sorted by sort_order, then by usage_count descending.
+      tags:
+        - templates
+      parameters:
+        - name: category
+          in: query
+          required: false
+          description: Filter by template category
+          schema:
+            type: string
+            enum: [telegram_bot, api_service]
+        - name: search
+          in: query
+          required: false
+          description: Search in name and description (case-insensitive)
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+      responses:
+        '200':
+          description: List of templates
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [templates]
+                    properties:
+                      templates:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TemplateListItem'
+              example:
+                data:
+                  templates:
+                    - id: "550e8400-e29b-41d4-a716-446655440001"
+                      name: "FAQ Bot"
+                      slug: "faq-bot"
+                      description: "Simple Q&A bot with inline buttons"
+                      category: "telegram_bot"
+                      credit_cost: 3
+                      preview_image_url: null
+                      features: ["Inline keyboard", "Quick answers"]
+                      tags: ["telegram", "simple", "faq"]
+                      usage_count: 320
+                      created_at: "2026-01-01T00:00:00Z"
+
+  /templates/{template_id}:
+    get:
+      operationId: getTemplate
+      summary: Get template details
+      description: |
+        Returns full template details including configuration schema.
+        Accepts either UUID or slug as the template identifier.
+      tags:
+        - templates
+      parameters:
+        - name: template_id
+          in: path
+          required: true
+          description: Template UUID or slug
+          schema:
+            type: string
+          examples:
+            uuid:
+              value: "550e8400-e29b-41d4-a716-446655440001"
+              summary: UUID format
+            slug:
+              value: "faq-bot"
+              summary: Slug format
+      responses:
+        '200':
+          description: Template details
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TemplateDetail'
+              example:
+                data:
+                  id: "550e8400-e29b-41d4-a716-446655440001"
+                  name: "FAQ Bot"
+                  slug: "faq-bot"
+                  description: "Simple Q&A bot with inline buttons"
+                  category: "telegram_bot"
+                  credit_cost: 3
+                  config_schema:
+                    type: "object"
+                    properties:
+                      bot_name:
+                        type: "string"
+                        title: "Bot Name"
+                    required: ["bot_name"]
+                  preview_image_url: null
+                  features: ["Inline keyboard", "Quick answers"]
+                  tags: ["telegram", "simple", "faq"]
+                  usage_count: 320
+                  example_config:
+                    bot_name: "My FAQ Bot"
+                  created_at: "2026-01-01T00:00:00Z"
+        '404':
+          description: Template not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Template not found"
+
+components:
+  schemas:
+    TemplateListItem:
+      type: object
+      description: Template in list view (compact)
+      required:
+        - id
+        - name
+        - slug
+        - category
+        - credit_cost
+        - features
+        - tags
+        - usage_count
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique template identifier
+        name:
+          type: string
+          maxLength: 255
+          description: Template display name
+        slug:
+          type: string
+          maxLength: 255
+          description: URL-friendly identifier
+        description:
+          type: string
+          nullable: true
+          description: Template description
+        category:
+          type: string
+          enum: [telegram_bot, api_service]
+          description: Template category
+        credit_cost:
+          type: integer
+          minimum: 0
+          description: Credits required to use template
+        preview_image_url:
+          type: string
+          nullable: true
+          description: URL to preview image
+        features:
+          type: array
+          items:
+            type: string
+          description: List of template features
+        tags:
+          type: array
+          items:
+            type: string
+          description: Searchable tags
+        usage_count:
+          type: integer
+          minimum: 0
+          description: Number of times template has been used
+        created_at:
+          type: string
+          format: date-time
+          description: Template creation timestamp
+
+    TemplateDetail:
+      type: object
+      description: Full template details
+      required:
+        - id
+        - name
+        - slug
+        - category
+        - credit_cost
+        - config_schema
+        - features
+        - tags
+        - usage_count
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 255
+        slug:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        category:
+          type: string
+          enum: [telegram_bot, api_service]
+        credit_cost:
+          type: integer
+          minimum: 0
+        config_schema:
+          type: object
+          description: JSON Schema defining configurable options
+          additionalProperties: true
+        preview_image_url:
+          type: string
+          nullable: true
+        features:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        usage_count:
+          type: integer
+          minimum: 0
+        example_config:
+          type: object
+          nullable: true
+          description: Example configuration values
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Error message
+
+tags:
+  - name: templates
+    description: Template management operations

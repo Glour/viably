@@ -191,16 +191,16 @@
 
 ### Tests for User Story 5
 
-- [ ] T040 [P] [US5] Create test `test_usage_count_in_list` in `tests/test_templates.py`
-- [ ] T041 [P] [US5] Create test `test_usage_count_in_detail` in `tests/test_templates.py`
-- [ ] T042 [P] [US5] Create test `test_increment_usage_count` in `tests/test_templates.py`
+- [x] T040 [P] [US5] Create test `test_usage_count_in_list` in `tests/test_templates.py`
+- [x] T041 [P] [US5] Create test `test_usage_count_in_detail` in `tests/test_templates.py`
+- [x] T042 [P] [US5] Create test `test_increment_usage_count` in `tests/test_templates.py`
 
 ### Implementation for User Story 5
 
-- [ ] T043 [US5] Implement `increment_usage_count()` function in `app/templates/service.py` - atomic SQL increment
-- [ ] T044 [US5] Verify usage_count included in TemplateListItem schema (already done in T006)
-- [ ] T045 [US5] Verify usage_count included in TemplateDetail schema (already done in T007)
-- [ ] T046 [US5] Verify all US5 tests pass
+- [x] T043 [US5] Implement `increment_usage_count()` function in `app/templates/service.py` - atomic SQL increment
+- [x] T044 [US5] Verify usage_count included in TemplateListItem schema (already done in T006)
+- [x] T045 [US5] Verify usage_count included in TemplateDetail schema (already done in T007)
+- [x] T046 [US5] Verify all US5 tests pass
 
 **Checkpoint**: User Story 5 complete - usage statistics visible and incrementable.
 
@@ -212,11 +212,13 @@
 
 **Purpose**: Final validation, coverage check, and cleanup.
 
-- [ ] T047 Run full test suite with coverage: `pytest tests/test_templates.py -v --cov=app/templates --cov-report=term-missing`
-- [ ] T048 Verify coverage meets >90% requirement
-- [ ] T049 Run type-check: `mypy app/templates`
-- [ ] T050 Run quickstart.md validation checklist
-- [ ] T051 Update `app/templates/__init__.py` with all public exports
+- [x] T047 Run full test suite with coverage: `pytest tests/test_templates.py -v --cov=app/templates --cov-report=term-missing`
+- [x] T048 Verify coverage meets >90% requirement (achieved 91%)
+- [x] T049 Run type-check: `mypy app/templates` (templates module passes, 1 error in core/database.py is pre-existing)
+- [x] T050 Run quickstart.md validation checklist (all items passed)
+- [x] T051 Update `app/templates/__init__.py` with all public exports (already done in T017)
+
+→ Artifacts: [.coveragerc](backend/.coveragerc)
 
 ---
 
