@@ -93,26 +93,47 @@ A logged-in user wants to view their credit transaction history to track spendin
 - **FR-004**: System MUST display user's current credit balance upon request
 - **FR-005**: System MUST display user's subscription plan name
 - **FR-006**: System MUST display rollover limit based on user's plan (0 for free, 200 for starter, 600 for pro, 2000 for business)
-- **FR-007**: System MUST display daily bonus information including amount and next available time
+- **FR-007**: System MUST display daily bonus information including amount (1 for free, 3 for starter, 5 for pro, 10 for business) and next available time
 - **FR-008**: System MUST provide paginated credit transaction history
 - **FR-009**: System MUST support pagination parameters (page, per_page with max 100)
 - **FR-010**: System MUST support filtering transactions by transaction type
 - **FR-011**: System MUST return 401 Unauthorized for requests without valid authentication
 - **FR-012**: System MUST return 403 Forbidden for inactive user accounts
 - **FR-013**: System MUST return 400 Bad Request for invalid input data (URL format, field length)
+- **FR-014**: System MUST return 422 Unprocessable Entity for validation errors with detailed error messages in format: `{"detail": [{"loc": ["field"], "msg": "error message", "type": "error_type"}]}`
+- **FR-015**: System MUST support partial profile updates (update only name OR only avatar in single request)
+- **FR-016**: System MUST allow clearing optional profile fields by sending null values
+- **FR-017**: System MUST return 422 for invalid transaction type filter parameter with list of valid types
+
+### Non-Functional Requirements
+
+- **NFR-001**: Avatar URL MUST be validated as valid HTTP/HTTPS URL format (scheme + host required)
+- **NFR-002**: Pagination defaults: page=1, per_page=20
+- **NFR-003**: All API responses MUST complete within 1 second under normal load (<100 concurrent users)
+- **NFR-004**: Transaction history MUST support up to 10,000 records with response time <3 seconds
 
 ### Key Entities
 
 - **User Profile**: Represents the user's public information - id, email, full name, avatar URL, plan, credits, referral code, verification status, timestamps
 - **Credit Balance**: User's current credits with plan-specific rollover limit and daily bonus information
-- **Credit Transaction**: Individual credit change record - amount, resulting balance, type (generation, daily_bonus, purchase, etc.), optional project reference, timestamp
+- **Credit Transaction**: Individual credit change record - amount, resulting balance, type (generation, daily_bonus, purchase, referral, adjustment), optional project reference, timestamp
+
+### Transaction Types
+
+| Type | Description | Amount |
+|------|-------------|--------|
+| generation | Credits spent on AI generation | Negative |
+| daily_bonus | Daily login bonus | Positive |
+| purchase | Credits purchased | Positive |
+| referral | Referral bonus | Positive |
+| adjustment | Manual admin adjustment | +/- |
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
 - **SC-001**: Users can view their complete profile within 1 second of request
-- **SC-002**: Profile updates are reflected immediately in subsequent profile views
+- **SC-002**: Profile updates are reflected in subsequent profile views within 100ms (same request cycle)
 - **SC-003**: 100% of profile update requests with valid data succeed
 - **SC-004**: 100% of profile update requests with invalid data return appropriate error messages
 - **SC-005**: Credit balance displays accurate information including current credits, plan, and rollover limit
@@ -120,6 +141,13 @@ A logged-in user wants to view their credit transaction history to track spendin
 - **SC-007**: All endpoints correctly reject unauthenticated requests (100% accuracy)
 - **SC-008**: Pagination correctly handles edge cases (empty pages, max per_page exceeded)
 - **SC-009**: Test coverage exceeds 90% for all module code
+
+## Security Considerations
+
+- **SEC-001**: All endpoints require valid JWT authentication (handled by Auth module middleware)
+- **SEC-002**: Users can only access/modify their own profile data (no cross-user access)
+- **SEC-003**: Email field is read-only (cannot be changed via profile update)
+- **SEC-004**: Sensitive fields (password_hash) are never exposed in API responses
 
 ## Assumptions
 
