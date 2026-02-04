@@ -15,6 +15,8 @@ from app.core.config import settings
 
 # Import all models here so they are registered with Base.metadata
 from app.auth.models import User  # noqa: F401
+from app.users.models import CreditTransaction  # noqa: F401
+from app.templates.models import Template  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
