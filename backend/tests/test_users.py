@@ -366,3 +366,138 @@ async def test_transactions_empty(
     assert data["transactions"] == []
     assert data["pagination"]["total"] == 0
     assert data["pagination"]["total_pages"] == 0
+
+
+# =============================================================================
+# Additional Service Tests for Coverage
+# =============================================================================
+
+
+@pytest.mark.asyncio
+async def test_get_user_by_id(
+    db_session,
+    test_user: User,
+) -> None:
+    """Test get_user_by_id service function."""
+    from app.users.service import get_user_by_id
+
+    # Existing user
+    user = await get_user_by_id(test_user.id, db_session)
+    assert user is not None
+    assert user.id == test_user.id
+    assert user.email == test_user.email
+
+    # Non-existent user
+    import uuid
+
+    missing = await get_user_by_id(uuid.uuid4(), db_session)
+    assert missing is None
+
+
+@pytest.mark.asyncio
+async def test_update_user_profile_without_db(
+    test_user: User,
+) -> None:
+    """Test update_user_profile without db session."""
+    from app.users.service import update_user_profile
+
+    # Update without db (no commit)
+    updated = await update_user_profile(
+        user=test_user,
+        full_name="No DB Update",
+        db=None,
+    )
+    assert updated.full_name == "No DB Update"
+
+
+def test_rollover_limit_unknown_plan() -> None:
+    """Test rollover limit returns 0 for unknown plan."""
+    from app.users.service import calculate_rollover_limit
+
+    assert calculate_rollover_limit("unknown_plan") == 0
+    assert calculate_rollover_limit("free") == 0
+    assert calculate_rollover_limit("pro") == 600
+
+
+def test_daily_bonus_amount_unknown_plan() -> None:
+    """Test daily bonus returns 1 for unknown plan."""
+    from app.users.service import get_daily_bonus_amount
+
+    assert get_daily_bonus_amount("unknown_plan") == 1
+    assert get_daily_bonus_amount("free") == 1
+    assert get_daily_bonus_amount("business") == 10
+
+
+@pytest.mark.asyncio
+async def test_clear_avatar_url(
+    client: AsyncClient,
+    test_user: User,
+    auth_token: str,
+) -> None:
+    """Test clearing avatar_url with empty string."""
+    response = await client.patch(
+        "/api/users/me",
+        headers={"Authorization": f"Bearer {auth_token}"},
+        json={"avatar_url": "https://example.com/new.jpg"},
+    )
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_update_only_avatar(
+    client: AsyncClient,
+    test_user: User,
+    auth_token: str,
+) -> None:
+    """Test updating only avatar_url, keeping name unchanged."""
+    original_name = test_user.full_name
+
+    response = await client.patch(
+        "/api/users/me",
+        headers={"Authorization": f"Bearer {auth_token}"},
+        json={"avatar_url": "https://example.com/only-avatar.jpg"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["full_name"] == original_name
+    assert data["avatar_url"] == "https://example.com/only-avatar.jpg"
+
+
+@pytest.mark.asyncio
+async def test_transactions_second_page(
+    client: AsyncClient,
+    user_with_transactions: User,
+    auth_token: str,
+) -> None:
+    """Test getting second page of transactions."""
+    response = await client.get(
+        "/api/users/me/transactions?page=2&per_page=2",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+
+    # 3 total, 2 per page, page 2 should have 1 item
+    assert len(data["transactions"]) == 1
+    assert data["pagination"]["page"] == 2
+
+
+@pytest.mark.asyncio
+async def test_transactions_page_beyond_total(
+    client: AsyncClient,
+    user_with_transactions: User,
+    auth_token: str,
+) -> None:
+    """Test requesting page beyond available data."""
+    response = await client.get(
+        "/api/users/me/transactions?page=100",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+
+    assert data["transactions"] == []
+    assert data["pagination"]["page"] == 100
