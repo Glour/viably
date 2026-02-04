@@ -1,0 +1,343 @@
+openapi: 3.1.0
+info:
+  title: Users Module API
+  description: User profile management, credit balance, and transaction history
+  version: 1.0.0
+
+servers:
+  - url: /api
+    description: API base path
+
+security:
+  - bearerAuth: []
+
+paths:
+  /users/me:
+    get:
+      summary: Get current user profile
+      operationId: getCurrentUser
+      tags:
+        - Users
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    patch:
+      summary: Update current user profile
+      operationId: updateCurrentUser
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/me/credits:
+    get:
+      summary: Get current user credit balance
+      operationId: getCreditBalance
+      tags:
+        - Users
+      responses:
+        '200':
+          description: Credit balance retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CreditBalanceResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/me/transactions:
+    get:
+      summary: Get credit transaction history
+      operationId: getTransactions
+      tags:
+        - Users
+      parameters:
+        - name: page
+          in: query
+          description: Page number (1-indexed)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          description: Items per page (max 100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: type
+          in: query
+          description: Filter by transaction type
+          schema:
+            type: string
+            enum:
+              - generation
+              - daily_bonus
+              - purchase
+              - referral
+              - adjustment
+      responses:
+        '200':
+          description: Transactions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TransactionsListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    UserResponse:
+      type: object
+      required:
+        - id
+        - email
+        - plan
+        - credits
+        - referral_code
+        - is_verified
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        full_name:
+          type: string
+          nullable: true
+          maxLength: 255
+          example: "John Doe"
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/avatar.jpg"
+        plan:
+          type: string
+          enum: [free, starter, pro, business]
+          example: "starter"
+        credits:
+          type: integer
+          example: 150
+        referral_code:
+          type: string
+          maxLength: 8
+          example: "ABC12345"
+        is_verified:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-02-04T12:00:00Z"
+        last_login_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2026-02-04T14:00:00Z"
+
+    UserUpdate:
+      type: object
+      properties:
+        full_name:
+          type: string
+          maxLength: 255
+          nullable: true
+          example: "John Smith"
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/new-avatar.jpg"
+
+    CreditBalanceResponse:
+      type: object
+      required:
+        - credits
+        - plan
+        - rollover_limit
+      properties:
+        credits:
+          type: integer
+          example: 150
+        plan:
+          type: string
+          enum: [free, starter, pro, business]
+          example: "starter"
+        daily_bonus:
+          type: object
+          nullable: true
+          properties:
+            amount:
+              type: integer
+              example: 3
+            next_bonus_at:
+              type: string
+              format: date-time
+              nullable: true
+              example: "2026-02-05T00:00:00Z"
+        rollover_limit:
+          type: integer
+          example: 200
+
+    CreditTransactionResponse:
+      type: object
+      required:
+        - id
+        - amount
+        - balance_after
+        - transaction_type
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        amount:
+          type: integer
+          description: Positive for credit, negative for debit
+          example: -5
+        balance_after:
+          type: integer
+          example: 145
+        transaction_type:
+          type: string
+          enum: [generation, daily_bonus, purchase, referral, adjustment]
+          example: "generation"
+        description:
+          type: string
+          nullable: true
+          example: "Generated Shop Bot"
+        project:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+          example:
+            id: "550e8400-e29b-41d4-a716-446655440001"
+            name: "My Shop Bot"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-02-04T12:00:00Z"
+
+    TransactionsListResponse:
+      type: object
+      required:
+        - transactions
+        - pagination
+      properties:
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreditTransactionResponse'
+        pagination:
+          type: object
+          required:
+            - page
+            - per_page
+            - total
+            - total_pages
+          properties:
+            page:
+              type: integer
+              example: 1
+            per_page:
+              type: integer
+              example: 20
+            total:
+              type: integer
+              example: 45
+            total_pages:
+              type: integer
+              example: 3
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          example: "Validation error"
+
+  responses:
+    Unauthorized:
+      description: Authentication required or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            detail: "Invalid or expired token"
+
+    Forbidden:
+      description: User account is inactive
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            detail: "User account is inactive"
+
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            detail: "Invalid avatar URL format"
