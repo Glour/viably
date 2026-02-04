@@ -134,15 +134,15 @@
 
 ### Tests for User Story 3
 
-- [ ] T025 [P] [US3] Create test `test_search_templates` in `tests/test_templates.py`
-- [ ] T026 [P] [US3] Create test `test_search_no_results` in `tests/test_templates.py`
-- [ ] T027 [P] [US3] Create test `test_search_combined_with_category` in `tests/test_templates.py`
+- [x] T025 [P] [US3] Create test `test_search_templates` in `tests/test_templates.py`
+- [x] T026 [P] [US3] Create test `test_search_no_results` in `tests/test_templates.py`
+- [x] T027 [P] [US3] Create test `test_search_combined_with_category` in `tests/test_templates.py`
 
 ### Implementation for User Story 3
 
-- [ ] T028 [US3] Add `search` parameter to `list_templates()` in `app/templates/service.py` using ILIKE
-- [ ] T029 [US3] Add `search` query parameter to `GET /api/templates` in `app/templates/routes.py`
-- [ ] T030 [US3] Verify all US3 tests pass
+- [x] T028 [US3] Add `search` parameter to `list_templates()` in `app/templates/service.py` using ILIKE (done in T015)
+- [x] T029 [US3] Add `search` query parameter to `GET /api/templates` in `app/templates/routes.py` (done in T016)
+- [x] T030 [US3] Verify all US3 tests pass
 
 **Checkpoint**: User Story 3 complete - search functionality works.
 

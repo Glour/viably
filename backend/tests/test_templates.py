@@ -125,3 +125,77 @@ async def test_filter_invalid_category(
     assert response.status_code == 200
     data = response.json()["data"]
     assert len(data["templates"]) == 0
+
+
+# =============================================================================
+# User Story 3: Search Templates
+# =============================================================================
+
+
+@pytest.mark.asyncio
+async def test_search_templates(
+    client: AsyncClient, multiple_templates: list[Template]
+) -> None:
+    """Test searching templates by name/description."""
+    # Search for "shop" - should find Shop Bot
+    response = await client.get("/api/templates?search=shop")
+    assert response.status_code == 200
+    data = response.json()["data"]
+    templates = data["templates"]
+
+    assert len(templates) == 1
+    assert templates[0]["slug"] == "shop-bot"
+
+    # Search for "bot" - should find FAQ Bot and Shop Bot
+    response = await client.get("/api/templates?search=bot")
+    assert response.status_code == 200
+    data = response.json()["data"]
+    templates = data["templates"]
+
+    assert len(templates) == 2
+    slugs = [t["slug"] for t in templates]
+    assert "faq-bot" in slugs
+    assert "shop-bot" in slugs
+
+    # Case-insensitive search
+    response = await client.get("/api/templates?search=FAQ")
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert len(data["templates"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_search_no_results(
+    client: AsyncClient, multiple_templates: list[Template]
+) -> None:
+    """Test search with no matching results."""
+    response = await client.get("/api/templates?search=nonexistent")
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert len(data["templates"]) == 0
+
+
+@pytest.mark.asyncio
+async def test_search_combined_with_category(
+    client: AsyncClient, multiple_templates: list[Template]
+) -> None:
+    """Test search combined with category filter."""
+    # Search "bot" but only in telegram_bot category
+    response = await client.get("/api/templates?search=bot&category=telegram_bot")
+    assert response.status_code == 200
+    data = response.json()["data"]
+    templates = data["templates"]
+
+    assert len(templates) == 2
+    for template in templates:
+        assert template["category"] == "telegram_bot"
+
+    # Search "service" in api_service category
+    response = await client.get("/api/templates?search=service&category=api_service")
+    assert response.status_code == 200
+    data = response.json()["data"]
+    templates = data["templates"]
+
+    assert len(templates) == 1
+    assert templates[0]["slug"] == "api-service"
