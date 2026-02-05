@@ -52,8 +52,10 @@
   → Artifacts: [requirements.txt](../../backend/requirements.txt)
 - [x] T002 Add AI generation settings to backend/app/core/config.py (ANTHROPIC_API_KEY, CELERY_BROKER_URL, CELERY_RESULT_BACKEND, GENERATION_COST, GENERATION_MAX_TOKENS, GENERATION_MODEL) [EXECUTOR: MAIN] [SEQUENTIAL]
   → Artifacts: [config.py](../../backend/app/core/config.py)
-- [ ] T003 [P] Create backend/app/ai/__init__.py module initialization [EXECUTOR: MAIN] [PARALLEL-GROUP-1]
-- [ ] T004 [P] Add get_current_admin_user dependency to backend/app/auth/deps.py (check if User has is_admin field first) [EXECUTOR: MAIN] [PARALLEL-GROUP-1]
+- [x] T003 [P] Create backend/app/ai/__init__.py module initialization [EXECUTOR: MAIN] [PARALLEL-GROUP-1]
+  → Artifacts: [__init__.py](../../backend/app/ai/__init__.py)
+- [x] T004 [P] Add get_current_admin_user dependency to backend/app/auth/deps.py (check if User has is_admin field first) [EXECUTOR: MAIN] [PARALLEL-GROUP-1]
+  → Artifacts: [deps.py](../../backend/app/auth/deps.py), [models.py](../../backend/app/auth/models.py), [migration](../../backend/alembic/versions/d4e5f6g7h8i9_add_is_admin_to_users.py)
 
 ---
 
