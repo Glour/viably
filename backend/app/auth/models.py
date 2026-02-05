@@ -55,3 +55,8 @@ class User(Base):
         back_populates="user",
         lazy="dynamic",
     )
+    projects = relationship(
+        "Project",
+        back_populates="user",
+        lazy="dynamic",
+    )
