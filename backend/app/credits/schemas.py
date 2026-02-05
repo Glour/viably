@@ -57,7 +57,7 @@ class TransactionResponse(BaseModel):
     description: str | None
     project_id: UUID | None
     related_user_id: UUID | None
-    metadata: dict[str, Any]
+    extra_data: dict[str, Any]
     created_at: datetime
 
     model_config = {"from_attributes": True}

@@ -3,8 +3,8 @@
 import uuid
 from datetime import date
 
-from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, UniqueConstraint
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy import JSON, Column, Date, DateTime, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -44,8 +44,8 @@ class CreditTransaction(Base):
         nullable=True,
     )
 
-    # Metadata for additional context
-    metadata = Column(JSONB, default=dict)
+    # Extra data for additional context
+    extra_data = Column(JSON, default=dict)
 
     # Timestamp
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)

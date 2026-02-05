@@ -201,7 +201,7 @@ async def add_credits(
         transaction_type=transaction_type,
         related_user_id=related_user_id,
         description=description,
-        metadata=metadata or {},
+        extra_data=metadata or {},
     )
     db.add(transaction)
 

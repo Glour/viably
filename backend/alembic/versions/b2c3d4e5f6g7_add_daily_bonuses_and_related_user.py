@@ -35,10 +35,10 @@ def upgrade() -> None:
         ondelete='SET NULL'
     )
 
-    # Add metadata column to credit_transactions
+    # Add extra_data column to credit_transactions
     op.add_column(
         'credit_transactions',
-        sa.Column('metadata', postgresql.JSONB(astext_type=sa.Text()), nullable=True, server_default='{}')
+        sa.Column('extra_data', sa.JSON(), nullable=True, server_default='{}')
     )
 
     # Add index on transaction_type for filtering
@@ -75,8 +75,8 @@ def downgrade() -> None:
     # Drop index on transaction_type
     op.drop_index('ix_credit_transactions_type', table_name='credit_transactions')
 
-    # Drop metadata column
-    op.drop_column('credit_transactions', 'metadata')
+    # Drop extra_data column
+    op.drop_column('credit_transactions', 'extra_data')
 
     # Drop related_user_id column
     op.drop_constraint('fk_credit_transactions_related_user', 'credit_transactions', type_='foreignkey')
