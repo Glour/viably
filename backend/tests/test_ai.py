@@ -1067,3 +1067,97 @@ class TestErrorHandlingWithCreditRefund:
         data = response.json()
         assert data["status"] == "ready"
         assert data["error_message"] is None
+
+
+# =============================================================================
+# T030-T033: Test Admin AI Status Endpoint
+# =============================================================================
+
+
+class TestAdminAiStatus:
+    """Tests for admin AI status endpoint."""
+
+    @pytest.mark.asyncio
+    async def test_admin_can_access_ai_status(
+        self,
+        client,
+        admin_token: str,
+    ) -> None:
+        """Test that admin user can access /ai/status endpoint (T030).
+
+        Verifies:
+        1. Admin user can access the endpoint
+        2. Response contains status and model fields
+        """
+        response = await client.get(
+            "/api/ai/status",
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+
+        # Verify response structure
+        assert "status" in data
+        assert "model" in data
+        assert data["status"] in ["operational", "degraded", "down"]
+        assert isinstance(data["model"], str)
+        assert len(data["model"]) > 0
+
+    @pytest.mark.asyncio
+    async def test_non_admin_user_gets_403(
+        self,
+        client,
+        auth_token: str,
+    ) -> None:
+        """Test that non-admin user gets 403 Forbidden (T031).
+
+        Verifies:
+        1. Regular authenticated user cannot access admin endpoint
+        2. Returns 403 Forbidden with appropriate message
+        """
+        response = await client.get(
+            "/api/ai/status",
+            headers={"Authorization": f"Bearer {auth_token}"},
+        )
+
+        assert response.status_code == 403
+        data = response.json()
+        assert "Admin access required" in data["detail"]
+
+    @pytest.mark.asyncio
+    async def test_unauthenticated_user_gets_401(
+        self,
+        client,
+    ) -> None:
+        """Test that unauthenticated user gets 401 Unauthorized (T032).
+
+        Verifies:
+        1. Request without token is rejected
+        2. Returns 401 Unauthorized
+        """
+        response = await client.get("/api/ai/status")
+
+        assert response.status_code == 401  # HTTPBearer returns 401 for missing credentials
+
+    @pytest.mark.asyncio
+    async def test_ai_status_returns_configured_model(
+        self,
+        client,
+        admin_token: str,
+    ) -> None:
+        """Test that AI status returns the configured model (T033).
+
+        Verifies:
+        1. The model field matches settings.GENERATION_MODEL
+        """
+        from app.core.config import settings
+
+        response = await client.get(
+            "/api/ai/status",
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["model"] == settings.GENERATION_MODEL

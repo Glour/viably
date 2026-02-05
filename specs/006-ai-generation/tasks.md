@@ -198,13 +198,17 @@
 
 ### Tests for User Story 6
 
-- [ ] T030 [P] [US6] Test admin access to /ai/status endpoint in backend/tests/test_ai.py [EXECUTOR: test-writer] [PARALLEL-GROUP-5]
-- [ ] T031 [P] [US6] Test non-admin rejected from /ai/status endpoint in backend/tests/test_ai.py [EXECUTOR: test-writer] [PARALLEL-GROUP-5]
+- [x] T030 [P] [US6] Test admin access to /ai/status endpoint in backend/tests/test_ai.py [EXECUTOR: test-writer] [PARALLEL-GROUP-5]
+  → Artifacts: [test_ai.py](../../backend/tests/test_ai.py)
+- [x] T031 [P] [US6] Test non-admin rejected from /ai/status endpoint in backend/tests/test_ai.py [EXECUTOR: test-writer] [PARALLEL-GROUP-5]
+  → Artifacts: [test_ai.py](../../backend/tests/test_ai.py)
 
 ### Implementation for User Story 6
 
-- [ ] T032 [US6] Create admin status endpoint in backend/app/ai/routes.py with get_current_admin_user dependency [EXECUTOR: api-builder] [SEQUENTIAL]
-- [ ] T033 [US6] Include ai_router in backend/app/main.py with prefix /api/ai [EXECUTOR: MAIN] [SEQUENTIAL]
+- [x] T032 [US6] Create admin status endpoint in backend/app/ai/routes.py with get_current_admin_user dependency [EXECUTOR: api-builder] [SEQUENTIAL]
+  → Artifacts: [routes.py](../../backend/app/ai/routes.py)
+- [x] T033 [US6] Include ai_router in backend/app/main.py with prefix /api/ai [EXECUTOR: MAIN] [SEQUENTIAL]
+  → Artifacts: [main.py](../../backend/app/main.py)
 
 **Checkpoint**: User Story 6 complete - admin monitoring available
 
