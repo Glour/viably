@@ -1,5 +1,7 @@
 """API routes for AI module."""
 
+import logging
+
 from fastapi import APIRouter, Depends
 
 from app.ai.client import anthropic_client
@@ -7,6 +9,8 @@ from app.ai.schemas import AiServiceStatus, AiStatusResponse
 from app.auth.deps import get_current_admin_user
 from app.auth.models import User
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -26,7 +30,8 @@ async def get_ai_status(
             status = AiServiceStatus.OPERATIONAL
         else:
             status = AiServiceStatus.DOWN
-    except Exception:
+    except Exception as e:
+        logger.warning(f"AI client check failed: {e}")
         status = AiServiceStatus.DOWN
 
     return AiStatusResponse(

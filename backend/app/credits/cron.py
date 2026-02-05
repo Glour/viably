@@ -32,7 +32,7 @@ async def monthly_rollover_job():
             )
         except Exception as e:
             await db.rollback()
-            logger.error(f"Monthly rollover failed: {e}")
+            logger.error("Monthly rollover failed: %s", e)
             raise
 
 

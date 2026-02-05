@@ -166,6 +166,15 @@ class AIGenerationService:
     async def validate_project_for_generation(self, project_id: UUID) -> Project:
         """Validate that a project is ready for generation.
 
+        This method provides standalone validation that can be called before
+        generation to check prerequisites without initiating the generation
+        process. It is used in tests and can be useful for pre-flight checks
+        in API endpoints.
+
+        Note: generate_project_code() performs its own inline validation,
+        so this method is not strictly required for generation. It exists
+        for cases where validation-only checks are needed.
+
         Checks:
         - Project exists
         - Project status is draft or error

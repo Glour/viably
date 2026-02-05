@@ -467,7 +467,7 @@ import asyncio
 from aiogram import Bot, Dispatcher
 
 async def main():
-    bot = Bot(token="TOKEN")
+    bot = Bot(token="FAKE_BOT_TOKEN_FOR_TESTING_12345")
     dp = Dispatcher()
     await dp.start_polling(bot)
 
@@ -778,7 +778,7 @@ class TestViewGeneratedCode:
         # Create a project with generated code (simulating post-generation state)
         generated_files = {
             "main.py": 'print("Hello, World!")',
-            "config.py": 'BOT_TOKEN = "your-token-here"',
+            "config.py": 'BOT_TOKEN = "FAKE_API_TOKEN_FOR_TESTING_ONLY"',
             "handlers/__init__.py": "# Handlers module",
         }
 
@@ -813,7 +813,7 @@ class TestViewGeneratedCode:
         assert data["generated_code"] is not None
         assert "files" in data["generated_code"]
         assert data["generated_code"]["files"]["main.py"] == 'print("Hello, World!")'
-        assert data["generated_code"]["files"]["config.py"] == 'BOT_TOKEN = "your-token-here"'
+        assert data["generated_code"]["files"]["config.py"] == 'BOT_TOKEN = "FAKE_API_TOKEN_FOR_TESTING_ONLY"'
         assert data["ai_model_used"] == "claude-sonnet-4-20250514"
         assert data["generated_at"] is not None
 

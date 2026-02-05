@@ -1,19 +1,82 @@
 """Authentication service with JWT token management and business logic."""
 
-import random
-import string
+import logging
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from jose import JWTError, jwt
-from jose.exceptions import ExpiredSignatureError
+import jwt
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.models import User
 from app.auth.security import hash_password, verify_password
 from app.core.config import settings
+from app.core.redis import get_redis
+from app.core.utils import generate_referral_code, generate_unique_referral_code
+
+logger = logging.getLogger(__name__)
+
+# Account lockout configuration
+MAX_FAILED_ATTEMPTS = 5
+LOCKOUT_DURATION_SECONDS = 900  # 15 minutes
+
+
+async def check_account_lockout(email: str) -> None:
+    """Check if account is locked due to failed login attempts.
+
+    Args:
+        email: User's email address.
+
+    Raises:
+        HTTPException 429: If account is temporarily locked.
+    """
+    redis = await get_redis()
+    key = f"failed_login:{email}"
+    attempts = await redis.get(key)
+
+    if attempts and int(attempts) >= MAX_FAILED_ATTEMPTS:
+        ttl = await redis.ttl(key)
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Account temporarily locked due to multiple failed login attempts. Try again in {ttl} seconds.",
+        )
+
+
+async def increment_failed_attempts(email: str) -> None:
+    """Increment failed login attempts counter.
+
+    Args:
+        email: User's email address.
+    """
+    redis = await get_redis()
+    key = f"failed_login:{email}"
+    attempts = await redis.incr(key)
+
+    # Set expiration on first failed attempt
+    if attempts == 1:
+        await redis.expire(key, LOCKOUT_DURATION_SECONDS)
+
+    logger.warning(
+        "Failed login attempt",
+        extra={
+            "event_type": "failed_login",
+            "email": email,
+            "attempts": attempts,
+        },
+    )
+
+
+async def clear_failed_attempts(email: str) -> None:
+    """Clear failed login attempts counter after successful login.
+
+    Args:
+        email: User's email address.
+    """
+    redis = await get_redis()
+    key = f"failed_login:{email}"
+    await redis.delete(key)
 
 
 def create_access_token(user_id: UUID, expires_delta: timedelta | None = None) -> str:
@@ -62,7 +125,7 @@ def create_refresh_token(user_id: UUID, expires_delta: timedelta | None = None) 
     return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
-def verify_token(token: str, token_type: str = "access") -> UUID | None:
+async def verify_token(token: str, token_type: str = "access") -> UUID | None:
     """Verify a JWT token and extract user_id.
 
     Args:
@@ -73,8 +136,14 @@ def verify_token(token: str, token_type: str = "access") -> UUID | None:
         User UUID if token is valid, None otherwise.
 
     Raises:
-        ValueError: If token is invalid, expired, or wrong type.
+        ValueError: If token is invalid, expired, wrong type, or blacklisted.
     """
+    # Check if token is blacklisted
+    redis_client = await get_redis()
+    is_blacklisted = await redis_client.exists(f"blacklist:{token}")
+    if is_blacklisted:
+        raise ValueError("Token has been revoked")
+
     try:
         payload = jwt.decode(
             token,
@@ -93,43 +162,8 @@ def verify_token(token: str, token_type: str = "access") -> UUID | None:
 
     except ExpiredSignatureError:
         raise ValueError("Token has expired")
-    except JWTError as e:
+    except InvalidTokenError as e:
         raise ValueError(f"Invalid token: {e}")
-
-
-def generate_referral_code() -> str:
-    """Generate a unique 8-character referral code.
-
-    Format: 3 uppercase letters + 5 digits (e.g., ABC12345)
-
-    Returns:
-        Generated referral code string.
-    """
-    letters = "".join(random.choices(string.ascii_uppercase, k=3))
-    digits = "".join(random.choices(string.digits, k=5))
-    return f"{letters}{digits}"
-
-
-async def generate_unique_referral_code(db: AsyncSession, max_retries: int = 10) -> str:
-    """Generate a unique referral code with collision retry.
-
-    Args:
-        db: Database session.
-        max_retries: Maximum number of retries on collision.
-
-    Returns:
-        Unique referral code string.
-
-    Raises:
-        RuntimeError: If unable to generate unique code after max retries.
-    """
-    for _ in range(max_retries):
-        code = generate_referral_code()
-        result = await db.execute(select(User).where(User.referral_code == code))
-        if result.scalar_one_or_none() is None:
-            return code
-
-    raise RuntimeError("Unable to generate unique referral code after max retries")
 
 
 async def register_user(
@@ -210,13 +244,19 @@ async def authenticate_user(
     Raises:
         HTTPException 401: If credentials invalid.
         HTTPException 403: If account inactive.
+        HTTPException 429: If account is locked.
     """
+    # Check if account is locked due to failed attempts
+    await check_account_lockout(email.lower())
+
     # Find user by email
     result = await db.execute(select(User).where(User.email == email.lower()))
     user = result.scalar_one_or_none()
 
     # Generic error message to prevent user enumeration
     if not user or not verify_password(password, user.password_hash):
+        # Increment failed attempts counter
+        await increment_failed_attempts(email.lower())
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",
@@ -228,6 +268,9 @@ async def authenticate_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account is inactive",
         )
+
+    # Clear failed attempts on successful login
+    await clear_failed_attempts(email.lower())
 
     # Update last login timestamp
     user.last_login_at = datetime.now(UTC)
@@ -255,11 +298,12 @@ async def refresh_access_token(
         HTTPException 403: If user account is inactive.
     """
     try:
-        user_id = verify_token(refresh_token, token_type="refresh")
+        user_id = await verify_token(refresh_token, token_type="refresh")
     except ValueError as e:
+        logger.warning("Token refresh failed: %s", e)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(e),
+            detail="Invalid or expired refresh token. Please log in again.",
         )
 
     # Verify user still exists and is active
@@ -279,3 +323,16 @@ async def refresh_access_token(
         )
 
     return create_access_token(user.id)
+
+
+async def blacklist_token(token: str, ttl_seconds: int) -> None:
+    """Add token to blacklist.
+
+    Stores token in Redis with TTL matching token expiration.
+
+    Args:
+        token: JWT token to blacklist.
+        ttl_seconds: Time-to-live in seconds (should match token expiration).
+    """
+    redis_client = await get_redis()
+    await redis_client.setex(f"blacklist:{token}", ttl_seconds, "1")

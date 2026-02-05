@@ -31,6 +31,7 @@ class Template(Base):
     config_schema = Column(JSON, nullable=False, default=dict)
 
     # Code template and prompts
+    # TODO: code_template is not currently used - kept for future template versioning
     code_template = Column(JSON, nullable=True, default=dict)
     prompt_template = Column(Text, nullable=False)
 

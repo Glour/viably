@@ -25,10 +25,9 @@ class CreditDeduct(BaseModel):
     """Request to deduct credits."""
 
     amount: int = Field(..., gt=0, description="Credits to deduct (positive number)")
-    transaction_type: str = Field(
+    transaction_type: TransactionType = Field(
         ...,
-        pattern="^(generation|admin_adjustment)$",
-        description="Type of deduction",
+        description="Type of deduction (generation or admin_adjustment)",
     )
     project_id: UUID | None = Field(None, description="Optional project reference")
     description: str | None = Field(None, max_length=255, description="Optional description")
@@ -38,9 +37,8 @@ class CreditAdd(BaseModel):
     """Request to add credits."""
 
     amount: int = Field(..., gt=0, description="Credits to add (positive number)")
-    transaction_type: str = Field(
+    transaction_type: TransactionType = Field(
         ...,
-        pattern="^(signup|daily_bonus|referral_bonus|purchase|refund|rollover|admin_adjustment)$",
         description="Type of credit addition",
     )
     related_user_id: UUID | None = Field(None, description="Related user for referrals")
@@ -96,6 +94,8 @@ class BalanceResponse(BaseModel):
 
     credits: int
     plan: str
+    daily_bonus: DailyBonusInfo | None = Field(None, description="Daily bonus info")
+    rollover_limit: int | None = Field(None, description="Credit rollover limit for plan")
 
 
 class CreditOperationResponse(BaseModel):

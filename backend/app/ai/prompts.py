@@ -105,21 +105,3 @@ def extract_code_files(response: str) -> dict[str, str]:
         files[filename] = code
 
     return files
-
-
-def count_code_files(files: dict[str, str]) -> dict[str, int]:
-    """Count files by extension for logging/metrics.
-
-    Args:
-        files: Dict mapping filename to code content.
-
-    Returns:
-        Dict mapping extension to count.
-    """
-    counts: dict[str, int] = {}
-
-    for filename in files:
-        ext = filename.rsplit(".", 1)[-1] if "." in filename else "unknown"
-        counts[ext] = counts.get(ext, 0) + 1
-
-    return counts

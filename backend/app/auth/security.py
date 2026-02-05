@@ -13,7 +13,7 @@ def hash_password(password: str) -> str:
         Hashed password string.
     """
     password_bytes = password.encode("utf-8")
-    salt = bcrypt.gensalt()
+    salt = bcrypt.gensalt(rounds=12)  # Explicit work factor for security auditability
     hashed = bcrypt.hashpw(password_bytes, salt)
     return hashed.decode("utf-8")
 

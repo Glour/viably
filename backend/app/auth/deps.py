@@ -1,5 +1,7 @@
 """FastAPI dependencies for authentication."""
 
+import logging
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
@@ -9,6 +11,7 @@ from app.auth.models import User
 from app.auth.service import verify_token
 from app.core.database import get_db
 
+logger = logging.getLogger(__name__)
 security = HTTPBearer()
 
 
@@ -35,11 +38,19 @@ async def get_current_user(
     token = credentials.credentials
 
     try:
-        user_id = verify_token(token, token_type="access")
+        user_id = await verify_token(token, token_type="access")
     except ValueError as e:
+        logger.warning(
+            "Security event: token validation failed",
+            extra={
+                "event_type": "token_validation_failed",
+                "error": str(e),
+                "token_prefix": token[:10] if len(token) > 10 else "***",
+            },
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(e),
+            detail="Invalid or expired authentication token. Please log in again.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -47,6 +58,13 @@ async def get_current_user(
     user = result.scalar_one_or_none()
 
     if not user:
+        logger.warning(
+            "Security event: user not found for valid token",
+            extra={
+                "event_type": "user_not_found",
+                "user_id": str(user_id),
+            },
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found",
@@ -54,6 +72,14 @@ async def get_current_user(
         )
 
     if not user.is_active:
+        logger.warning(
+            "Security event: inactive user access attempt",
+            extra={
+                "event_type": "inactive_user_access",
+                "user_id": str(user.id),
+                "email": user.email,
+            },
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User account is inactive",
@@ -79,6 +105,14 @@ async def get_current_admin_user(
         HTTPException 403: If user is not an admin.
     """
     if not current_user.is_admin:
+        logger.warning(
+            "Security event: unauthorized admin access attempt",
+            extra={
+                "event_type": "unauthorized_admin_access",
+                "user_id": str(current_user.id),
+                "email": current_user.email,
+            },
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required",

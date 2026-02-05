@@ -7,13 +7,15 @@ from pydantic import BaseModel, Field, HttpUrl
 
 # Re-export UserResponse from auth for consistency
 from app.auth.schemas import UserResponse
+# Re-export DailyBonusInfo and TransactionResponse from credits for consistency
+from app.credits.schemas import DailyBonusInfo, TransactionResponse
 
 __all__ = [
     "UserResponse",
     "UserUpdate",
     "CreditBalanceResponse",
     "DailyBonusInfo",
-    "CreditTransactionResponse",
+    "TransactionResponse",
     "ProjectInfo",
     "TransactionsListResponse",
     "PaginationInfo",
@@ -27,13 +29,6 @@ class UserUpdate(BaseModel):
     avatar_url: HttpUrl | None = None
 
 
-class DailyBonusInfo(BaseModel):
-    """Daily bonus information."""
-
-    amount: int
-    next_bonus_at: datetime | None = None
-
-
 class CreditBalanceResponse(BaseModel):
     """User credit balance info."""
 
@@ -43,25 +38,8 @@ class CreditBalanceResponse(BaseModel):
     rollover_limit: int
 
 
-class ProjectInfo(BaseModel):
-    """Minimal project info for transaction display."""
-
-    id: UUID
-    name: str
-
-
-class CreditTransactionResponse(BaseModel):
-    """Single credit transaction."""
-
-    id: UUID
-    amount: int
-    balance_after: int
-    transaction_type: str
-    description: str | None
-    project: ProjectInfo | None = None
-    created_at: datetime
-
-    model_config = {"from_attributes": True}
+# NOTE: ProjectInfo was removed as it's never populated in transaction responses.
+# If needed in future, can be added to TransactionResponse in credits module.
 
 
 class PaginationInfo(BaseModel):
@@ -76,5 +54,5 @@ class PaginationInfo(BaseModel):
 class TransactionsListResponse(BaseModel):
     """Paginated list of transactions."""
 
-    transactions: list[CreditTransactionResponse]
+    transactions: list[TransactionResponse]
     pagination: PaginationInfo

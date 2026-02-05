@@ -7,13 +7,15 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/viably"
+    # SECURITY: No default - must be provided via DATABASE_URL environment variable
+    DATABASE_URL: str
 
     # JWT Settings
-    JWT_SECRET_KEY: str = "change-this-in-production"
+    # SECURITY: No default - must be provided via JWT_SECRET_KEY environment variable
+    JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15  # 15 minutes (security best practice)
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7  # 7 days (reduced from 30)
 
     # Password Settings
     MIN_PASSWORD_LENGTH: int = 8
@@ -21,6 +23,8 @@ class Settings(BaseSettings):
     # App Settings
     DEBUG: bool = False
     APP_NAME: str = "Viably"
+    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173"  # Comma-separated list
+    SQL_ECHO: bool = False  # Separate from DEBUG - never enable in production
 
     # AI Generation
     ANTHROPIC_API_KEY: str = ""
@@ -34,6 +38,7 @@ class Settings(BaseSettings):
     RAILWAY_API_TOKEN: str = ""
     DEPLOYMENT_TIMEOUT_SECONDS: int = 300  # 5 minutes
     DEPLOYMENT_POLL_INTERVAL_SECONDS: int = 10
+    HEALTH_CHECK_TIMEOUT_SECONDS: float = 10.0  # Health check HTTP request timeout
 
     class Config:
         env_file = ".env"
