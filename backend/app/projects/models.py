@@ -76,6 +76,9 @@ class Project(Base):
     # Relationships
     user = relationship("User", back_populates="projects")
     template = relationship("Template")
+    deployments = relationship(
+        "Deployment", back_populates="project", cascade="all, delete-orphan"
+    )
 
     # Indexes for common queries
     __table_args__ = (
