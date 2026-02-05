@@ -8,12 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.deps import get_current_user
 from app.auth.models import User
 from app.core.database import get_db
+from app.projects.models import ProjectStatus
 from app.projects.schemas import (
     ProjectCreate,
     ProjectDetailResponse,
     ProjectListResponse,
     ProjectResponse,
-    ProjectStatus,
     ProjectUpdate,
 )
 from app.projects.service import (

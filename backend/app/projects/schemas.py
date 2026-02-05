@@ -1,22 +1,12 @@
 """Pydantic schemas for projects module."""
 
 from datetime import datetime
-from enum import Enum
 from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-
-class ProjectStatus(str, Enum):
-    """Project lifecycle status."""
-
-    DRAFT = "draft"
-    GENERATING = "generating"
-    READY = "ready"
-    DEPLOYING = "deploying"
-    DEPLOYED = "deployed"
-    ERROR = "error"
+from app.projects.models import ProjectStatus
 
 
 class ProjectCreate(BaseModel):
