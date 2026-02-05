@@ -65,10 +65,14 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Create AnthropicClient wrapper class in backend/app/ai/client.py with generate_code() async method [EXECUTOR: api-builder] [SEQUENTIAL]
-- [ ] T006 Create SYSTEM_PROMPT constant and build_generation_prompt() function in backend/app/ai/prompts.py [EXECUTOR: api-builder] [SEQUENTIAL]
-- [ ] T007 Create extract_code_files() function in backend/app/ai/prompts.py with regex pattern for markdown code blocks [EXECUTOR: api-builder] [SEQUENTIAL]
-- [ ] T008 Create AiStatusResponse schema in backend/app/ai/schemas.py [EXECUTOR: api-builder] [SEQUENTIAL]
+- [x] T005 Create AnthropicClient wrapper class in backend/app/ai/client.py with generate_code() async method [EXECUTOR: api-builder] [SEQUENTIAL]
+  → Artifacts: [client.py](../../backend/app/ai/client.py)
+- [x] T006 Create SYSTEM_PROMPT constant and build_generation_prompt() function in backend/app/ai/prompts.py [EXECUTOR: api-builder] [SEQUENTIAL]
+  → Artifacts: [prompts.py](../../backend/app/ai/prompts.py)
+- [x] T007 Create extract_code_files() function in backend/app/ai/prompts.py with regex pattern for markdown code blocks [EXECUTOR: api-builder] [SEQUENTIAL]
+  → Artifacts: [prompts.py](../../backend/app/ai/prompts.py)
+- [x] T008 Create AiStatusResponse schema in backend/app/ai/schemas.py [EXECUTOR: api-builder] [SEQUENTIAL]
+  → Artifacts: [schemas.py](../../backend/app/ai/schemas.py)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
