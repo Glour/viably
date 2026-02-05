@@ -45,6 +45,12 @@ paths:
           description: Не авторизован
         '404':
           description: Проект не найден
+        '429':
+          description: Превышен лимит запросов (5 запросов/минута)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /api/deployments/{deployment_id}:
     get:
@@ -127,6 +133,37 @@ paths:
           description: Не авторизован
         '404':
           description: Деплоймент не найден
+
+  /api/deployments/projects/{project_id}:
+    get:
+      summary: List Project Deployments
+      description: Получить список всех деплойментов проекта
+      operationId: list_project_deployments
+      tags:
+        - deployments
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID проекта
+      responses:
+        '200':
+          description: Список деплойментов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeploymentResponse'
+        '401':
+          description: Не авторизован
+        '404':
+          description: Проект не найден
 
 components:
   securitySchemes:
@@ -228,7 +265,8 @@ components:
         logs:
           type: string
           nullable: true
-          description: Текстовые логи деплоймента
+          description: Текстовые логи деплоймента (макс. 1MB)
+          maxLength: 1048576
         status:
           $ref: '#/components/schemas/DeploymentStatus'
 
