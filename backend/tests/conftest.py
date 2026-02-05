@@ -17,6 +17,7 @@ from app.core.database import Base, get_db
 from app.main import app
 from app.templates.models import Template
 from app.credits.models import CreditTransaction, DailyBonus
+from app.projects.models import Project, ProjectStatus
 
 # Test database URL (in-memory SQLite for testing)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -314,3 +315,108 @@ async def multiple_templates(db_session: AsyncSession) -> list[Template]:
     for template in templates:
         await db_session.refresh(template)
     return templates
+
+
+# Project fixtures
+
+
+@pytest_asyncio.fixture
+async def test_project(
+    db_session: AsyncSession, test_user: User, test_template: Template
+) -> Project:
+    """Create a single test project."""
+    project = Project(
+        id=uuid.uuid4(),
+        user_id=test_user.id,
+        name="Test Project",
+        description="A test project for unit tests",
+        template_id=test_template.id,
+        config={"bot_name": "TestBot"},
+        status=ProjectStatus.DRAFT.value,
+        is_public=False,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
+    db_session.add(project)
+    await db_session.commit()
+    await db_session.refresh(project)
+    return project
+
+
+@pytest_asyncio.fixture
+async def multiple_projects(
+    db_session: AsyncSession, test_user: User, test_template: Template
+) -> list[Project]:
+    """Create multiple test projects for list/pagination tests."""
+    now = datetime.now(timezone.utc)
+    projects = [
+        Project(
+            id=uuid.uuid4(),
+            user_id=test_user.id,
+            name=f"Project {i}",
+            description=f"Test project {i}",
+            template_id=test_template.id,
+            config={"bot_name": f"Bot{i}"},
+            status=ProjectStatus.DRAFT.value if i % 2 == 0 else ProjectStatus.READY.value,
+            is_public=False,
+            created_at=now - timedelta(hours=i),
+            updated_at=now - timedelta(hours=i),
+        )
+        for i in range(25)
+    ]
+    for project in projects:
+        db_session.add(project)
+    await db_session.commit()
+    for project in projects:
+        await db_session.refresh(project)
+    return projects
+
+
+@pytest_asyncio.fixture
+async def other_user(db_session: AsyncSession) -> User:
+    """Create another test user for access control tests."""
+    user = User(
+        id=uuid.uuid4(),
+        email="other@example.com",
+        password_hash=hash_password("Test1234"),
+        full_name="Other User",
+        plan="free",
+        credits=10,
+        referral_code=generate_referral_code(),
+        is_active=True,
+        is_verified=True,
+        created_at=datetime.now(timezone.utc),
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+def other_user_token(other_user: User) -> str:
+    """Create access token for other user."""
+    return create_access_token(other_user.id)
+
+
+@pytest_asyncio.fixture
+async def public_project(
+    db_session: AsyncSession, test_user: User, test_template: Template
+) -> Project:
+    """Create a public project for access control tests."""
+    project = Project(
+        id=uuid.uuid4(),
+        user_id=test_user.id,
+        name="Public Project",
+        description="A public project",
+        template_id=test_template.id,
+        config={"bot_name": "PublicBot"},
+        status=ProjectStatus.READY.value,
+        is_public=True,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
+    db_session.add(project)
+    await db_session.commit()
+    await db_session.refresh(project)
+    return project

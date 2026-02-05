@@ -1,0 +1,326 @@
+openapi: 3.1.0
+info:
+  title: Projects Module API
+  version: 1.0.0
+  description: API для управления проектами пользователей
+
+servers:
+  - url: /api
+    description: API prefix
+
+paths:
+  /projects:
+    post:
+      operationId: createProject
+      summary: Create a new project
+      tags: [projects]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectCreate'
+      responses:
+        '201':
+          description: Project created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectDetailResponse'
+        '400':
+          description: Validation error or template not found
+        '401':
+          description: Unauthorized
+
+    get:
+      operationId: listProjects
+      summary: List user's projects with pagination
+      tags: [projects]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/ProjectStatus'
+      responses:
+        '200':
+          description: Paginated list of projects
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectListResponse'
+        '401':
+          description: Unauthorized
+
+  /projects/{project_id}:
+    get:
+      operationId: getProject
+      summary: Get project details
+      tags: [projects]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Project details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectDetailResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Project not found
+
+    patch:
+      operationId: updateProject
+      summary: Update project
+      tags: [projects]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectUpdate'
+      responses:
+        '200':
+          description: Project updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectDetailResponse'
+        '400':
+          description: Validation error
+        '401':
+          description: Unauthorized
+        '404':
+          description: Project not found
+
+    delete:
+      operationId: deleteProject
+      summary: Delete project
+      tags: [projects]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Project deleted
+        '401':
+          description: Unauthorized
+        '404':
+          description: Project not found
+
+  /projects/{project_id}/generate:
+    post:
+      operationId: triggerGeneration
+      summary: Trigger AI code generation
+      tags: [projects]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Generation started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectDetailResponse'
+        '400':
+          description: Project not in draft status
+        '401':
+          description: Unauthorized
+        '404':
+          description: Project not found
+
+  /projects/public/{project_id}:
+    get:
+      operationId: getPublicProject
+      summary: Get public project details (read-only)
+      tags: [projects]
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Public project details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        '404':
+          description: Project not found or not public
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ProjectStatus:
+      type: string
+      enum: [draft, generating, ready, deploying, deployed, error]
+
+    ProjectCreate:
+      type: object
+      required:
+        - name
+        - template_id
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        template_id:
+          type: string
+          format: uuid
+        config:
+          type: object
+          nullable: true
+
+    ProjectUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        config:
+          type: object
+          nullable: true
+        is_public:
+          type: boolean
+
+    ProjectResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        template_id:
+          type: string
+          format: uuid
+        config:
+          type: object
+          nullable: true
+        status:
+          $ref: '#/components/schemas/ProjectStatus'
+        is_public:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ProjectDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/ProjectResponse'
+        - type: object
+          properties:
+            generated_code:
+              type: object
+              nullable: true
+            generation_logs:
+              type: string
+              nullable: true
+            ai_model_used:
+              type: string
+              nullable: true
+            error_message:
+              type: string
+              nullable: true
+            deployed_url:
+              type: string
+              nullable: true
+            deploy_platform:
+              type: string
+              nullable: true
+            generated_at:
+              type: string
+              format: date-time
+              nullable: true
+            deployed_at:
+              type: string
+              format: date-time
+              nullable: true
+
+    ProjectListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectResponse'
+        total:
+          type: integer
+        page:
+          type: integer
+        per_page:
+          type: integer
+        pages:
+          type: integer
