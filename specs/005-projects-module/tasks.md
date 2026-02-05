@@ -79,16 +79,23 @@
 
 ### Tests for User Story 1
 
-- [ ] T008 [P] [US1] Test create_project success in backend/tests/test_projects.py
-- [ ] T009 [P] [US1] Test create_project with invalid template returns 400 in backend/tests/test_projects.py
-- [ ] T010 [P] [US1] Test create_project with invalid config validation in backend/tests/test_projects.py
+- [x] T008 [P] [US1] Test create_project success in backend/tests/test_projects.py
+  → Artifacts: [test_projects.py](../../backend/tests/test_projects.py)
+- [x] T009 [P] [US1] Test create_project with invalid template returns 404 in backend/tests/test_projects.py
+  → Artifacts: [test_projects.py](../../backend/tests/test_projects.py)
+- [x] T010 [P] [US1] Test create_project with invalid config validation in backend/tests/test_projects.py
+  → Artifacts: [test_projects.py](../../backend/tests/test_projects.py)
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Implement create_project() service function in backend/app/projects/service.py
-- [ ] T012 [US1] Add config validation against template.config_schema using jsonschema in backend/app/projects/service.py
-- [ ] T013 [US1] Implement POST /projects endpoint in backend/app/projects/routes.py
-- [ ] T014 [US1] Integrate with templates module: call increment_usage_count() on project creation in backend/app/projects/service.py
+- [x] T011 [US1] Implement create_project() service function in backend/app/projects/service.py
+  → Artifacts: [service.py](../../backend/app/projects/service.py)
+- [x] T012 [US1] Add config validation against template.config_schema using jsonschema in backend/app/projects/service.py
+  → Artifacts: [service.py](../../backend/app/projects/service.py)
+- [x] T013 [US1] Implement POST /projects endpoint in backend/app/projects/routes.py
+  → Artifacts: [routes.py](../../backend/app/projects/routes.py)
+- [x] T014 [US1] Integrate with templates module: call increment_usage_count() on project creation in backend/app/projects/service.py
+  → Artifacts: [service.py](../../backend/app/projects/service.py)
 
 **Checkpoint**: User Story 1 complete — can create projects via API
 
@@ -102,16 +109,23 @@
 
 ### Tests for User Story 2
 
-- [ ] T015 [P] [US2] Test list_projects pagination in backend/tests/test_projects.py
-- [ ] T016 [P] [US2] Test list_projects filter by status in backend/tests/test_projects.py
-- [ ] T017 [P] [US2] Test get_project returns full details in backend/tests/test_projects.py
+- [x] T015 [P] [US2] Test list_projects pagination in backend/tests/test_projects.py
+  → Artifacts: [test_projects.py](../../backend/tests/test_projects.py)
+- [x] T016 [P] [US2] Test list_projects filter by status in backend/tests/test_projects.py
+  → Artifacts: [test_projects.py](../../backend/tests/test_projects.py)
+- [x] T017 [P] [US2] Test get_project returns full details in backend/tests/test_projects.py
+  → Artifacts: [test_projects.py](../../backend/tests/test_projects.py)
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Implement list_user_projects() service function with pagination in backend/app/projects/service.py
-- [ ] T019 [US2] Implement get_project_by_id() service function in backend/app/projects/service.py
-- [ ] T020 [US2] Implement GET /projects endpoint with pagination and status filter in backend/app/projects/routes.py
-- [ ] T021 [US2] Implement GET /projects/{project_id} endpoint in backend/app/projects/routes.py
+- [x] T018 [US2] Implement list_user_projects() service function with pagination in backend/app/projects/service.py
+  → Artifacts: [service.py](../../backend/app/projects/service.py)
+- [x] T019 [US2] Implement get_project_by_id() service function in backend/app/projects/service.py
+  → Artifacts: [service.py](../../backend/app/projects/service.py)
+- [x] T020 [US2] Implement GET /projects endpoint with pagination and status filter in backend/app/projects/routes.py
+  → Artifacts: [routes.py](../../backend/app/projects/routes.py)
+- [x] T021 [US2] Implement GET /projects/{project_id} endpoint in backend/app/projects/routes.py
+  → Artifacts: [routes.py](../../backend/app/projects/routes.py)
 
 **Checkpoint**: User Story 2 complete — can list and view projects
 
@@ -125,14 +139,19 @@
 
 ### Tests for User Story 3
 
-- [ ] T022 [P] [US3] Test update_project success in backend/tests/test_projects.py
-- [ ] T023 [P] [US3] Test update_project on non-existent project returns 404 in backend/tests/test_projects.py
+- [x] T022 [P] [US3] Test update_project success in backend/tests/test_projects.py
+  → Artifacts: [test_projects.py](../../backend/tests/test_projects.py)
+- [x] T023 [P] [US3] Test update_project on non-existent project returns 404 in backend/tests/test_projects.py
+  → Artifacts: [test_projects.py](../../backend/tests/test_projects.py)
 
 ### Implementation for User Story 3
 
-- [ ] T024 [US3] Implement update_project() service function in backend/app/projects/service.py
-- [ ] T025 [US3] Add config re-validation on update in backend/app/projects/service.py
-- [ ] T026 [US3] Implement PATCH /projects/{project_id} endpoint in backend/app/projects/routes.py
+- [x] T024 [US3] Implement update_project() service function in backend/app/projects/service.py
+  → Artifacts: [service.py](../../backend/app/projects/service.py)
+- [x] T025 [US3] Add config re-validation on update in backend/app/projects/service.py
+  → Artifacts: [service.py](../../backend/app/projects/service.py)
+- [x] T026 [US3] Implement PATCH /projects/{project_id} endpoint in backend/app/projects/routes.py
+  → Artifacts: [routes.py](../../backend/app/projects/routes.py)
 
 **Checkpoint**: User Story 3 complete — can update projects
 
@@ -146,13 +165,17 @@
 
 ### Tests for User Story 4
 
-- [ ] T027 [P] [US4] Test delete_project success in backend/tests/test_projects.py
-- [ ] T028 [P] [US4] Test delete_project on non-existent returns 404 in backend/tests/test_projects.py
+- [x] T027 [P] [US4] Test delete_project success in backend/tests/test_projects.py
+  → Artifacts: [test_projects.py](../../backend/tests/test_projects.py)
+- [x] T028 [P] [US4] Test delete_project on non-existent returns 404 in backend/tests/test_projects.py
+  → Artifacts: [test_projects.py](../../backend/tests/test_projects.py)
 
 ### Implementation for User Story 4
 
-- [ ] T029 [US4] Implement delete_project() service function in backend/app/projects/service.py
-- [ ] T030 [US4] Implement DELETE /projects/{project_id} endpoint in backend/app/projects/routes.py
+- [x] T029 [US4] Implement delete_project() service function in backend/app/projects/service.py
+  → Artifacts: [service.py](../../backend/app/projects/service.py)
+- [x] T030 [US4] Implement DELETE /projects/{project_id} endpoint in backend/app/projects/routes.py
+  → Artifacts: [routes.py](../../backend/app/projects/routes.py)
 
 **Checkpoint**: User Story 4 complete — can delete projects
 
@@ -166,16 +189,23 @@
 
 ### Tests for User Story 5
 
-- [ ] T031 [P] [US5] Test trigger_generation success in backend/tests/test_projects.py
-- [ ] T032 [P] [US5] Test trigger_generation on non-draft returns 400 in backend/tests/test_projects.py
-- [ ] T033 [P] [US5] Test status_transitions (draft→generating, cannot re-trigger) in backend/tests/test_projects.py
+- [x] T031 [P] [US5] Test trigger_generation success in backend/tests/test_projects.py
+  → Artifacts: [test_projects.py](../../backend/tests/test_projects.py)
+- [x] T032 [P] [US5] Test trigger_generation on non-draft returns 400 in backend/tests/test_projects.py
+  → Artifacts: [test_projects.py](../../backend/tests/test_projects.py)
+- [x] T033 [P] [US5] Test status_transitions (draft→generating, cannot re-trigger) in backend/tests/test_projects.py
+  → Artifacts: [test_projects.py](../../backend/tests/test_projects.py)
 
 ### Implementation for User Story 5
 
-- [ ] T034 [US5] Implement trigger_generation() service function with status validation in backend/app/projects/service.py
-- [ ] T035 [US5] Implement save_generated_code() service function (for AI module callback) in backend/app/projects/service.py
-- [ ] T036 [US5] Implement set_error() service function for error handling in backend/app/projects/service.py
-- [ ] T037 [US5] Implement POST /projects/{project_id}/generate endpoint in backend/app/projects/routes.py
+- [x] T034 [US5] Implement trigger_generation() service function with status validation in backend/app/projects/service.py
+  → Artifacts: [service.py](../../backend/app/projects/service.py)
+- [x] T035 [US5] Implement save_generated_code() service function (for AI module callback) in backend/app/projects/service.py
+  → Artifacts: [service.py](../../backend/app/projects/service.py)
+- [x] T036 [US5] Implement set_error() service function for error handling in backend/app/projects/service.py
+  → Artifacts: [service.py](../../backend/app/projects/service.py)
+- [x] T037 [US5] Implement POST /projects/{project_id}/generate endpoint in backend/app/projects/routes.py
+  → Artifacts: [routes.py](../../backend/app/projects/routes.py)
 
 **Checkpoint**: User Story 5 complete — can trigger generation workflow
 
@@ -189,14 +219,19 @@
 
 ### Tests for User Story 6
 
-- [ ] T038 [P] [US6] Test owner_only_access (other user gets 404) in backend/tests/test_projects.py
-- [ ] T039 [P] [US6] Test public_project_access in backend/tests/test_projects.py
+- [x] T038 [P] [US6] Test owner_only_access (other user gets 404) in backend/tests/test_projects.py
+  → Artifacts: [test_projects.py](../../backend/tests/test_projects.py)
+- [x] T039 [P] [US6] Test public_project_access in backend/tests/test_projects.py
+  → Artifacts: [test_projects.py](../../backend/tests/test_projects.py)
 
 ### Implementation for User Story 6
 
-- [ ] T040 [US6] Implement get_public_project() service function in backend/app/projects/service.py
-- [ ] T041 [US6] Implement GET /projects/public/{project_id} endpoint in backend/app/projects/routes.py
-- [ ] T042 [US6] Add other_user fixture for access control tests in backend/tests/conftest.py
+- [x] T040 [US6] Implement get_public_project() service function in backend/app/projects/service.py
+  → Artifacts: [service.py](../../backend/app/projects/service.py)
+- [x] T041 [US6] Implement GET /projects/public/{project_id} endpoint in backend/app/projects/routes.py
+  → Artifacts: [routes.py](../../backend/app/projects/routes.py)
+- [x] T042 [US6] Add other_user fixture for access control tests in backend/tests/conftest.py
+  → Artifacts: [conftest.py](../../backend/tests/conftest.py)
 
 **Checkpoint**: User Story 6 complete — access control enforced
 
@@ -206,8 +241,10 @@
 
 **Purpose**: Wire up module to main application
 
-- [ ] T043 Register projects router in backend/app/main.py
-- [ ] T044 Run full test suite: pytest backend/tests/test_projects.py -v
+- [x] T043 Register projects router in backend/app/main.py
+  → Artifacts: [main.py](../../backend/app/main.py)
+- [x] T044 Run full test suite: pytest backend/tests/test_projects.py -v
+  → 18 tests passed
 - [ ] T045 Apply Alembic migration: alembic upgrade head
 
 ---
