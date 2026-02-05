@@ -1,6 +1,6 @@
 """Authentication service with JWT token management and business logic."""
 
-import random
+import secrets
 import string
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
@@ -105,8 +105,8 @@ def generate_referral_code() -> str:
     Returns:
         Generated referral code string.
     """
-    letters = "".join(random.choices(string.ascii_uppercase, k=3))
-    digits = "".join(random.choices(string.digits, k=5))
+    letters = "".join(secrets.choice(string.ascii_uppercase) for _ in range(3))
+    digits = "".join(secrets.choice(string.digits) for _ in range(5))
     return f"{letters}{digits}"
 
 

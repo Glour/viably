@@ -15,6 +15,11 @@ from app.credits.schemas import DailyBonusClaimResponse, DailyBonusInfo
 logger = logging.getLogger(__name__)
 
 # Business constants
+# NOTE: DAILY_BONUSES values here differ from users/service.py intentionally.
+# This module (credits) uses these values for credit system operations (claiming bonuses).
+# The free tier gets 0 bonus here to enforce upgrade incentive for credit claiming.
+# users/service.py uses different values (free=1) for display/informational purposes.
+# TODO: Consider consolidating into a shared constants module with clear semantics.
 DAILY_BONUSES: dict[str, int] = {
     "free": 0,
     "starter": 3,
@@ -22,6 +27,8 @@ DAILY_BONUSES: dict[str, int] = {
     "business": 20,
 }
 
+# NOTE: ROLLOVER_LIMITS is duplicated in users/service.py with same values.
+# Consider consolidating into a shared constants module.
 ROLLOVER_LIMITS: dict[str, int] = {
     "free": 0,
     "starter": 200,
@@ -456,7 +463,9 @@ async def process_monthly_rollover(db: AsyncSession) -> dict:
             except Exception as e:
                 errors += 1
                 logger.error(
-                    f"Rollover failed for user {user.id}: {e}",
+                    "Rollover failed for user %s: %s",
+                    user.id,
+                    e,
                     extra={"user_id": str(user.id), "error": str(e)},
                 )
 

@@ -135,7 +135,7 @@ class DeploymentService:
             return deployment
 
         except Exception as e:
-            logger.error(f"Deployment failed: {e}")
+            logger.error("Deployment failed: %s", e)
 
             deployment.status = DeploymentStatus.FAILED.value
             deployment.error_message = str(e)
@@ -229,7 +229,7 @@ class DeploymentService:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to stop deployment: {e}")
+            logger.error("Failed to stop deployment: %s", e)
             raise
 
     async def check_health(self, deployment_id: UUID) -> bool:
@@ -252,5 +252,6 @@ class DeploymentService:
 
                 return healthy
 
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Health check failed for deployment {deployment_id}: {e}")
             return False

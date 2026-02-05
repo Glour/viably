@@ -10,7 +10,8 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/viably"
 
     # JWT Settings
-    JWT_SECRET_KEY: str = "change-this-in-production"
+    # SECURITY: No default - must be provided via JWT_SECRET_KEY environment variable
+    JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30

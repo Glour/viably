@@ -1,6 +1,10 @@
 """FastAPI routes for authentication endpoints."""
 
+import logging
+
 from fastapi import APIRouter, Depends, Response, status
+
+logger = logging.getLogger(__name__)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.deps import get_current_user
@@ -124,6 +128,11 @@ async def logout(
     Raises:
         401: Not authenticated
     """
-    # MVP: Just acknowledge the logout request
-    # Future: Add token to blacklist
+    # TODO: Implement token blacklist for proper session invalidation
+    # Options: Redis-based blacklist, database table, or short-lived tokens with refresh rotation
+    # For now, tokens remain valid until expiration (24h access, 30d refresh)
+
+    # Log logout for audit trail
+    logger.info("User %s requested logout", current_user.id)
+
     return Response(status_code=status.HTTP_204_NO_CONTENT)

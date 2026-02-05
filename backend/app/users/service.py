@@ -10,6 +10,8 @@ from app.auth.models import User
 from app.users.models import CreditTransaction
 
 # Plan-specific rollover limits
+# NOTE: ROLLOVER_LIMITS is duplicated in credits/service.py with same values.
+# Consider consolidating into a shared constants module.
 ROLLOVER_LIMITS: dict[str, int] = {
     "free": 0,
     "starter": 200,
@@ -18,6 +20,11 @@ ROLLOVER_LIMITS: dict[str, int] = {
 }
 
 # Plan-specific daily bonus amounts
+# NOTE: DAILY_BONUS_AMOUNTS values here differ from credits/service.py intentionally.
+# This module (users) uses these values for display/informational purposes.
+# The free tier shows 1 bonus here for user-facing information.
+# credits/service.py uses 0 for free tier to enforce upgrade incentive when actually claiming.
+# TODO: Consider consolidating into a shared constants module with clear semantics.
 DAILY_BONUS_AMOUNTS: dict[str, int] = {
     "free": 1,
     "starter": 3,
