@@ -62,7 +62,9 @@ class AnthropicClient:
             messages=[{"role": "user", "content": prompt}],
         )
 
-        result = response.content[0].text
+        # Extract text from first TextBlock in response
+        first_block = response.content[0]
+        result = first_block.text if hasattr(first_block, "text") else ""
 
         logger.info(
             "Code generation complete",
