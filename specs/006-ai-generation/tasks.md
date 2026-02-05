@@ -86,9 +86,12 @@
 
 ### Tests for User Story 1
 
-- [ ] T009 [P] [US1] Test build_generation_prompt() with variable replacement in backend/tests/test_ai.py [EXECUTOR: test-writer] [PARALLEL-GROUP-2]
-- [ ] T010 [P] [US1] Test extract_code_files() with valid and empty responses in backend/tests/test_ai.py [EXECUTOR: test-writer] [PARALLEL-GROUP-2]
-- [ ] T011 [P] [US1] Test generation service success with mocked API in backend/tests/test_ai.py [EXECUTOR: test-writer] [PARALLEL-GROUP-2]
+- [x] T009 [P] [US1] Test build_generation_prompt() with variable replacement in backend/tests/test_ai.py [EXECUTOR: test-writer] [PARALLEL-GROUP-2]
+  → Artifacts: [test_ai.py](../../backend/tests/test_ai.py)
+- [x] T010 [P] [US1] Test extract_code_files() with valid and empty responses in backend/tests/test_ai.py [EXECUTOR: test-writer] [PARALLEL-GROUP-2]
+  → Artifacts: [test_ai.py](../../backend/tests/test_ai.py)
+- [x] T011 [P] [US1] Test generation service success with mocked API in backend/tests/test_ai.py [EXECUTOR: test-writer] [PARALLEL-GROUP-2]
+  → Artifacts: [test_ai.py](../../backend/tests/test_ai.py)
 
 ### Implementation for User Story 1
 

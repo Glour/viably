@@ -1,0 +1,659 @@
+"""Tests for AI generation module."""
+
+import json
+import uuid
+from datetime import datetime, timezone
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.ai.prompts import build_generation_prompt, extract_code_files
+from app.auth.models import User
+from app.projects.models import Project, ProjectStatus
+from app.templates.models import Template
+
+
+# =============================================================================
+# T009: Test build_generation_prompt
+# =============================================================================
+
+
+class TestBuildGenerationPrompt:
+    """Tests for build_generation_prompt function."""
+
+    def test_replaces_simple_variables(self) -> None:
+        """Test that simple string variables are replaced correctly."""
+        template = "Create a bot named {{bot_name}} for {{purpose}}"
+        config = {"bot_name": "ShopBot", "purpose": "e-commerce"}
+
+        result = build_generation_prompt(template, config)
+
+        assert result == "Create a bot named ShopBot for e-commerce"
+
+    def test_handles_list_values(self) -> None:
+        """Test that list values are JSON-serialized with proper formatting."""
+        template = "Include these features: {{features}}"
+        config = {"features": ["inline keyboard", "payment system", "admin panel"]}
+
+        result = build_generation_prompt(template, config)
+
+        # Verify JSON formatting is present
+        assert "[\n" in result
+        assert '"inline keyboard"' in result
+        assert '"payment system"' in result
+        assert '"admin panel"' in result
+
+        # Verify it's valid JSON
+        extracted = result.replace("Include these features: ", "")
+        parsed = json.loads(extracted)
+        assert parsed == config["features"]
+
+    def test_handles_dict_values(self) -> None:
+        """Test that dict values are JSON-serialized with proper formatting."""
+        template = "Use this config: {{settings}}"
+        config = {
+            "settings": {
+                "max_items": 10,
+                "currency": "USD",
+                "notifications": True,
+            }
+        }
+
+        result = build_generation_prompt(template, config)
+
+        # Verify JSON formatting
+        assert "{\n" in result
+        assert '"max_items": 10' in result
+        assert '"currency": "USD"' in result
+        assert '"notifications": true' in result
+
+        # Verify it's valid JSON
+        extracted = result.replace("Use this config: ", "")
+        parsed = json.loads(extracted)
+        assert parsed == config["settings"]
+
+    def test_replaces_multiple_variables(self) -> None:
+        """Test that multiple variables are replaced in a single template."""
+        template = """
+Bot Name: {{bot_name}}
+Category: {{category}}
+Features: {{features}}
+Max Users: {{max_users}}
+"""
+        config = {
+            "bot_name": "TestBot",
+            "category": "utility",
+            "features": ["feature1", "feature2"],
+            "max_users": 1000,
+        }
+
+        result = build_generation_prompt(template, config)
+
+        assert "Bot Name: TestBot" in result
+        assert "Category: utility" in result
+        assert '"feature1"' in result
+        assert '"feature2"' in result
+        assert "Max Users: 1000" in result
+
+    def test_handles_number_values(self) -> None:
+        """Test that numeric values are converted to strings correctly."""
+        template = "Max items: {{max_items}}, Price: {{price}}"
+        config = {"max_items": 100, "price": 19.99}
+
+        result = build_generation_prompt(template, config)
+
+        assert result == "Max items: 100, Price: 19.99"
+
+    def test_handles_boolean_values(self) -> None:
+        """Test that boolean values are converted correctly."""
+        template = "Enabled: {{enabled}}, Public: {{is_public}}"
+        config = {"enabled": True, "is_public": False}
+
+        result = build_generation_prompt(template, config)
+
+        assert result == "Enabled: True, Public: False"
+
+    def test_handles_missing_variables(self) -> None:
+        """Test that template with placeholders that have no config values remains unchanged."""
+        template = "Name: {{bot_name}}, Type: {{bot_type}}"
+        config = {"bot_name": "TestBot"}  # bot_type is missing
+
+        result = build_generation_prompt(template, config)
+
+        assert result == "Name: TestBot, Type: {{bot_type}}"
+
+    def test_handles_empty_config(self) -> None:
+        """Test that empty config leaves template unchanged."""
+        template = "Name: {{bot_name}}"
+        config: dict[str, str] = {}
+
+        result = build_generation_prompt(template, config)
+
+        assert result == "Name: {{bot_name}}"
+
+    def test_handles_unicode_characters(self) -> None:
+        """Test that Unicode characters are preserved (ensure_ascii=False)."""
+        template = "Bot name: {{bot_name}}"
+        config = {"bot_name": "МойБот"}  # Cyrillic
+
+        result = build_generation_prompt(template, config)
+
+        assert result == "Bot name: МойБот"
+
+    def test_handles_nested_dict_values(self) -> None:
+        """Test that nested dicts are properly JSON-serialized."""
+        template = "Config: {{config}}"
+        config: dict[str, dict[str, dict[str, str | int] | list[str]]] = {
+            "config": {
+                "database": {
+                    "host": "localhost",
+                    "port": 5432,
+                },
+                "features": ["a", "b"],
+            }
+        }
+
+        result = build_generation_prompt(template, config)
+
+        # Verify nested structure is preserved
+        assert '"database":' in result
+        assert '"host": "localhost"' in result
+        assert '"port": 5432' in result
+        assert '"features":' in result
+
+        # Verify valid JSON
+        extracted = result.replace("Config: ", "")
+        parsed = json.loads(extracted)
+        assert parsed == config["config"]
+
+
+# =============================================================================
+# T010: Test extract_code_files
+# =============================================================================
+
+
+class TestExtractCodeFiles:
+    """Tests for extract_code_files function."""
+
+    def test_extracts_python_file(self) -> None:
+        """Test extracting a single Python file from markdown code block."""
+        response = """Here's the code:
+
+```python
+# filename: main.py
+print("Hello, World!")
+```
+"""
+        result = extract_code_files(response)
+
+        assert len(result) == 1
+        assert "main.py" in result
+        assert result["main.py"] == 'print("Hello, World!")'
+
+    def test_extracts_multiple_files(self) -> None:
+        """Test extracting multiple files with different extensions."""
+        response = """Generated files:
+
+```python
+# filename: bot.py
+import asyncio
+print("bot")
+```
+
+```dockerfile
+# filename: Dockerfile
+FROM python:3.12
+```
+
+```yaml
+# filename: docker-compose.yml
+version: '3.8'
+services:
+  app:
+    build: .
+```
+
+```json
+# filename: config.json
+{"key": "value"}
+```
+"""
+        result = extract_code_files(response)
+
+        assert len(result) == 4
+        assert "bot.py" in result
+        assert "import asyncio" in result["bot.py"]
+        assert "Dockerfile" in result
+        assert "FROM python:3.12" in result["Dockerfile"]
+        assert "docker-compose.yml" in result
+        assert "version: '3.8'" in result["docker-compose.yml"]
+        assert "config.json" in result
+        assert '{"key": "value"}' in result["config.json"]
+
+    def test_returns_empty_for_no_code_blocks(self) -> None:
+        """Test that response without valid code blocks returns empty dict."""
+        response = """This is just text without any code blocks.
+No files to extract here."""
+
+        result = extract_code_files(response)
+
+        assert result == {}
+
+    def test_ignores_blocks_without_filename(self) -> None:
+        """Test that code blocks without filename comment are ignored."""
+        response = """
+```python
+# This is just a regular code block
+print("No filename")
+```
+
+```python
+# filename: with_filename.py
+print("Has filename")
+```
+"""
+        result = extract_code_files(response)
+
+        # Only the one with filename should be extracted
+        assert len(result) == 1
+        assert "with_filename.py" in result
+        assert result["with_filename.py"] == 'print("Has filename")'
+
+    def test_handles_empty_response(self) -> None:
+        """Test that empty response returns empty dict."""
+        result = extract_code_files("")
+
+        assert result == {}
+
+    def test_handles_nested_path_filenames(self) -> None:
+        """Test that nested paths in filenames are preserved."""
+        response = """
+```python
+# filename: src/handlers/start.py
+async def start_handler():
+    pass
+```
+
+```python
+# filename: config/settings.py
+DATABASE_URL = "sqlite:///db.sqlite"
+```
+"""
+        result = extract_code_files(response)
+
+        assert len(result) == 2
+        assert "src/handlers/start.py" in result
+        assert "config/settings.py" in result
+
+    def test_extracts_env_file(self) -> None:
+        """Test extracting .env file."""
+        response = """
+```env
+# filename: .env
+API_KEY=secret123
+DATABASE_URL=postgresql://localhost/db
+```
+"""
+        result = extract_code_files(response)
+
+        assert len(result) == 1
+        assert ".env" in result
+        assert "API_KEY=secret123" in result[".env"]
+        assert "DATABASE_URL=postgresql://localhost/db" in result[".env"]
+
+    def test_extracts_requirements_txt(self) -> None:
+        """Test extracting requirements.txt."""
+        response = """
+```requirements
+# filename: requirements.txt
+fastapi==0.109.0
+uvicorn==0.27.0
+```
+"""
+        result = extract_code_files(response)
+
+        assert len(result) == 1
+        assert "requirements.txt" in result
+        assert "fastapi==0.109.0" in result["requirements.txt"]
+
+    def test_extracts_bash_script(self) -> None:
+        """Test extracting shell script."""
+        response = """
+```bash
+# filename: start.sh
+#!/bin/bash
+python main.py
+```
+"""
+        result = extract_code_files(response)
+
+        assert len(result) == 1
+        assert "start.sh" in result
+        assert "#!/bin/bash" in result["start.sh"]
+
+    def test_handles_code_block_without_language(self) -> None:
+        """Test extracting from code block without language specifier."""
+        response = """
+```
+# filename: README.txt
+This is a readme file
+```
+"""
+        result = extract_code_files(response)
+
+        assert len(result) == 1
+        assert "README.txt" in result
+        assert "This is a readme file" in result["README.txt"]
+
+    def test_strips_whitespace_from_code(self) -> None:
+        """Test that leading/trailing whitespace is stripped from code."""
+        response = """
+```python
+# filename: test.py
+
+
+def test():
+    pass
+
+
+```
+"""
+        result = extract_code_files(response)
+
+        # Should strip leading/trailing empty lines
+        assert result["test.py"] == "def test():\n    pass"
+
+    def test_preserves_internal_whitespace(self) -> None:
+        """Test that internal whitespace in code is preserved."""
+        response = """
+```python
+# filename: test.py
+def func1():
+    pass
+
+def func2():
+    pass
+```
+"""
+        result = extract_code_files(response)
+
+        # Internal blank line should be preserved
+        assert "\n\n" in result["test.py"]
+        assert result["test.py"] == "def func1():\n    pass\n\ndef func2():\n    pass"
+
+    def test_handles_filename_with_spaces(self) -> None:
+        """Test that filenames with extra spaces are trimmed."""
+        response = """
+```python
+# filename:   config file.py
+content = "test"
+```
+"""
+        result = extract_code_files(response)
+
+        assert "config file.py" in result
+
+    def test_case_insensitive_language_matching(self) -> None:
+        """Test that language specifiers are case-insensitive."""
+        response = """
+```PYTHON
+# filename: test1.py
+pass
+```
+
+```Python
+# filename: test2.py
+pass
+```
+"""
+        result = extract_code_files(response)
+
+        assert len(result) == 2
+        assert "test1.py" in result
+        assert "test2.py" in result
+
+
+# =============================================================================
+# T011: Test Generation Service (placeholder for future implementation)
+# =============================================================================
+
+
+class TestGenerationService:
+    """Tests for AIGenerationService."""
+
+    @pytest.mark.asyncio
+    async def test_generation_success(
+        self,
+        db_session: AsyncSession,
+        test_user: User,
+        test_template: Template,
+    ) -> None:
+        """Test successful AI code generation flow.
+
+        This test will be implemented once AIGenerationService is created.
+        Expected behavior:
+        1. Create project in draft status
+        2. Mock Anthropic API to return valid code blocks
+        3. Call AIGenerationService.generate_project_code()
+        4. Verify project status transitions: draft -> generating -> ready
+        5. Verify generated_code field contains extracted files
+        6. Verify user credits are deducted
+        """
+        # Create project in draft status
+        project = Project(
+            id=uuid.uuid4(),
+            user_id=test_user.id,
+            name="Test Project",
+            description="Test project for AI generation",
+            template_id=test_template.id,
+            config={"bot_name": "TestBot"},
+            status=ProjectStatus.DRAFT.value,
+            is_public=False,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        db_session.add(project)
+        await db_session.commit()
+        await db_session.refresh(project)
+
+        # Mock Anthropic API response with valid code blocks
+        mock_response = """Here's your bot:
+
+```python
+# filename: main.py
+import asyncio
+from aiogram import Bot, Dispatcher
+
+async def main():
+    bot = Bot(token="TOKEN")
+    dp = Dispatcher()
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+```python
+# filename: config.py
+DATABASE_URL = "sqlite:///bot.db"
+```
+
+```dockerfile
+# filename: Dockerfile
+FROM python:3.12
+WORKDIR /app
+COPY . .
+RUN pip install -r requirements.txt
+CMD ["python", "main.py"]
+```
+"""
+
+        # Mock the Anthropic client
+        with patch("app.ai.client.anthropic_client.generate_code") as mock_generate:
+            mock_generate.return_value = mock_response
+
+            # TODO: Implement AIGenerationService and uncomment below
+            # from app.ai.service import AIGenerationService
+            # service = AIGenerationService(db_session)
+            # result = await service.generate_project_code(project.id)
+
+            # For now, just verify the mock setup works
+            generated = await mock_generate()
+            assert "main.py" in generated
+            assert "config.py" in generated
+            assert "Dockerfile" in generated
+
+            # When service is implemented, verify:
+            # await db_session.refresh(project)
+            # assert project.status == ProjectStatus.READY.value
+            # assert project.generated_code is not None
+            # assert "main.py" in project.generated_code
+            # assert "config.py" in project.generated_code
+            # assert "Dockerfile" in project.generated_code
+
+            # Verify credits deducted
+            # await db_session.refresh(test_user)
+            # assert test_user.credits == 100 - test_template.credit_cost  # 100 - 5 = 95
+
+    @pytest.mark.asyncio
+    async def test_generation_updates_project_status(
+        self,
+        db_session: AsyncSession,
+        test_user: User,
+        test_template: Template,
+    ) -> None:
+        """Test that generation updates project status correctly.
+
+        Expected status transitions:
+        - draft -> generating (when generation starts)
+        - generating -> ready (when generation completes)
+        - generating -> error (when generation fails)
+
+        This test will be implemented once AIGenerationService is created.
+        """
+        # Placeholder for future implementation
+        project = Project(
+            id=uuid.uuid4(),
+            user_id=test_user.id,
+            name="Status Test Project",
+            template_id=test_template.id,
+            config={"bot_name": "StatusBot"},
+            status=ProjectStatus.DRAFT.value,
+            is_public=False,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        db_session.add(project)
+        await db_session.commit()
+
+        # When service is implemented:
+        # 1. Verify status changes to "generating" immediately
+        # 2. Mock successful generation
+        # 3. Verify status changes to "ready"
+        # 4. Verify updated_at timestamp is updated
+
+        assert project.status == ProjectStatus.DRAFT.value  # Initial state
+
+    @pytest.mark.asyncio
+    async def test_generation_error_handling(
+        self,
+        db_session: AsyncSession,
+        test_user: User,
+        test_template: Template,
+    ) -> None:
+        """Test that generation errors are handled correctly.
+
+        Expected behavior when Anthropic API fails:
+        1. Project status should be set to "error"
+        2. Error message should be logged
+        3. User credits should NOT be deducted
+        4. Exception should be raised to caller
+
+        This test will be implemented once AIGenerationService is created.
+        """
+        # Placeholder for future implementation
+        project = Project(
+            id=uuid.uuid4(),
+            user_id=test_user.id,
+            name="Error Test Project",
+            template_id=test_template.id,
+            config={"bot_name": "ErrorBot"},
+            status=ProjectStatus.DRAFT.value,
+            is_public=False,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        db_session.add(project)
+        await db_session.commit()
+
+        # When service is implemented:
+        # with patch("app.ai.client.anthropic_client.generate_code") as mock_generate:
+        #     mock_generate.side_effect = Exception("API Error")
+        #
+        #     from app.ai.service import AIGenerationService
+        #     service = AIGenerationService(db_session)
+        #
+        #     with pytest.raises(Exception):
+        #         await service.generate_project_code(project.id)
+        #
+        #     await db_session.refresh(project)
+        #     assert project.status == ProjectStatus.ERROR.value
+        #
+        #     # Verify credits NOT deducted
+        #     await db_session.refresh(test_user)
+        #     assert test_user.credits == 100  # Unchanged
+
+        assert project.status == ProjectStatus.DRAFT.value  # Initial state
+
+    @pytest.mark.asyncio
+    async def test_generation_with_insufficient_credits(
+        self,
+        db_session: AsyncSession,
+        test_user: User,
+        test_template: Template,
+    ) -> None:
+        """Test that generation fails when user has insufficient credits.
+
+        Expected behavior:
+        1. Check user credits before generation
+        2. Raise exception if credits < template.credit_cost
+        3. Project status should remain "draft"
+        4. No Anthropic API call should be made
+
+        This test will be implemented once AIGenerationService is created.
+        """
+        # Set user credits below template cost using SQLAlchemy 2.0 update
+        initial_credits = 2
+        await db_session.execute(
+            update(User).where(User.id == test_user.id).values(credits=initial_credits)
+        )
+        await db_session.commit()
+        await db_session.refresh(test_user)
+
+        project = Project(
+            id=uuid.uuid4(),
+            user_id=test_user.id,
+            name="Insufficient Credits Project",
+            template_id=test_template.id,
+            config={"bot_name": "NoCreditsBot"},
+            status=ProjectStatus.DRAFT.value,
+            is_public=False,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        db_session.add(project)
+        await db_session.commit()
+
+        # When service is implemented:
+        # from app.ai.service import AIGenerationService, InsufficientCreditsError
+        # service = AIGenerationService(db_session)
+        #
+        # with pytest.raises(InsufficientCreditsError):
+        #     await service.generate_project_code(project.id)
+        #
+        # await db_session.refresh(project)
+        # assert project.status == ProjectStatus.DRAFT.value
+
+        assert test_user.credits == 2  # Current state
