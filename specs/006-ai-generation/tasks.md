@@ -50,7 +50,8 @@
 
 - [x] T001 Add anthropic>=0.20.0, celery>=5.3.0, redis>=5.0.0 to backend/requirements.txt [EXECUTOR: MAIN] [SEQUENTIAL]
   → Artifacts: [requirements.txt](../../backend/requirements.txt)
-- [ ] T002 Add AI generation settings to backend/app/core/config.py (ANTHROPIC_API_KEY, CELERY_BROKER_URL, CELERY_RESULT_BACKEND, GENERATION_COST, GENERATION_MAX_TOKENS, GENERATION_MODEL) [EXECUTOR: MAIN] [SEQUENTIAL]
+- [x] T002 Add AI generation settings to backend/app/core/config.py (ANTHROPIC_API_KEY, CELERY_BROKER_URL, CELERY_RESULT_BACKEND, GENERATION_COST, GENERATION_MAX_TOKENS, GENERATION_MODEL) [EXECUTOR: MAIN] [SEQUENTIAL]
+  → Artifacts: [config.py](../../backend/app/core/config.py)
 - [ ] T003 [P] Create backend/app/ai/__init__.py module initialization [EXECUTOR: MAIN] [PARALLEL-GROUP-1]
 - [ ] T004 [P] Add get_current_admin_user dependency to backend/app/auth/deps.py (check if User has is_admin field first) [EXECUTOR: MAIN] [PARALLEL-GROUP-1]
 
