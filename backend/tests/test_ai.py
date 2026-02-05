@@ -890,3 +890,180 @@ class TestViewGeneratedCode:
         assert data["status"] == "error"
         assert data["error_message"] == "API rate limit exceeded"
         assert data["generated_code"] is None
+
+
+# =============================================================================
+# T017, T018: Test Error Handling with Credit Refund
+# =============================================================================
+
+
+class TestErrorHandlingWithCreditRefund:
+    """Tests for error handling and credit refund on generation failure."""
+
+    @pytest.mark.asyncio
+    async def test_credit_refund_on_api_error(
+        self,
+        client,
+        auth_token: str,
+        db_session: AsyncSession,
+        test_user: User,
+        test_template: Template,
+    ) -> None:
+        """Test that credits are refunded when AI generation fails (T017).
+
+        Verifies:
+        1. Create project in draft status
+        2. User has sufficient credits
+        3. Trigger generation with mocked API failure
+        4. Verify credits are refunded (original balance restored)
+        """
+        from app.core.config import settings
+
+        # Store initial credits
+        initial_credits = test_user.credits
+        generation_cost = settings.GENERATION_COST
+
+        # Create draft project
+        project = Project(
+            id=uuid.uuid4(),
+            user_id=test_user.id,
+            name="Refund Test Project",
+            template_id=test_template.id,
+            config={"bot_name": "RefundBot"},
+            status=ProjectStatus.DRAFT.value,
+            is_public=False,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        db_session.add(project)
+        await db_session.commit()
+
+        # Mock AI service to raise an error
+        with patch("app.ai.service.AIGenerationService") as mock_ai_service:
+            mock_instance = MagicMock()
+            mock_instance.generate_project_code = AsyncMock(
+                side_effect=Exception("Simulated API error")
+            )
+            mock_ai_service.return_value = mock_instance
+
+            # Trigger generation (should fail)
+            response = await client.post(
+                f"/api/projects/{project.id}/generate",
+                headers={"Authorization": f"Bearer {auth_token}"},
+            )
+
+        # Verify the request failed
+        assert response.status_code == 500
+        assert "Generation failed" in response.json()["detail"]
+
+        # Refresh user to get updated credits
+        await db_session.refresh(test_user)
+
+        # Credits should be fully refunded (back to initial)
+        assert test_user.credits == initial_credits
+
+    @pytest.mark.asyncio
+    async def test_error_status_and_message_saved(
+        self,
+        db_session: AsyncSession,
+        test_user: User,
+        test_template: Template,
+    ) -> None:
+        """Test that error status and message are saved to project (T018).
+
+        Verifies:
+        1. When AI generation fails, project status = 'error'
+        2. Error message is stored in project.error_message
+        """
+        from app.ai.service import AIGenerationService
+
+        # Create draft project
+        project = Project(
+            id=uuid.uuid4(),
+            user_id=test_user.id,
+            name="Error Message Test",
+            template_id=test_template.id,
+            config={"bot_name": "ErrorMsgBot"},
+            status=ProjectStatus.DRAFT.value,
+            is_public=False,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        db_session.add(project)
+        await db_session.commit()
+
+        # Mock API to return error
+        with patch("app.ai.service.anthropic_client.generate_code") as mock_generate:
+            error_message = "Rate limit exceeded: too many requests"
+            mock_generate.side_effect = Exception(error_message)
+
+            service = AIGenerationService(db_session)
+
+            with pytest.raises(Exception, match="Rate limit exceeded"):
+                await service.generate_project_code(project.id)
+
+        # Verify project state
+        await db_session.refresh(project)
+        assert project.status == ProjectStatus.ERROR.value
+        assert project.error_message == error_message
+
+    @pytest.mark.asyncio
+    async def test_regeneration_from_error_status(
+        self,
+        client,
+        auth_token: str,
+        db_session: AsyncSession,
+        test_user: User,
+        test_template: Template,
+    ) -> None:
+        """Test regeneration from error status succeeds (T020).
+
+        Verifies:
+        1. Project with status='error' can be regenerated
+        2. Previous error_message is cleared
+        3. Generation completes successfully
+        """
+        # Create project in error status
+        project = Project(
+            id=uuid.uuid4(),
+            user_id=test_user.id,
+            name="Retry Test Project",
+            template_id=test_template.id,
+            config={"bot_name": "RetryBot"},
+            status=ProjectStatus.ERROR.value,
+            error_message="Previous generation failed",
+            is_public=False,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        db_session.add(project)
+        await db_session.commit()
+
+        # Mock successful AI generation
+        async def mock_generate(project_id):
+            from sqlalchemy import select
+            result = await db_session.execute(
+                select(Project).where(Project.id == project_id)
+            )
+            proj = result.scalar_one()
+            proj.status = ProjectStatus.READY.value
+            proj.generated_code = {"files": {"main.py": "# Generated code"}}
+            proj.error_message = None  # Clear previous error
+            await db_session.commit()
+            return {"success": True, "files_count": 1, "files": ["main.py"]}
+
+        with patch("app.ai.service.AIGenerationService") as mock_ai_service:
+            mock_instance = MagicMock()
+            mock_instance.generate_project_code = mock_generate
+            mock_ai_service.return_value = mock_instance
+
+            # Trigger regeneration
+            response = await client.post(
+                f"/api/projects/{project.id}/generate",
+                headers={"Authorization": f"Bearer {auth_token}"},
+            )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "ready"
+        assert data["error_message"] is None

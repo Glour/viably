@@ -133,13 +133,17 @@
 
 ### Tests for User Story 3
 
-- [ ] T017 [P] [US3] Test credit refund on API error in backend/tests/test_ai.py [EXECUTOR: test-writer] [PARALLEL-GROUP-3]
-- [ ] T018 [P] [US3] Test error status and message saved to project in backend/tests/test_ai.py [EXECUTOR: test-writer] [PARALLEL-GROUP-3]
+- [x] T017 [P] [US3] Test credit refund on API error in backend/tests/test_ai.py [EXECUTOR: test-writer] [PARALLEL-GROUP-3]
+  → Artifacts: [test_ai.py](../../backend/tests/test_ai.py)
+- [x] T018 [P] [US3] Test error status and message saved to project in backend/tests/test_ai.py [EXECUTOR: test-writer] [PARALLEL-GROUP-3]
+  → Artifacts: [test_ai.py](../../backend/tests/test_ai.py)
 
 ### Implementation for User Story 3
 
-- [ ] T019 [US3] Add error handling with credit refund in AIGenerationService.generate_project_code() in backend/app/ai/service.py [EXECUTOR: api-builder] [SEQUENTIAL]
-- [ ] T020 [US3] Add test for regeneration from error status (reset to draft first) in backend/tests/test_ai.py [EXECUTOR: test-writer] [SEQUENTIAL]
+- [x] T019 [US3] Add error handling with credit refund in AIGenerationService.generate_project_code() in backend/app/ai/service.py [EXECUTOR: api-builder] [SEQUENTIAL]
+  → Artifacts: [service.py](../../backend/app/ai/service.py), [projects/service.py](../../backend/app/projects/service.py) (implemented in T012, T013)
+- [x] T020 [US3] Add test for regeneration from error status (reset to draft first) in backend/tests/test_ai.py [EXECUTOR: test-writer] [SEQUENTIAL]
+  → Artifacts: [test_ai.py](../../backend/tests/test_ai.py)
 
 **Checkpoint**: User Story 3 complete - errors handled gracefully with refunds
 
