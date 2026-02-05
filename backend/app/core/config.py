@@ -22,6 +22,14 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     APP_NAME: str = "Viably"
 
+    # AI Generation
+    ANTHROPIC_API_KEY: str = ""
+    CELERY_BROKER_URL: str = "redis://localhost:6379/0"
+    CELERY_RESULT_BACKEND: str = "redis://localhost:6379/0"
+    GENERATION_COST: int = 10
+    GENERATION_MAX_TOKENS: int = 8192
+    GENERATION_MODEL: str = "claude-sonnet-4-20250514"
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

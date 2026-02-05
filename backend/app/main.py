@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.ai.routes import router as ai_router
 from app.auth.routes import router as auth_router
 from app.credits.cron import start_scheduler, stop_scheduler
 from app.credits.routes import router as credits_router
@@ -30,6 +31,7 @@ app = FastAPI(
 )
 
 # Include routers
+app.include_router(ai_router, prefix="/api/ai", tags=["ai"])
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(credits_router, prefix="/api/credits", tags=["credits"])
 app.include_router(projects_router, prefix="/api/projects", tags=["projects"])

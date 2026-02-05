@@ -400,6 +400,34 @@ def other_user_token(other_user: User) -> str:
 
 
 @pytest_asyncio.fixture
+async def admin_user(db_session: AsyncSession) -> User:
+    """Create an admin test user."""
+    user = User(
+        id=uuid.uuid4(),
+        email="admin@example.com",
+        password_hash=hash_password("Admin1234"),
+        full_name="Admin User",
+        plan="pro",
+        credits=1000,
+        referral_code=generate_referral_code(),
+        is_active=True,
+        is_verified=True,
+        is_admin=True,
+        created_at=datetime.now(timezone.utc),
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+def admin_token(admin_user: User) -> str:
+    """Create access token for admin user."""
+    return create_access_token(admin_user.id)
+
+
+@pytest_asyncio.fixture
 async def public_project(
     db_session: AsyncSession, test_user: User, test_template: Template
 ) -> Project:

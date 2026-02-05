@@ -1,5 +1,6 @@
 """Business logic for projects module."""
 
+import logging
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -8,9 +9,13 @@ from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
+from app.credits.service import add_credits, deduct_credits
 from app.projects.models import Project, ProjectStatus
 from app.projects.schemas import ProjectCreate, ProjectUpdate
 from app.templates.service import get_template_by_id, increment_usage_count
+
+logger = logging.getLogger(__name__)
 
 
 def validate_config_against_schema(config: dict | None, schema: dict) -> None:
@@ -221,32 +226,105 @@ async def trigger_generation(
 ) -> Project:
     """Trigger AI code generation for a project.
 
+    Workflow:
+    1. Validate project exists and status is draft/error
+    2. Check user has sufficient credits
+    3. Deduct credits atomically
+    4. Set status to generating
+    5. Call AI generation service (synchronous MVP)
+    6. On error: refund credits, set error status
+
     Args:
         project_id: Project UUID.
         user_id: Owner's user ID.
         db: Database session.
 
     Returns:
-        Updated project with status='generating'.
+        Updated project with status='generating' -> 'ready' or 'error'.
 
     Raises:
         HTTPException 404: If project not found.
-        HTTPException 400: If project not in draft status.
+        HTTPException 400: If project not in draft/error status.
+        HTTPException 422: If insufficient credits.
     """
     project = await get_project_by_id(project_id, user_id, db)
 
-    if project.status != ProjectStatus.DRAFT.value:
+    # Allow generation from draft or error status (retry)
+    if project.status not in (ProjectStatus.DRAFT.value, ProjectStatus.ERROR.value):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Generation can only be triggered for draft projects",
+            detail="Generation can only be triggered for draft or error projects",
         )
 
+    generation_cost = settings.GENERATION_COST
+
+    # Deduct credits atomically (raises HTTPException 422 if insufficient)
+    logger.info(
+        "Deducting credits for generation",
+        extra={
+            "project_id": str(project_id),
+            "user_id": str(user_id),
+            "cost": generation_cost,
+        },
+    )
+
+    await deduct_credits(
+        user_id=user_id,
+        amount=generation_cost,
+        transaction_type="generation",
+        project_id=project_id,
+        description=f"AI code generation for project: {project.name}",
+        db=db,
+    )
+
+    # Set status to generating
     project.status = ProjectStatus.GENERATING.value
+    project.error_message = None  # Clear previous error
     await db.commit()
     await db.refresh(project)
 
-    # TODO: Trigger async AI generation task
-    # This will be implemented in the AI module
+    # Import here to avoid circular import
+    from app.ai.service import AIGenerationService
+
+    try:
+        # Synchronous generation (MVP) - will be async via Celery later
+        ai_service = AIGenerationService(db)
+        await ai_service.generate_project_code(project_id)
+
+        # Refresh to get updated status
+        await db.refresh(project)
+
+        logger.info(
+            "Generation completed successfully",
+            extra={
+                "project_id": str(project_id),
+                "status": project.status,
+            },
+        )
+
+    except Exception as e:
+        # Refund credits on failure
+        logger.error(
+            "Generation failed, refunding credits",
+            extra={
+                "project_id": str(project_id),
+                "error": str(e),
+            },
+        )
+
+        await add_credits(
+            user_id=user_id,
+            amount=generation_cost,
+            transaction_type="generation_refund",
+            description=f"Refund for failed generation: {project.name}",
+            db=db,
+        )
+
+        # Re-raise the exception for proper error response
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Generation failed: {str(e)}",
+        )
 
     return project
 
