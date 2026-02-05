@@ -1,105 +1,93 @@
-# Implementation Plan: [FEATURE]
+# Implementation Plan: Credits Module
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
-
-**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
+**Branch**: `003-credits-module` | **Date**: 2026-02-05 | **Spec**: [spec.md](./spec.md)
+**Input**: Feature specification from `/specs/003-credits-module/spec.md`
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+Модуль управления кредитной экономикой: атомарные операции списания/начисления кредитов, ежедневные бонусы по тарифным планам, реферальные бонусы и месячный rollover с лимитами. Основан на существующей модели CreditTransaction и интегрируется с Users Module.
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
-
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: Python 3.12+
+**Primary Dependencies**: FastAPI 0.109+, SQLAlchemy 2.0+ (async), Pydantic 2.5+
+**Storage**: PostgreSQL (async via asyncpg), SQLite (tests via aiosqlite)
+**Testing**: pytest 8.0+, pytest-asyncio 0.23+, httpx 0.26+
+**Target Platform**: Linux server (Docker)
+**Project Type**: Web application (backend only for this module)
+**Performance Goals**: <500ms p99 для операций с кредитами, обработка 100k пользователей за 1 час при rollover
+**Constraints**: Атомарность операций (SELECT FOR UPDATE), нулевая вероятность отрицательного баланса
+**Scale/Scope**: ~10k-100k пользователей, ~1M транзакций/месяц
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+| Principle | Status | Notes |
+|-----------|--------|-------|
+| I. Context-First Development | ✅ PASS | Изучен существующий код: CreditTransaction в users/models.py, миграция существует |
+| II. Single Source of Truth | ✅ PASS | CreditTransaction переносится в credits/models.py как единственный источник |
+| III. Library-First Development | ✅ PASS | APScheduler для cron-задач (проверено в research.md) |
+| IV. Code Reuse & DRY | ✅ PASS | Переиспользуется Base, get_db, auth deps из существующих модулей |
+| V. Strict Type Safety | ✅ PASS | Все функции с type hints, Pydantic schemas |
+| VI. Atomic Task Execution | ✅ PASS | Каждая задача независимо тестируема и коммитируема |
+| VII. Quality Gates | ✅ PASS | mypy + pytest обязательны перед коммитом |
+| VIII. Progressive Specification | ✅ PASS | spec.md → plan.md → tasks.md → implement |
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/[###-feature]/
-├── plan.md              # This file (/speckit.plan command output)
-├── research.md          # Phase 0 output (/speckit.plan command)
-├── research/            # Complex research (if needed - for deep research tasks)
-├── data-model.md        # Phase 1 output (/speckit.plan command)
-├── quickstart.md        # Phase 1 output (/speckit.plan command)
-├── contracts/           # Phase 1 output (/speckit.plan command)
-└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
+specs/003-credits-module/
+├── plan.md              # This file
+├── research.md          # Phase 0 output
+├── data-model.md        # Phase 1 output
+├── quickstart.md        # Phase 1 output
+├── contracts/           # Phase 1 output
+│   └── openapi.yaml
+└── tasks.md             # Phase 2 output (created by /speckit.tasks)
 ```
 
 ### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
 backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
+├── app/
+│   ├── credits/                    # NEW: Credits module
+│   │   ├── __init__.py            # Module exports
+│   │   ├── models.py              # CreditTransaction, DailyBonus
+│   │   ├── schemas.py             # Pydantic schemas
+│   │   ├── service.py             # Business logic
+│   │   ├── routes.py              # FastAPI endpoints
+│   │   └── cron.py                # Scheduled jobs (rollover)
+│   ├── auth/                      # Existing: User model, deps
+│   ├── users/                     # Existing: User endpoints
+│   │   └── models.py              # MODIFY: Remove CreditTransaction (move to credits)
+│   └── main.py                    # MODIFY: Register credits router, start scheduler
+├── alembic/versions/
+│   └── xxx_add_daily_bonuses.py   # NEW: Daily bonus table migration
 └── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+    └── test_credits.py            # NEW: Credits module tests
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: Используется существующая структура web application (backend/).
+- Credits module создаётся как отдельный пакет `app/credits/`
+- CreditTransaction перемещается из `app/users/models.py` в `app/credits/models.py`
+- Добавляется таблица daily_bonuses для отслеживания полученных бонусов
 
 ## Complexity Tracking
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
+> Нет нарушений Constitution — таблица пустая
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+| — | — | — |
+
+## Key Decisions
+
+1. **Atomic Operations**: SELECT FOR UPDATE для блокировки записи пользователя при изменении баланса
+2. **Daily Bonus Tracking**: Отдельная таблица daily_bonuses с unique constraint (user_id, bonus_date)
+3. **Cron Jobs**: APScheduler для месячного rollover (1-го числа в 00:00 UTC)
+4. **Transaction Types**: signup, daily_bonus, referral_bonus, purchase, refund, generation, rollover, admin_adjustment
+5. **Related User**: Поле related_user_id добавляется в CreditTransaction для связи реферальных бонусов
