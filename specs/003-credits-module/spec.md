@@ -110,6 +110,10 @@
 - **FR-011**: Система ДОЛЖНА защищать от race conditions при параллельных операциях с кредитами
 - **FR-012**: Каждая транзакция ДОЛЖНА содержать: user_id, amount, balance_after, transaction_type, created_at
 - **FR-013**: Типы транзакций ДОЛЖНЫ включать: signup, daily_bonus, referral_bonus, purchase, refund, generation, rollover, admin_adjustment
+- **FR-014**: Система ДОЛЖНА использовать row-level locking (SELECT FOR UPDATE) с timeout 5 секунд для операций с кредитами
+- **FR-015**: При невозможности получить lock в течение timeout система ДОЛЖНА вернуть ошибку 409 Conflict с возможностью retry
+- **FR-016**: Cron-задача rollover ДОЛЖНА обрабатывать каждого пользователя в отдельной транзакции для изоляции ошибок
+- **FR-017**: При потере соединения с БД mid-transaction система ДОЛЖНА откатить транзакцию (implicit rollback), баланс остаётся без изменений
 
 ### Key Entities *(include if feature involves data)*
 

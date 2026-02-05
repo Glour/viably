@@ -4,6 +4,7 @@ import uuid
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.core.database import Base
@@ -41,3 +42,16 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     last_login_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
+    credit_transactions = relationship(
+        "CreditTransaction",
+        foreign_keys="CreditTransaction.user_id",
+        back_populates="user",
+        lazy="dynamic",
+    )
+    daily_bonuses = relationship(
+        "DailyBonus",
+        back_populates="user",
+        lazy="dynamic",
+    )

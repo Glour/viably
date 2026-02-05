@@ -1,0 +1,409 @@
+openapi: 3.1.0
+info:
+  title: Credits Module API
+  description: API для управления кредитами пользователей
+  version: 1.0.0
+
+servers:
+  - url: /api
+    description: API prefix
+
+tags:
+  - name: credits
+    description: Операции с кредитами
+
+paths:
+  /credits/balance:
+    get:
+      tags: [credits]
+      summary: Получить текущий баланс кредитов
+      operationId: getBalance
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Текущий баланс
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BalanceResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /credits/transactions:
+    get:
+      tags: [credits]
+      summary: Получить историю транзакций
+      operationId: getTransactions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          description: Фильтр по типу транзакции
+          schema:
+            $ref: "#/components/schemas/TransactionType"
+        - name: limit
+          in: query
+          description: Количество записей
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          description: Смещение для пагинации
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        "200":
+          description: Список транзакций
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionsListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /credits/daily-bonus:
+    get:
+      tags: [credits]
+      summary: Информация о ежедневном бонусе
+      operationId: getDailyBonusInfo
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Информация о доступности бонуса
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailyBonusInfoResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+    post:
+      tags: [credits]
+      summary: Получить ежедневный бонус
+      operationId: claimDailyBonus
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Бонус успешно получен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailyBonusClaimResponse"
+        "400":
+          description: План не включает ежедневные бонусы
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: Бонус уже получен сегодня
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /credits/deduct:
+    post:
+      tags: [credits]
+      summary: Списать кредиты (внутренний endpoint)
+      description: |
+        Используется другими модулями для списания кредитов.
+        Не предназначен для прямого вызова из frontend.
+      operationId: deductCredits
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeductCreditsRequest"
+      responses:
+        "200":
+          description: Кредиты успешно списаны
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditOperationResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          description: Недостаточно кредитов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /credits/add:
+    post:
+      tags: [credits]
+      summary: Начислить кредиты (внутренний endpoint)
+      description: |
+        Используется другими модулями для начисления кредитов.
+        Не предназначен для прямого вызова из frontend.
+      operationId: addCredits
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddCreditsRequest"
+      responses:
+        "200":
+          description: Кредиты успешно начислены
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditOperationResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Не авторизован
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+    TransactionType:
+      type: string
+      enum:
+        - signup
+        - daily_bonus
+        - referral_bonus
+        - purchase
+        - refund
+        - generation
+        - rollover
+        - admin_adjustment
+
+    BalanceResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [credits, plan]
+          properties:
+            credits:
+              type: integer
+              description: Текущий баланс кредитов
+              example: 150
+            plan:
+              type: string
+              description: Тарифный план пользователя
+              example: starter
+
+    TransactionResponse:
+      type: object
+      required:
+        - id
+        - amount
+        - balance_after
+        - transaction_type
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        amount:
+          type: integer
+          description: Сумма (+ для начисления, - для списания)
+          example: -5
+        balance_after:
+          type: integer
+          description: Баланс после операции
+          example: 145
+        transaction_type:
+          $ref: "#/components/schemas/TransactionType"
+        description:
+          type: string
+          nullable: true
+          example: Generated Shop Bot
+        project:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+        related_user:
+          type: object
+          nullable: true
+          description: Связанный пользователь (для referral_bonus)
+          properties:
+            id:
+              type: string
+              format: uuid
+            email:
+              type: string
+        created_at:
+          type: string
+          format: date-time
+
+    TransactionsListResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/TransactionResponse"
+        meta:
+          type: object
+          required: [total, limit, offset]
+          properties:
+            total:
+              type: integer
+              description: Общее количество транзакций
+            limit:
+              type: integer
+            offset:
+              type: integer
+
+    DailyBonusInfoResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [amount, claimed_today]
+          properties:
+            amount:
+              type: integer
+              description: Количество кредитов для бонуса (0 если план не включает)
+              example: 3
+            claimed_today:
+              type: boolean
+              description: Получен ли бонус сегодня
+              example: false
+            next_available_at:
+              type: string
+              format: date-time
+              nullable: true
+              description: Когда будет доступен следующий бонус (null если доступен сейчас)
+            streak_days:
+              type: integer
+              description: Количество дней подряд (для будущих фич)
+              default: 0
+
+    DailyBonusClaimResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [claimed, amount, new_balance, next_available_at]
+          properties:
+            claimed:
+              type: boolean
+              example: true
+            amount:
+              type: integer
+              description: Количество начисленных кредитов
+              example: 3
+            new_balance:
+              type: integer
+              description: Новый баланс после начисления
+              example: 153
+            next_available_at:
+              type: string
+              format: date-time
+              description: Когда будет доступен следующий бонус
+
+    DeductCreditsRequest:
+      type: object
+      required: [amount, transaction_type]
+      properties:
+        amount:
+          type: integer
+          minimum: 1
+          description: Количество кредитов для списания
+        transaction_type:
+          type: string
+          enum: [generation, admin_adjustment]
+        project_id:
+          type: string
+          format: uuid
+          nullable: true
+        description:
+          type: string
+          nullable: true
+          maxLength: 255
+
+    AddCreditsRequest:
+      type: object
+      required: [amount, transaction_type]
+      properties:
+        amount:
+          type: integer
+          minimum: 1
+          description: Количество кредитов для начисления
+        transaction_type:
+          type: string
+          enum:
+            - signup
+            - daily_bonus
+            - referral_bonus
+            - purchase
+            - refund
+            - rollover
+            - admin_adjustment
+        related_user_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID связанного пользователя (для referral_bonus)
+        description:
+          type: string
+          nullable: true
+          maxLength: 255
+
+    CreditOperationResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [transaction_id, balance_after, success]
+          properties:
+            transaction_id:
+              type: string
+              format: uuid
+            balance_after:
+              type: integer
+            success:
+              type: boolean
+              example: true
+
+    ErrorResponse:
+      type: object
+      required: [detail]
+      properties:
+        detail:
+          type: string
+          example: Insufficient credits. Required: 5, Available: 2

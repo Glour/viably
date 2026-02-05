@@ -16,7 +16,7 @@ from app.auth.service import create_access_token, generate_referral_code, hash_p
 from app.core.database import Base, get_db
 from app.main import app
 from app.templates.models import Template
-from app.users.models import CreditTransaction
+from app.credits.models import CreditTransaction, DailyBonus
 
 # Test database URL (in-memory SQLite for testing)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -169,7 +169,20 @@ async def user_with_transactions(db_session: AsyncSession, test_user: User) -> U
 async def user_with_today_bonus(db_session: AsyncSession, test_user: User) -> User:
     """Create test user who already claimed daily bonus today."""
     now = datetime.now(timezone.utc)
-    bonus = CreditTransaction(
+    today = now.date()
+
+    # Create DailyBonus record
+    bonus_record = DailyBonus(
+        id=uuid.uuid4(),
+        user_id=test_user.id,
+        credits_awarded=3,
+        bonus_date=today,
+        created_at=now,
+    )
+    db_session.add(bonus_record)
+
+    # Create corresponding transaction
+    bonus_tx = CreditTransaction(
         id=uuid.uuid4(),
         user_id=test_user.id,
         amount=3,
@@ -178,7 +191,7 @@ async def user_with_today_bonus(db_session: AsyncSession, test_user: User) -> Us
         description="Daily bonus",
         created_at=now,
     )
-    db_session.add(bonus)
+    db_session.add(bonus_tx)
     await db_session.commit()
     return test_user
 
