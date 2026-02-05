@@ -13,7 +13,6 @@ from app.core.database import get_db
 from app.credits.models import CreditTransaction
 from app.credits.schemas import (
     BalanceResponse,
-    CreditOperationResponse,
     DailyBonusClaimResponse,
     DailyBonusInfo,
     TransactionResponse,

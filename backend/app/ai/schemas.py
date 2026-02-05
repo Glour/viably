@@ -9,7 +9,7 @@ class AiServiceStatus(str, Enum):
     """AI service operational status."""
 
     OPERATIONAL = "operational"
-    DEGRADED = "degraded"
+    DEGRADED = "degraded"  # Placeholder for future partial outage detection
     DOWN = "down"
 
 
@@ -28,24 +28,3 @@ class AiStatusResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class GenerationMetrics(BaseModel):
-    """Metrics from a code generation run."""
-
-    input_tokens: int = Field(..., description="Tokens in the input prompt")
-    output_tokens: int = Field(..., description="Tokens in the generated response")
-    files_generated: int = Field(..., description="Number of code files extracted")
-    model_used: str = Field(..., description="AI model used for generation")
-
-
-class CodeExtractionResult(BaseModel):
-    """Result of extracting code files from AI response."""
-
-    files: dict[str, str] = Field(
-        ...,
-        description="Mapping of filename to code content",
-    )
-    file_count: int = Field(..., description="Total number of files extracted")
-    extensions: dict[str, int] = Field(
-        ...,
-        description="Count of files by extension",
-    )

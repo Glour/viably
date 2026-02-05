@@ -1,11 +1,12 @@
 """Pydantic schemas for deploy module."""
 
+import re
 from datetime import datetime
 from enum import Enum
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class DeploymentStatus(str, Enum):
@@ -23,7 +24,7 @@ class DeploymentPlatform(str, Enum):
     """Supported deployment platforms."""
 
     RAILWAY = "railway"
-    RENDER = "render"
+    RENDER = "render"  # Placeholder for future Render.com integration
 
 
 class DeploymentCreate(BaseModel):
@@ -31,6 +32,36 @@ class DeploymentCreate(BaseModel):
 
     platform: DeploymentPlatform = DeploymentPlatform.RAILWAY
     env_variables: dict[str, str] = Field(default_factory=dict)
+
+    @field_validator("env_variables")
+    @classmethod
+    def validate_env_vars(cls, v: dict[str, str]) -> dict[str, str]:
+        """Validate environment variable names and values.
+
+        Args:
+            v: Environment variables dictionary.
+
+        Returns:
+            Validated environment variables.
+
+        Raises:
+            ValueError: If validation fails.
+        """
+        for key, value in v.items():
+            # Validate key format: uppercase letters, numbers, and underscores
+            if not re.match(r'^[A-Z][A-Z0-9_]*$', key):
+                raise ValueError(
+                    f"Invalid env var name '{key}'. "
+                    "Must start with uppercase letter and contain only uppercase letters, numbers, and underscores."
+                )
+
+            # Validate value length to prevent abuse
+            if len(value) > 10000:
+                raise ValueError(
+                    f"Env var value for '{key}' exceeds maximum length of 10000 characters"
+                )
+
+        return v
 
 
 class DeploymentResponse(BaseModel):

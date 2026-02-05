@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.security import validate_deployment_url
 from app.deploy.models import Deployment
 from app.deploy.railway import railway_client
 from app.deploy.schemas import DeploymentCreate, DeploymentStatus
@@ -242,9 +243,19 @@ class DeploymentService:
         if not deployment or not deployment.url:
             return False
 
+        # Validate URL to prevent SSRF attacks
+        if not validate_deployment_url(deployment.url):
+            logger.warning(
+                f"Invalid deployment URL detected for {deployment_id}: {deployment.url}"
+            )
+            return False
+
         try:
             async with httpx.AsyncClient() as client:
-                response = await client.get(deployment.url, timeout=10.0)
+                response = await client.get(
+                    deployment.url,
+                    timeout=settings.HEALTH_CHECK_TIMEOUT_SECONDS
+                )
                 healthy = response.status_code < 500
 
                 deployment.last_health_check = datetime.now(timezone.utc)

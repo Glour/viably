@@ -21,8 +21,7 @@ class TemplateListItem(BaseModel):
     usage_count: int
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class TemplateDetail(BaseModel):
@@ -39,11 +38,11 @@ class TemplateDetail(BaseModel):
     features: list[str]
     tags: list[str]
     usage_count: int
-    example_config: dict | None = None  # Example values for config
+    # TODO: example_config is not currently populated - add to Template model or remove
+    example_config: dict | None = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class TemplatesListResponse(BaseModel):

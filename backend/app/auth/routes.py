@@ -3,6 +3,8 @@
 import logging
 
 from fastapi import APIRouter, Depends, Response, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi_limiter.depends import RateLimiter
 
 logger = logging.getLogger(__name__)
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,17 +21,24 @@ from app.auth.schemas import (
 )
 from app.auth.service import (
     authenticate_user,
+    blacklist_token,
     create_access_token,
     create_refresh_token,
     refresh_access_token,
     register_user,
 )
+from app.core.config import settings
 from app.core.database import get_db
 
 router = APIRouter()
 
 
-@router.post("/register", response_model=dict, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register",
+    response_model=dict,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(RateLimiter(times=5, minutes=1))],
+)
 async def register(
     user_data: UserRegister,
     db: AsyncSession = Depends(get_db),
@@ -51,6 +60,15 @@ async def register(
         db=db,
     )
 
+    logger.info(
+        "Security event: new user registered",
+        extra={
+            "event_type": "user_registration",
+            "user_id": str(user.id),
+            "email": user.email,
+        },
+    )
+
     access_token = create_access_token(user.id)
     refresh_token = create_refresh_token(user.id)
 
@@ -63,7 +81,11 @@ async def register(
     }
 
 
-@router.post("/login", response_model=dict)
+@router.post(
+    "/login",
+    response_model=dict,
+    dependencies=[Depends(RateLimiter(times=5, minutes=1))],
+)
 async def login(
     user_data: UserLogin,
     db: AsyncSession = Depends(get_db),
@@ -80,6 +102,15 @@ async def login(
         email=user_data.email,
         password=user_data.password,
         db=db,
+    )
+
+    logger.info(
+        "Security event: successful login",
+        extra={
+            "event_type": "successful_login",
+            "user_id": str(user.id),
+            "email": user.email,
+        },
     )
 
     access_token = create_access_token(user.id)
@@ -116,23 +147,29 @@ async def refresh(
     }
 
 
+security = HTTPBearer()
+
+
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
     current_user: User = Depends(get_current_user),
 ) -> Response:
     """Logout current session.
 
-    Invalidates the current session. In MVP, this just returns 204
-    without token blacklisting (tokens expire naturally).
+    Invalidates the current access token by adding it to the blacklist.
+    The token will be stored in Redis until its natural expiration.
 
     Raises:
         401: Not authenticated
     """
-    # TODO: Implement token blacklist for proper session invalidation
-    # Options: Redis-based blacklist, database table, or short-lived tokens with refresh rotation
-    # For now, tokens remain valid until expiration (24h access, 30d refresh)
+    token = credentials.credentials
+
+    # Blacklist the token with TTL matching token expiration
+    ttl_seconds = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    await blacklist_token(token, ttl_seconds)
 
     # Log logout for audit trail
-    logger.info("User %s requested logout", current_user.id)
+    logger.info("User %s logged out, token blacklisted", current_user.id)
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)

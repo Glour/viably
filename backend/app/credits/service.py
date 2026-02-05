@@ -9,58 +9,16 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.models import User
+from app.core.constants import (
+    REFERRAL_BONUS,
+    get_daily_bonus_claimable as get_daily_bonus_amount,
+    get_rollover_limit,
+)
+from app.core.db_utils import get_user_with_lock
 from app.credits.models import CreditTransaction, DailyBonus
 from app.credits.schemas import DailyBonusClaimResponse, DailyBonusInfo
 
 logger = logging.getLogger(__name__)
-
-# Business constants
-# NOTE: DAILY_BONUSES values here differ from users/service.py intentionally.
-# This module (credits) uses these values for credit system operations (claiming bonuses).
-# The free tier gets 0 bonus here to enforce upgrade incentive for credit claiming.
-# users/service.py uses different values (free=1) for display/informational purposes.
-# TODO: Consider consolidating into a shared constants module with clear semantics.
-DAILY_BONUSES: dict[str, int] = {
-    "free": 0,
-    "starter": 3,
-    "pro": 10,
-    "business": 20,
-}
-
-# NOTE: ROLLOVER_LIMITS is duplicated in users/service.py with same values.
-# Consider consolidating into a shared constants module.
-ROLLOVER_LIMITS: dict[str, int] = {
-    "free": 0,
-    "starter": 200,
-    "pro": 600,
-    "business": 2000,
-}
-
-REFERRAL_BONUS: int = 5
-
-
-def get_daily_bonus_amount(plan: str) -> int:
-    """Get daily bonus amount based on plan.
-
-    Args:
-        plan: User's subscription plan
-
-    Returns:
-        Daily bonus amount (0 for free plan)
-    """
-    return DAILY_BONUSES.get(plan, 0)
-
-
-def get_rollover_limit(plan: str) -> int:
-    """Get rollover limit based on plan.
-
-    Args:
-        plan: User's subscription plan
-
-    Returns:
-        Maximum credits that can be carried over monthly
-    """
-    return ROLLOVER_LIMITS.get(plan, 0)
 
 
 async def deduct_credits(
@@ -97,15 +55,7 @@ async def deduct_credits(
         )
 
     # Lock user row for atomic operation
-    stmt = select(User).where(User.id == user_id).with_for_update()
-    result = await db.execute(stmt)
-    user = result.scalar_one_or_none()
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
+    user = await get_user_with_lock(user_id, db)
 
     # Check balance
     if user.credits < amount:
@@ -184,15 +134,7 @@ async def add_credits(
         )
 
     # Lock user row for atomic operation
-    stmt = select(User).where(User.id == user_id).with_for_update()
-    result = await db.execute(stmt)
-    user = result.scalar_one_or_none()
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
+    user = await get_user_with_lock(user_id, db)
 
     # Calculate new balance
     new_balance = user.credits + amount
@@ -248,15 +190,7 @@ async def claim_daily_bonus(user_id: UUID, db: AsyncSession) -> DailyBonusClaimR
         HTTPException 404: User not found
     """
     # Get user with lock
-    stmt = select(User).where(User.id == user_id).with_for_update()
-    result = await db.execute(stmt)
-    user = result.scalar_one_or_none()
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
+    user = await get_user_with_lock(user_id, db)
 
     # Get bonus amount based on plan
     bonus_amount = get_daily_bonus_amount(user.plan)

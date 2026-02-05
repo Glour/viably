@@ -28,6 +28,9 @@ class User(Base):
 
     # Plan & Credits
     plan = Column(String(20), default="free", nullable=False)
+    # Current credit balance (source of truth)
+    # NOTE: This is denormalized - CreditTransaction.balance_after stores snapshots
+    # for transaction history display. User.credits is the authoritative current balance.
     credits = Column(Integer, default=5, nullable=False)
 
     # Referrals

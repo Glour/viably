@@ -1,5 +1,6 @@
 """FastAPI routes for deploy module."""
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -15,6 +16,7 @@ from app.deploy.schemas import (
 )
 from app.deploy.service import DeploymentService
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/deployments", tags=["deployments"])
 
 
@@ -34,14 +36,16 @@ async def deploy_project(
         )
         return deployment
     except ValueError as e:
+        logger.error("Deployment validation error: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e),
+            detail="Invalid deployment configuration. Please check your settings.",
         )
     except Exception as e:
+        logger.exception("Deployment failed for project %s: %s", project_id, e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Deployment failed: {e}",
+            detail="Deployment failed. Please try again or contact support.",
         )
 
 

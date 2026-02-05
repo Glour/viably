@@ -1,43 +1,20 @@
 """Business logic for projects module."""
 
 import logging
-from datetime import datetime, timezone
 from uuid import UUID
 
-import jsonschema
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.validation import validate_config_against_schema
 from app.credits.service import add_credits, deduct_credits
 from app.projects.models import Project, ProjectStatus
 from app.projects.schemas import ProjectCreate, ProjectUpdate
 from app.templates.service import get_template_by_id, increment_usage_count
 
 logger = logging.getLogger(__name__)
-
-
-def validate_config_against_schema(config: dict | None, schema: dict) -> None:
-    """Validate project config against template's JSON schema.
-
-    Args:
-        config: User-provided configuration.
-        schema: Template's config_schema (JSON Schema format).
-
-    Raises:
-        HTTPException 400: If config doesn't match schema.
-    """
-    if config is None:
-        config = {}
-
-    try:
-        jsonschema.validate(instance=config, schema=schema)
-    except jsonschema.ValidationError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Config validation failed: {e.message}",
-        )
 
 
 async def create_project(
@@ -304,7 +281,7 @@ async def trigger_generation(
 
     except Exception as e:
         # Refund credits on failure
-        logger.error(
+        logger.exception(
             "Generation failed, refunding credits",
             extra={
                 "project_id": str(project_id),
@@ -323,58 +300,10 @@ async def trigger_generation(
         # Re-raise the exception for proper error response
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Generation failed: {str(e)}",
+            detail="Code generation failed. Your credits have been refunded. Please try again.",
         )
 
     return project
-
-
-async def save_generated_code(
-    project_id: UUID,
-    code_files: dict,
-    ai_model: str,
-    db: AsyncSession,
-) -> None:
-    """Save generated code to project (called by AI module).
-
-    Args:
-        project_id: Project UUID.
-        code_files: Generated code files dict.
-        ai_model: AI model used for generation.
-        db: Database session.
-    """
-    query = select(Project).where(Project.id == project_id)
-    result = await db.execute(query)
-    project = result.scalar_one_or_none()
-
-    if project and project.status == ProjectStatus.GENERATING.value:
-        project.generated_code = code_files
-        project.ai_model_used = ai_model
-        project.status = ProjectStatus.READY.value
-        project.generated_at = datetime.now(timezone.utc)
-        await db.commit()
-
-
-async def set_error(
-    project_id: UUID,
-    error_message: str,
-    db: AsyncSession,
-) -> None:
-    """Set project to error status (called by AI/Deploy modules).
-
-    Args:
-        project_id: Project UUID.
-        error_message: Error description.
-        db: Database session.
-    """
-    query = select(Project).where(Project.id == project_id)
-    result = await db.execute(query)
-    project = result.scalar_one_or_none()
-
-    if project:
-        project.status = ProjectStatus.ERROR.value
-        project.error_message = error_message
-        await db.commit()
 
 
 async def get_public_project(
