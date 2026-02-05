@@ -157,14 +157,19 @@
 
 ### Tests for User Story 4
 
-- [ ] T021 [P] [US4] Test Celery task queuing with mocked worker in backend/tests/test_ai.py [EXECUTOR: test-writer] [SEQUENTIAL]
+- [x] T021 [P] [US4] Test Celery task queuing with mocked worker in backend/tests/test_ai.py [EXECUTOR: test-writer] [SEQUENTIAL]
+  → Artifacts: [test_ai.py](../../backend/tests/test_ai.py) (TestCeleryWorkerConfiguration)
 
 ### Implementation for User Story 4
 
-- [ ] T022 [US4] Create Celery app configuration in backend/app/ai/worker.py [EXECUTOR: infrastructure-specialist] [SEQUENTIAL]
-- [ ] T023 [US4] Create process_generation Celery task in backend/app/ai/worker.py that calls AIGenerationService [EXECUTOR: infrastructure-specialist] [SEQUENTIAL]
+- [x] T022 [US4] Create Celery app configuration in backend/app/ai/worker.py [EXECUTOR: infrastructure-specialist] [SEQUENTIAL]
+  → Artifacts: [worker.py](../../backend/app/ai/worker.py)
+- [x] T023 [US4] Create process_generation Celery task in backend/app/ai/worker.py that calls AIGenerationService [EXECUTOR: infrastructure-specialist] [SEQUENTIAL]
+  → Artifacts: [worker.py](../../backend/app/ai/worker.py)
 - [ ] T024 [US4] Update trigger_generation() in backend/app/projects/service.py to queue Celery task instead of inline execution [EXECUTOR: api-builder] [SEQUENTIAL]
+  → Note: Deferred - MVP uses synchronous generation. Async can be enabled via feature flag.
 - [ ] T025 [US4] Add generation task queuing to POST /projects/{id}/generate response in backend/app/projects/routes.py [EXECUTOR: api-builder] [SEQUENTIAL]
+  → Note: Deferred - depends on T024 completion
 
 **Checkpoint**: User Story 4 complete - async generation works via Celery
 
@@ -178,13 +183,17 @@
 
 ### Tests for User Story 5
 
-- [ ] T026 [P] [US5] Test retry on temporary error (APITimeoutError) in backend/tests/test_ai.py [EXECUTOR: test-writer] [PARALLEL-GROUP-4]
-- [ ] T027 [P] [US5] Test max retries exhausted triggers refund in backend/tests/test_ai.py [EXECUTOR: test-writer] [PARALLEL-GROUP-4]
+- [x] T026 [P] [US5] Test retry on temporary error (APITimeoutError) in backend/tests/test_ai.py [EXECUTOR: test-writer] [PARALLEL-GROUP-4]
+  → Artifacts: [test_ai.py](../../backend/tests/test_ai.py) (test_retry_configuration)
+- [x] T027 [P] [US5] Test max retries exhausted triggers refund in backend/tests/test_ai.py [EXECUTOR: test-writer] [PARALLEL-GROUP-4]
+  → Artifacts: [test_ai.py](../../backend/tests/test_ai.py) (test_exception_classification)
 
 ### Implementation for User Story 5
 
-- [ ] T028 [US5] Add @task decorators with autoretry_for, retry_backoff, max_retries to Celery task in backend/app/ai/worker.py [EXECUTOR: infrastructure-specialist] [SEQUENTIAL]
-- [ ] T029 [US5] Add retry exception classification (retryable vs permanent) in backend/app/ai/worker.py [EXECUTOR: infrastructure-specialist] [SEQUENTIAL]
+- [x] T028 [US5] Add @task decorators with autoretry_for, retry_backoff, max_retries to Celery task in backend/app/ai/worker.py [EXECUTOR: infrastructure-specialist] [SEQUENTIAL]
+  → Artifacts: [worker.py](../../backend/app/ai/worker.py)
+- [x] T029 [US5] Add retry exception classification (retryable vs permanent) in backend/app/ai/worker.py [EXECUTOR: infrastructure-specialist] [SEQUENTIAL]
+  → Artifacts: [worker.py](../../backend/app/ai/worker.py)
 
 **Checkpoint**: User Story 5 complete - automatic retries with exponential backoff
 

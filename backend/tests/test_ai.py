@@ -1161,3 +1161,78 @@ class TestAdminAiStatus:
         assert response.status_code == 200
         data = response.json()
         assert data["model"] == settings.GENERATION_MODEL
+
+
+# =============================================================================
+# T021, T026, T027: Test Celery Worker and Retry Logic
+# =============================================================================
+
+
+class TestCeleryWorkerConfiguration:
+    """Tests for Celery worker configuration and task behavior."""
+
+    def test_celery_app_configuration(self) -> None:
+        """Test that Celery app is configured correctly (T021)."""
+        from app.ai.worker import celery_app
+
+        # Verify broker and backend are configured
+        assert celery_app.conf.broker_url is not None
+        assert celery_app.conf.result_backend is not None
+
+        # Verify serialization settings
+        assert celery_app.conf.task_serializer == "json"
+        assert celery_app.conf.result_serializer == "json"
+
+        # Verify reliability settings
+        assert celery_app.conf.task_acks_late is True
+        assert celery_app.conf.task_track_started is True
+
+    def test_task_registration(self) -> None:
+        """Test that process_generation task is registered."""
+        from app.ai.worker import celery_app
+
+        assert "process_generation" in celery_app.tasks
+
+    def test_retry_configuration(self) -> None:
+        """Test that retry settings are correctly configured (T026)."""
+        from app.ai.worker import celery_app, process_generation
+
+        task = celery_app.tasks["process_generation"]
+
+        # Verify retry settings
+        assert task.max_retries == 3
+        assert task.retry_backoff is True
+        assert task.retry_backoff_max == 600  # 10 minutes
+
+    def test_exception_classification(self) -> None:
+        """Test that exceptions are classified correctly (T027)."""
+        from app.ai.worker import RETRYABLE_EXCEPTIONS, PERMANENT_EXCEPTIONS
+        from anthropic import (
+            APITimeoutError,
+            RateLimitError,
+            APIConnectionError,
+            AuthenticationError,
+            BadRequestError,
+        )
+
+        # Verify retryable exceptions
+        assert APITimeoutError in RETRYABLE_EXCEPTIONS
+        assert RateLimitError in RETRYABLE_EXCEPTIONS
+        assert APIConnectionError in RETRYABLE_EXCEPTIONS
+
+        # Verify permanent exceptions
+        assert AuthenticationError in PERMANENT_EXCEPTIONS
+        assert BadRequestError in PERMANENT_EXCEPTIONS
+        assert ValueError in PERMANENT_EXCEPTIONS
+
+    def test_process_generation_task_exists(self) -> None:
+        """Test that process_generation task exists and has correct signature."""
+        from app.ai.worker import process_generation
+
+        # The task should be callable
+        assert process_generation is not None
+        assert callable(process_generation)
+
+        # Check task attributes
+        assert hasattr(process_generation, 'delay')  # Celery async call method
+        assert hasattr(process_generation, 'apply_async')  # Celery async call method
