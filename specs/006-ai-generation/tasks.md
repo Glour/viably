@@ -116,8 +116,10 @@
 
 ### Verification for User Story 2
 
-- [ ] T015 [US2] Verify ProjectDetailResponse schema includes generated_code field in backend/app/projects/schemas.py [EXECUTOR: MAIN] [SEQUENTIAL]
-- [ ] T016 [US2] Add test for viewing generated code via GET /projects/{id} in backend/tests/test_ai.py [EXECUTOR: test-writer] [SEQUENTIAL]
+- [x] T015 [US2] Verify ProjectDetailResponse schema includes generated_code field in backend/app/projects/schemas.py [EXECUTOR: MAIN] [SEQUENTIAL]
+  → Artifacts: [schemas.py](../../backend/app/projects/schemas.py) (verified: generated_code field exists)
+- [x] T016 [US2] Add test for viewing generated code via GET /projects/{id} in backend/tests/test_ai.py [EXECUTOR: test-writer] [SEQUENTIAL]
+  → Artifacts: [test_ai.py](../../backend/tests/test_ai.py)
 
 **Checkpoint**: User Story 2 complete - users can view generated code
 

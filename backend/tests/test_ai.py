@@ -753,3 +753,140 @@ print("regenerated")
 
         assert validated_project.id == project.id
         assert validated_project.status == ProjectStatus.DRAFT.value
+
+
+# =============================================================================
+# T016: Test viewing generated code via GET /projects/{id}
+# =============================================================================
+
+
+class TestViewGeneratedCode:
+    """Tests for viewing generated code via project detail endpoint."""
+
+    @pytest.mark.asyncio
+    async def test_view_generated_code_after_generation(
+        self,
+        client,
+        auth_token: str,
+        db_session: AsyncSession,
+        test_user: User,
+        test_template: Template,
+    ) -> None:
+        """Test that generated code is accessible via GET /projects/{id}."""
+        from httpx import AsyncClient
+
+        # Create a project with generated code (simulating post-generation state)
+        generated_files = {
+            "main.py": 'print("Hello, World!")',
+            "config.py": 'BOT_TOKEN = "your-token-here"',
+            "handlers/__init__.py": "# Handlers module",
+        }
+
+        project = Project(
+            id=uuid.uuid4(),
+            user_id=test_user.id,
+            name="Generated Project",
+            template_id=test_template.id,
+            config={"bot_name": "TestBot"},
+            status=ProjectStatus.READY.value,
+            generated_code={"files": generated_files},
+            ai_model_used="claude-sonnet-4-20250514",
+            generated_at=datetime.now(timezone.utc),
+            is_public=False,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        db_session.add(project)
+        await db_session.commit()
+
+        # Get project details
+        response = await client.get(
+            f"/api/projects/{project.id}",
+            headers={"Authorization": f"Bearer {auth_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+
+        # Verify project status and generated code
+        assert data["status"] == "ready"
+        assert data["generated_code"] is not None
+        assert "files" in data["generated_code"]
+        assert data["generated_code"]["files"]["main.py"] == 'print("Hello, World!")'
+        assert data["generated_code"]["files"]["config.py"] == 'BOT_TOKEN = "your-token-here"'
+        assert data["ai_model_used"] == "claude-sonnet-4-20250514"
+        assert data["generated_at"] is not None
+
+    @pytest.mark.asyncio
+    async def test_view_project_without_generated_code(
+        self,
+        client,
+        auth_token: str,
+        db_session: AsyncSession,
+        test_user: User,
+        test_template: Template,
+    ) -> None:
+        """Test that draft project returns null for generated_code."""
+        project = Project(
+            id=uuid.uuid4(),
+            user_id=test_user.id,
+            name="Draft Project",
+            template_id=test_template.id,
+            config={"bot_name": "DraftBot"},
+            status=ProjectStatus.DRAFT.value,
+            is_public=False,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        db_session.add(project)
+        await db_session.commit()
+
+        response = await client.get(
+            f"/api/projects/{project.id}",
+            headers={"Authorization": f"Bearer {auth_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data["status"] == "draft"
+        assert data["generated_code"] is None
+        assert data["ai_model_used"] is None
+        assert data["generated_at"] is None
+
+    @pytest.mark.asyncio
+    async def test_view_project_with_error_status(
+        self,
+        client,
+        auth_token: str,
+        db_session: AsyncSession,
+        test_user: User,
+        test_template: Template,
+    ) -> None:
+        """Test that error project shows error_message."""
+        project = Project(
+            id=uuid.uuid4(),
+            user_id=test_user.id,
+            name="Failed Project",
+            template_id=test_template.id,
+            config={"bot_name": "FailBot"},
+            status=ProjectStatus.ERROR.value,
+            error_message="API rate limit exceeded",
+            is_public=False,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        db_session.add(project)
+        await db_session.commit()
+
+        response = await client.get(
+            f"/api/projects/{project.id}",
+            headers={"Authorization": f"Bearer {auth_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data["status"] == "error"
+        assert data["error_message"] == "API rate limit exceeded"
+        assert data["generated_code"] is None
