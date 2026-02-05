@@ -95,7 +95,8 @@
 
 ### Implementation for User Story 1
 
-- [ ] T012 [US1] Implement AIGenerationService.generate_project_code() in backend/app/ai/service.py (core generation logic: get project, get template, build prompt, call API, extract files, save to project) [EXECUTOR: api-builder] [SEQUENTIAL]
+- [x] T012 [US1] Implement AIGenerationService.generate_project_code() in backend/app/ai/service.py (core generation logic: get project, get template, build prompt, call API, extract files, save to project) [EXECUTOR: api-builder] [SEQUENTIAL]
+  → Artifacts: [service.py](../../backend/app/ai/service.py)
 - [ ] T013 [US1] Update trigger_generation() in backend/app/projects/service.py to check credits and call deduct_credits() before setting status=generating [EXECUTOR: api-builder] [SEQUENTIAL]
 - [ ] T014 [US1] Add logging throughout AIGenerationService with structured logging format in backend/app/ai/service.py [EXECUTOR: api-builder] [SEQUENTIAL]
 

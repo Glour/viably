@@ -432,15 +432,15 @@ class TestGenerationService:
     ) -> None:
         """Test successful AI code generation flow.
 
-        This test will be implemented once AIGenerationService is created.
-        Expected behavior:
+        Verifies:
         1. Create project in draft status
         2. Mock Anthropic API to return valid code blocks
         3. Call AIGenerationService.generate_project_code()
-        4. Verify project status transitions: draft -> generating -> ready
+        4. Verify project status changes to ready
         5. Verify generated_code field contains extracted files
-        6. Verify user credits are deducted
         """
+        from app.ai.service import AIGenerationService
+
         # Create project in draft status
         project = Project(
             id=uuid.uuid4(),
@@ -491,31 +491,29 @@ CMD ["python", "main.py"]
 """
 
         # Mock the Anthropic client
-        with patch("app.ai.client.anthropic_client.generate_code") as mock_generate:
+        with patch("app.ai.service.anthropic_client.generate_code") as mock_generate:
             mock_generate.return_value = mock_response
 
-            # TODO: Implement AIGenerationService and uncomment below
-            # from app.ai.service import AIGenerationService
-            # service = AIGenerationService(db_session)
-            # result = await service.generate_project_code(project.id)
+            service = AIGenerationService(db_session)
+            result = await service.generate_project_code(project.id)
 
-            # For now, just verify the mock setup works
-            generated = await mock_generate()
-            assert "main.py" in generated
-            assert "config.py" in generated
-            assert "Dockerfile" in generated
+            # Verify result
+            assert result["success"] is True
+            assert result["files_count"] == 3
+            assert "main.py" in result["files"]
+            assert "config.py" in result["files"]
+            assert "Dockerfile" in result["files"]
 
-            # When service is implemented, verify:
-            # await db_session.refresh(project)
-            # assert project.status == ProjectStatus.READY.value
-            # assert project.generated_code is not None
-            # assert "main.py" in project.generated_code
-            # assert "config.py" in project.generated_code
-            # assert "Dockerfile" in project.generated_code
-
-            # Verify credits deducted
-            # await db_session.refresh(test_user)
-            # assert test_user.credits == 100 - test_template.credit_cost  # 100 - 5 = 95
+            # Verify project state
+            await db_session.refresh(project)
+            assert project.status == ProjectStatus.READY.value
+            assert project.generated_code is not None
+            assert "files" in project.generated_code
+            assert "main.py" in project.generated_code["files"]
+            assert "config.py" in project.generated_code["files"]
+            assert "Dockerfile" in project.generated_code["files"]
+            assert project.generated_at is not None
+            assert project.error_message is None
 
     @pytest.mark.asyncio
     async def test_generation_updates_project_status(
@@ -527,13 +525,10 @@ CMD ["python", "main.py"]
         """Test that generation updates project status correctly.
 
         Expected status transitions:
-        - draft -> generating (when generation starts)
-        - generating -> ready (when generation completes)
-        - generating -> error (when generation fails)
-
-        This test will be implemented once AIGenerationService is created.
+        - draft -> ready (when generation completes successfully)
         """
-        # Placeholder for future implementation
+        from app.ai.service import AIGenerationService
+
         project = Project(
             id=uuid.uuid4(),
             user_id=test_user.id,
@@ -548,13 +543,21 @@ CMD ["python", "main.py"]
         db_session.add(project)
         await db_session.commit()
 
-        # When service is implemented:
-        # 1. Verify status changes to "generating" immediately
-        # 2. Mock successful generation
-        # 3. Verify status changes to "ready"
-        # 4. Verify updated_at timestamp is updated
+        mock_response = """
+```python
+# filename: main.py
+print("hello")
+```
+"""
+        with patch("app.ai.service.anthropic_client.generate_code") as mock_generate:
+            mock_generate.return_value = mock_response
 
-        assert project.status == ProjectStatus.DRAFT.value  # Initial state
+            service = AIGenerationService(db_session)
+            await service.generate_project_code(project.id)
+
+            await db_session.refresh(project)
+            assert project.status == ProjectStatus.READY.value
+            assert project.generated_at is not None
 
     @pytest.mark.asyncio
     async def test_generation_error_handling(
@@ -567,13 +570,11 @@ CMD ["python", "main.py"]
 
         Expected behavior when Anthropic API fails:
         1. Project status should be set to "error"
-        2. Error message should be logged
-        3. User credits should NOT be deducted
-        4. Exception should be raised to caller
-
-        This test will be implemented once AIGenerationService is created.
+        2. Error message should be stored
+        3. Exception should be raised to caller
         """
-        # Placeholder for future implementation
+        from app.ai.service import AIGenerationService
+
         project = Project(
             id=uuid.uuid4(),
             user_id=test_user.id,
@@ -588,56 +589,119 @@ CMD ["python", "main.py"]
         db_session.add(project)
         await db_session.commit()
 
-        # When service is implemented:
-        # with patch("app.ai.client.anthropic_client.generate_code") as mock_generate:
-        #     mock_generate.side_effect = Exception("API Error")
-        #
-        #     from app.ai.service import AIGenerationService
-        #     service = AIGenerationService(db_session)
-        #
-        #     with pytest.raises(Exception):
-        #         await service.generate_project_code(project.id)
-        #
-        #     await db_session.refresh(project)
-        #     assert project.status == ProjectStatus.ERROR.value
-        #
-        #     # Verify credits NOT deducted
-        #     await db_session.refresh(test_user)
-        #     assert test_user.credits == 100  # Unchanged
+        with patch("app.ai.service.anthropic_client.generate_code") as mock_generate:
+            mock_generate.side_effect = Exception("API Error")
 
-        assert project.status == ProjectStatus.DRAFT.value  # Initial state
+            service = AIGenerationService(db_session)
+
+            with pytest.raises(Exception, match="API Error"):
+                await service.generate_project_code(project.id)
+
+            await db_session.refresh(project)
+            assert project.status == ProjectStatus.ERROR.value
+            assert project.error_message == "API Error"
 
     @pytest.mark.asyncio
-    async def test_generation_with_insufficient_credits(
+    async def test_generation_project_not_found(
+        self,
+        db_session: AsyncSession,
+    ) -> None:
+        """Test that generation fails for non-existent project."""
+        from app.ai.service import AIGenerationService
+
+        service = AIGenerationService(db_session)
+        non_existent_id = uuid.uuid4()
+
+        with pytest.raises(ValueError, match=f"Project {non_existent_id} not found"):
+            await service.generate_project_code(non_existent_id)
+
+    @pytest.mark.asyncio
+    async def test_generation_invalid_status(
         self,
         db_session: AsyncSession,
         test_user: User,
         test_template: Template,
     ) -> None:
-        """Test that generation fails when user has insufficient credits.
-
-        Expected behavior:
-        1. Check user credits before generation
-        2. Raise exception if credits < template.credit_cost
-        3. Project status should remain "draft"
-        4. No Anthropic API call should be made
-
-        This test will be implemented once AIGenerationService is created.
-        """
-        # Set user credits below template cost using SQLAlchemy 2.0 update
-        initial_credits = 2
-        await db_session.execute(
-            update(User).where(User.id == test_user.id).values(credits=initial_credits)
-        )
-        await db_session.commit()
-        await db_session.refresh(test_user)
+        """Test that generation fails for projects not in draft or error status."""
+        from app.ai.service import AIGenerationService
 
         project = Project(
             id=uuid.uuid4(),
             user_id=test_user.id,
-            name="Insufficient Credits Project",
+            name="Ready Project",
             template_id=test_template.id,
-            config={"bot_name": "NoCreditsBot"},
+            config={"bot_name": "ReadyBot"},
+            status=ProjectStatus.READY.value,  # Not draft or error
+            is_public=False,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        db_session.add(project)
+        await db_session.commit()
+
+        service = AIGenerationService(db_session)
+
+        with pytest.raises(ValueError, match="Project status must be 'draft' or 'error'"):
+            await service.generate_project_code(project.id)
+
+    @pytest.mark.asyncio
+    async def test_generation_from_error_status(
+        self,
+        db_session: AsyncSession,
+        test_user: User,
+        test_template: Template,
+    ) -> None:
+        """Test that regeneration works for projects in error status."""
+        from app.ai.service import AIGenerationService
+
+        project = Project(
+            id=uuid.uuid4(),
+            user_id=test_user.id,
+            name="Error Project",
+            template_id=test_template.id,
+            config={"bot_name": "ErrorBot"},
+            status=ProjectStatus.ERROR.value,  # Can be regenerated
+            error_message="Previous error",
+            is_public=False,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        db_session.add(project)
+        await db_session.commit()
+
+        mock_response = """
+```python
+# filename: main.py
+print("regenerated")
+```
+"""
+        with patch("app.ai.service.anthropic_client.generate_code") as mock_generate:
+            mock_generate.return_value = mock_response
+
+            service = AIGenerationService(db_session)
+            result = await service.generate_project_code(project.id)
+
+            assert result["success"] is True
+            await db_session.refresh(project)
+            assert project.status == ProjectStatus.READY.value
+            assert project.error_message is None  # Cleared on success
+
+    @pytest.mark.asyncio
+    async def test_generation_no_files_extracted(
+        self,
+        db_session: AsyncSession,
+        test_user: User,
+        test_template: Template,
+    ) -> None:
+        """Test that generation fails if AI returns no valid code files."""
+        from app.ai.service import AIGenerationService
+
+        project = Project(
+            id=uuid.uuid4(),
+            user_id=test_user.id,
+            name="No Files Project",
+            template_id=test_template.id,
+            config={"bot_name": "NoFilesBot"},
             status=ProjectStatus.DRAFT.value,
             is_public=False,
             created_at=datetime.now(timezone.utc),
@@ -646,14 +710,46 @@ CMD ["python", "main.py"]
         db_session.add(project)
         await db_session.commit()
 
-        # When service is implemented:
-        # from app.ai.service import AIGenerationService, InsufficientCreditsError
-        # service = AIGenerationService(db_session)
-        #
-        # with pytest.raises(InsufficientCreditsError):
-        #     await service.generate_project_code(project.id)
-        #
-        # await db_session.refresh(project)
-        # assert project.status == ProjectStatus.DRAFT.value
+        # AI returns text without valid code blocks
+        mock_response = "Here is some text without any code blocks"
 
-        assert test_user.credits == 2  # Current state
+        with patch("app.ai.service.anthropic_client.generate_code") as mock_generate:
+            mock_generate.return_value = mock_response
+
+            service = AIGenerationService(db_session)
+
+            with pytest.raises(ValueError, match="No code files extracted"):
+                await service.generate_project_code(project.id)
+
+            await db_session.refresh(project)
+            assert project.status == ProjectStatus.ERROR.value
+
+    @pytest.mark.asyncio
+    async def test_validate_project_for_generation(
+        self,
+        db_session: AsyncSession,
+        test_user: User,
+        test_template: Template,
+    ) -> None:
+        """Test project validation for generation."""
+        from app.ai.service import AIGenerationService
+
+        project = Project(
+            id=uuid.uuid4(),
+            user_id=test_user.id,
+            name="Valid Project",
+            template_id=test_template.id,
+            config={"bot_name": "ValidBot"},
+            status=ProjectStatus.DRAFT.value,
+            is_public=False,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        db_session.add(project)
+        await db_session.commit()
+
+        service = AIGenerationService(db_session)
+        validated_project = await service.validate_project_for_generation(project.id)
+
+        assert validated_project.id == project.id
+        assert validated_project.status == ProjectStatus.DRAFT.value
