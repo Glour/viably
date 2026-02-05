@@ -1,0 +1,189 @@
+openapi: 3.1.0
+info:
+  title: AI Generation Module API
+  description: API endpoints for AI code generation
+  version: 1.0.0
+
+paths:
+  /api/projects/{project_id}/generate:
+    post:
+      operationId: triggerGeneration
+      summary: Trigger AI code generation for a project
+      description: |
+        Initiates AI code generation for the specified project.
+        - Validates project is in "draft" status
+        - Checks user has sufficient credits
+        - Deducts credits atomically
+        - Queues async generation task
+        - Returns immediately with status="generating"
+      tags:
+        - projects
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Project UUID
+      responses:
+        '200':
+          description: Generation triggered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectDetailResponse'
+        '400':
+          description: Bad request - project not in draft status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Generation can only be triggered for draft projects"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Insufficient credits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Insufficient credits. Required: 10, Available: 5"
+
+  /api/ai/status:
+    get:
+      operationId: getAiStatus
+      summary: Get AI service status (admin only)
+      description: |
+        Returns operational status of the AI service.
+        Only accessible to admin users.
+      tags:
+        - ai
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: AI service status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiStatusResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ProjectDetailResponse:
+      type: object
+      required:
+        - id
+        - name
+        - template_id
+        - status
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        template_id:
+          type: string
+          format: uuid
+        config:
+          type: object
+          additionalProperties: true
+          nullable: true
+        status:
+          type: string
+          enum: [draft, generating, ready, deploying, deployed, error]
+        generated_code:
+          type: object
+          nullable: true
+          properties:
+            files:
+              type: object
+              additionalProperties:
+                type: string
+          description: Generated code files (path → content)
+        generation_logs:
+          type: string
+          nullable: true
+        ai_model_used:
+          type: string
+          nullable: true
+        error_message:
+          type: string
+          nullable: true
+        is_public:
+          type: boolean
+          default: false
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+        generated_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    AiStatusResponse:
+      type: object
+      required:
+        - status
+        - model
+      properties:
+        status:
+          type: string
+          enum: [operational, degraded, down]
+          description: Current service status
+        model:
+          type: string
+          description: Default AI model being used
+          example: "claude-sonnet-4-20250514"
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Error message
