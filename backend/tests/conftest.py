@@ -18,6 +18,8 @@ from app.main import app
 from app.templates.models import Template
 from app.credits.models import CreditTransaction, DailyBonus
 from app.projects.models import Project, ProjectStatus
+from app.deploy.models import Deployment
+from app.deploy.schemas import DeploymentStatus, DeploymentPlatform
 
 # Test database URL (in-memory SQLite for testing)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -448,3 +450,106 @@ async def public_project(
     await db_session.commit()
     await db_session.refresh(project)
     return project
+
+
+# Deploy module fixtures
+
+
+@pytest_asyncio.fixture
+async def ready_project(
+    db_session: AsyncSession, test_user: User, test_template: Template
+) -> Project:
+    """Create a project in 'ready' status with generated code."""
+    project = Project(
+        id=uuid.uuid4(),
+        user_id=test_user.id,
+        name="Ready Project",
+        description="A project ready for deployment",
+        template_id=test_template.id,
+        config={"bot_name": "ReadyBot"},
+        status=ProjectStatus.READY.value,
+        generated_code={
+            "files": {
+                "main.py": "print('Hello Bot')",
+                "requirements.txt": "python-telegram-bot>=20.0",
+            },
+            "entry_point": "main.py",
+            "runtime": "python3.12",
+        },
+        is_public=False,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+        generated_at=datetime.now(timezone.utc),
+    )
+    db_session.add(project)
+    await db_session.commit()
+    await db_session.refresh(project)
+    return project
+
+
+@pytest_asyncio.fixture
+async def draft_project(
+    db_session: AsyncSession, test_user: User, test_template: Template
+) -> Project:
+    """Create a project in 'draft' status (not ready for deployment)."""
+    project = Project(
+        id=uuid.uuid4(),
+        user_id=test_user.id,
+        name="Draft Project",
+        description="A draft project",
+        template_id=test_template.id,
+        config={"bot_name": "DraftBot"},
+        status=ProjectStatus.DRAFT.value,
+        is_public=False,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
+    db_session.add(project)
+    await db_session.commit()
+    await db_session.refresh(project)
+    return project
+
+
+@pytest_asyncio.fixture
+async def deployment(
+    db_session: AsyncSession, ready_project: Project
+) -> Deployment:
+    """Create a basic deployment for testing."""
+    deployment = Deployment(
+        id=uuid.uuid4(),
+        project_id=ready_project.id,
+        platform=DeploymentPlatform.RAILWAY.value,
+        status=DeploymentStatus.PENDING.value,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
+    db_session.add(deployment)
+    await db_session.commit()
+    await db_session.refresh(deployment)
+    return deployment
+
+
+@pytest_asyncio.fixture
+async def active_deployment(
+    db_session: AsyncSession, ready_project: Project
+) -> Deployment:
+    """Create an active deployment with URL for testing."""
+    deployment = Deployment(
+        id=uuid.uuid4(),
+        project_id=ready_project.id,
+        platform=DeploymentPlatform.RAILWAY.value,
+        external_id="rd-123456",
+        status=DeploymentStatus.ACTIVE.value,
+        url="https://test-bot.up.railway.app",
+        platform_data={
+            "railway_project_id": "rp-123456",
+            "railway_service_id": "rs-123456",
+        },
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+        deployed_at=datetime.now(timezone.utc),
+    )
+    db_session.add(deployment)
+    await db_session.commit()
+    await db_session.refresh(deployment)
+    return deployment

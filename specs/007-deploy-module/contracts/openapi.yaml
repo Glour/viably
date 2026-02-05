@@ -1,0 +1,242 @@
+openapi: 3.1.0
+info:
+  title: Deploy Module API
+  description: API для деплоя проектов на внешние платформы
+  version: 1.0.0
+
+paths:
+  /api/deployments/projects/{project_id}/deploy:
+    post:
+      summary: Deploy Project
+      description: Запустить деплой проекта на платформу
+      operationId: deploy_project
+      tags:
+        - deployments
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID проекта для деплоя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeploymentCreate'
+      responses:
+        '200':
+          description: Деплоймент создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentResponse'
+        '400':
+          description: Проект не в статусе ready или нет сгенерированного кода
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+        '404':
+          description: Проект не найден
+
+  /api/deployments/{deployment_id}:
+    get:
+      summary: Get Deployment
+      description: Получить информацию о деплойменте
+      operationId: get_deployment
+      tags:
+        - deployments
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: deployment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID деплоймента
+      responses:
+        '200':
+          description: Информация о деплойменте
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentResponse'
+        '401':
+          description: Не авторизован
+        '404':
+          description: Деплоймент не найден
+
+    delete:
+      summary: Stop Deployment
+      description: Остановить и удалить деплоймент
+      operationId: stop_deployment
+      tags:
+        - deployments
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: deployment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID деплоймента
+      responses:
+        '204':
+          description: Деплоймент остановлен
+        '401':
+          description: Не авторизован
+        '404':
+          description: Деплоймент не найден
+
+  /api/deployments/{deployment_id}/logs:
+    get:
+      summary: Get Deployment Logs
+      description: Получить логи деплоймента
+      operationId: get_deployment_logs
+      tags:
+        - deployments
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: deployment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID деплоймента
+      responses:
+        '200':
+          description: Логи деплоймента
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentLogsResponse'
+        '401':
+          description: Не авторизован
+        '404':
+          description: Деплоймент не найден
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    DeploymentStatus:
+      type: string
+      enum:
+        - pending
+        - building
+        - deploying
+        - active
+        - failed
+        - stopped
+
+    DeploymentPlatform:
+      type: string
+      enum:
+        - railway
+        - render
+
+    DeploymentCreate:
+      type: object
+      properties:
+        platform:
+          $ref: '#/components/schemas/DeploymentPlatform'
+          default: railway
+        env_variables:
+          type: object
+          additionalProperties:
+            type: string
+          description: Переменные окружения для деплоя (например, BOT_TOKEN)
+          default: {}
+      example:
+        platform: railway
+        env_variables:
+          BOT_TOKEN: "123456:ABC..."
+
+    DeploymentResponse:
+      type: object
+      required:
+        - id
+        - project_id
+        - platform
+        - status
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        project_id:
+          type: string
+          format: uuid
+        platform:
+          type: string
+        status:
+          $ref: '#/components/schemas/DeploymentStatus'
+        url:
+          type: string
+          nullable: true
+          description: Публичный URL деплоймента
+        build_url:
+          type: string
+          nullable: true
+          description: URL логов сборки
+        admin_url:
+          type: string
+          nullable: true
+          description: URL админ-панели платформы
+        error_message:
+          type: string
+          nullable: true
+          description: Сообщение об ошибке (если статус failed)
+        created_at:
+          type: string
+          format: date-time
+        deployed_at:
+          type: string
+          format: date-time
+          nullable: true
+        last_health_check:
+          type: string
+          format: date-time
+          nullable: true
+
+    DeploymentLogsResponse:
+      type: object
+      required:
+        - deployment_id
+        - status
+      properties:
+        deployment_id:
+          type: string
+          format: uuid
+        logs:
+          type: string
+          nullable: true
+          description: Текстовые логи деплоймента
+        status:
+          $ref: '#/components/schemas/DeploymentStatus'
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Описание ошибки

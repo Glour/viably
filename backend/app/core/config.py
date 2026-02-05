@@ -30,6 +30,11 @@ class Settings(BaseSettings):
     GENERATION_MAX_TOKENS: int = 8192
     GENERATION_MODEL: str = "claude-sonnet-4-20250514"
 
+    # Deployment (Railway)
+    RAILWAY_API_TOKEN: str = ""
+    DEPLOYMENT_TIMEOUT_SECONDS: int = 300  # 5 minutes
+    DEPLOYMENT_POLL_INTERVAL_SECONDS: int = 10
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
