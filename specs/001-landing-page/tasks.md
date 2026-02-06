@@ -159,12 +159,13 @@
 
 ### Implementation for User Story 3
 
-- [ ] T036 [US3] Create `frontend/components/landing/templates-preview.tsx` with section heading and "Смотреть все шаблоны →" link
-- [ ] T037 [US3] Implement template cards grid loading data from `lib/data/templates.ts`, displaying emoji, name, cost in credits
-- [ ] T038 [US3] Add staggered appear animation for template cards using Motion viewport trigger with 100ms delay per card
-- [ ] T039 [US3] Implement hover effects for template cards: lift (translateY), glow (shadow), scale using Motion `whileHover`
-- [ ] T040 [US3] Style templates grid: 1 column mobile → 2 columns tablet (md) → 3 columns desktop (lg), surface background
-- [ ] T041 [US3] Wire "Смотреть все шаблоны →" link to `/templates` route (templates gallery page from 011-templates-gallery)
+- [x] T036 [US3] Create `frontend/components/landing/templates-preview.tsx` with section heading and "Смотреть все шаблоны →" link [EXECUTOR: fullstack-nextjs-specialist]
+- [x] T037 [US3] Implement template cards grid loading data from `lib/data/templates.ts`, displaying emoji, name, cost in credits
+- [x] T038 [US3] Add staggered appear animation for template cards using Motion viewport trigger with 100ms delay per card
+- [x] T039 [US3] Implement hover effects for template cards: lift (translateY), glow (shadow), scale using Motion `whileHover`
+- [x] T040 [US3] Style templates grid: 1 column mobile → 2 columns tablet (md) → 3 columns desktop (lg), surface background
+- [x] T041 [US3] Wire "Смотреть все шаблоны →" link to `/templates` route (templates gallery page from 011-templates-gallery)
+→ Artifacts: [templates-preview.tsx](frontend/components/landing/templates-preview.tsx)
 
 **Checkpoint**: Templates Preview shows 6 cards, stagger animation works, hover effects functional, link to gallery works
 
@@ -178,12 +179,13 @@
 
 ### Implementation for Footer
 
-- [ ] T042 [P] [Footer] Create `frontend/components/landing/footer.tsx` with 4 columns structure: Product, Resources, Company, Legal
-- [ ] T043 [P] [Footer] Add social media icons (Twitter, GitHub, Telegram) using lucide-react with links opening in new tab
-- [ ] T044 [Footer] Populate navigation links in each column (Products: Templates, Pricing; Resources: Docs, Blog; Company: About, Contact; Legal: Privacy, Terms)
-- [ ] T045 [Footer] Add gradient separator line at top of footer using Tailwind gradient utilities
-- [ ] T046 [Footer] Style footer responsive layout: 4 columns desktop → 2 columns tablet → 1 column mobile, copyright text at bottom
-- [ ] T047 [Footer] Add copyright text: "© 2025 Viably. All rights reserved."
+- [x] T042 [P] [Footer] Create `frontend/components/landing/footer.tsx` with 4 columns structure: Product, Resources, Company, Legal [EXECUTOR: fullstack-nextjs-specialist]
+- [x] T043 [P] [Footer] Add social media icons (Twitter, GitHub, Telegram) using lucide-react with links opening in new tab
+- [x] T044 [Footer] Populate navigation links in each column (Products: Templates, Pricing; Resources: Docs, Blog; Company: About, Contact; Legal: Privacy, Terms)
+- [x] T045 [Footer] Add gradient separator line at top of footer using Tailwind gradient utilities
+- [x] T046 [Footer] Style footer responsive layout: 4 columns desktop → 2 columns tablet → 1 column mobile, copyright text at bottom
+- [x] T047 [Footer] Add copyright text: "© 2025 Viably. All rights reserved."
+→ Artifacts: [footer.tsx](frontend/components/landing/footer.tsx)
 
 **Checkpoint**: Footer complete with all navigation sections, social icons, responsive layout, gradient separator
 
