@@ -76,13 +76,13 @@
 
 ### Implementation for User Story 1
 
-- [ ] T008 [P] [US1] Create ProjectActionMenu component (⋮ dropdown with Open, Duplicate, Download ZIP, divider, Delete with red text) using shadcn DropdownMenu in `frontend/components/projects/project-action-menu.tsx`
-- [ ] T009 [P] [US1] Create ProjectCard component (emoji+name, status badge, description line-clamp-2, footer with relative time + action menu, hover: lift + gradient top line) using Card in `frontend/components/projects/project-card.tsx`
-- [ ] T010 [P] [US1] Create ProjectListRow component (table-like row: emoji+name, category, status badge, updated time, action menu, hover bg) in `frontend/components/projects/project-list-row.tsx`
-- [ ] T011 [P] [US1] Create ProjectToolbar component (search input with useDebounce, status filter Select, sort Select, grid/list view toggle buttons) in `frontend/components/projects/project-toolbar.tsx`
-- [ ] T012 [P] [US1] Create ProjectNoResults component (inline "no results" message with suggestion to clear filters) in `frontend/components/projects/project-no-results.tsx`
-- [ ] T013 [US1] Create delete confirmation dialog using AlertDialog (warning text about permanent deletion, confirm/cancel buttons) in `frontend/components/projects/delete-project-dialog.tsx`
-- [ ] T014 [US1] Replace stub with full projects list page: header (H1 "Мои проекты" + "+ Новый проект" gradient button, subtitle with count/limit/plan), toolbar, grid/list conditional rendering (responsive: 3/2/1 columns grid, list view default on mobile), loading Shimmer state, integrate store in `frontend/app/projects/page.tsx`
+- [x] T008 [P] [US1] Create ProjectActionMenu component (⋮ dropdown with Open, Duplicate, Download ZIP, divider, Delete with red text) using shadcn DropdownMenu in `frontend/components/projects/project-action-menu.tsx`
+- [x] T009 [P] [US1] Create ProjectCard component (emoji+name, status badge, description line-clamp-2, footer with relative time + action menu, hover: lift + gradient top line) using Card in `frontend/components/projects/project-card.tsx`
+- [x] T010 [P] [US1] Create ProjectListRow component (table-like row: emoji+name, category, status badge, updated time, action menu, hover bg) in `frontend/components/projects/project-list-row.tsx`
+- [x] T011 [P] [US1] Create ProjectToolbar component (search input with useDebounce, status filter Select, sort Select, grid/list view toggle buttons) in `frontend/components/projects/project-toolbar.tsx`
+- [x] T012 [P] [US1] Create ProjectNoResults component (inline "no results" message with suggestion to clear filters) in `frontend/components/projects/project-no-results.tsx`
+- [x] T013 [US1] Create delete confirmation dialog using AlertDialog (warning text about permanent deletion, confirm/cancel buttons) in `frontend/components/projects/delete-project-dialog.tsx`
+- [x] T014 [US1] Replace stub with full projects list page: header (H1 "Мои проекты" + "+ Новый проект" gradient button, subtitle with count/limit/plan), toolbar, grid/list conditional rendering (responsive: 3/2/1 columns grid, list view default on mobile), loading Shimmer state, integrate store in `frontend/app/projects/page.tsx`
 
 **Checkpoint**: Projects list page fully functional. Grid/list toggle, search, filter, sort, action menu with delete confirmation all working.
 
