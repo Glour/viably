@@ -20,10 +20,10 @@
 
 **Purpose**: Prepare for implementation by analyzing requirements, creating necessary agents, and assigning executors.
 
-- [ ] P001 Analyze all tasks and identify required agent types and capabilities
-- [ ] P002 Create missing agents using meta-agent-v3 (launch N calls in single message, 1 per agent), then ask user restart
-- [ ] P003 Assign executors to all tasks: MAIN (trivial only), existing agents (100% match), or specific agent names
-- [ ] P004 Resolve research tasks: simple (solve with tools now), complex (create prompts in research/)
+- [x] P001 Analyze all tasks and identify required agent types and capabilities
+- [x] P002 Create missing agents using meta-agent-v3 (launch N calls in single message, 1 per agent), then ask user restart
+- [x] P003 Assign executors to all tasks: MAIN (trivial only), existing agents (100% match), or specific agent names
+- [x] P004 Resolve research tasks: simple (solve with tools now), complex (create prompts in research/)
 
 **Rules**:
 - **MAIN executor**: ONLY for trivial tasks (1-2 line fixes, simple imports, single npm install)
@@ -42,7 +42,8 @@
 
 **Purpose**: Create directories and shared infrastructure
 
-- [ ] T001 Create `frontend/components/dashboard/` directory and `frontend/lib/utils/` directory
+- [x] T001 Create `frontend/components/dashboard/` directory and `frontend/lib/utils/` directory
+  → Artifacts: [components/dashboard/](frontend/components/dashboard/), [lib/utils/](frontend/lib/utils/)
 
 ---
 
@@ -52,12 +53,12 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T002 Add dashboard types (UserProfile, ProjectSummary, ProjectStatus, DailyBonusState, TemplateShortcut, UserProfileResponse, RecentProjectsResponse, DashboardState, DailyBonusStoreState) to `frontend/types/index.ts` per data-model.md and contracts/dashboard-api.md
-- [ ] T003 Create mock API functions (getUserProfile, getRecentProjects) with 800ms delay and discriminated union responses in `frontend/lib/api/dashboard.ts` following the pattern from `frontend/lib/api/auth.ts` per contracts/dashboard-api.md mock data
-- [ ] T004 [P] Create dashboard zustand store (user, projects, isLoading, loadDashboard) in `frontend/stores/dashboard.ts` that calls mock API from T003, following pattern of `frontend/stores/sidebar.ts`
-- [ ] T005 [P] Create daily bonus zustand store with localStorage persist middleware (claimedToday, lastClaimedDate, streak, todayReward, nextReward, claim, checkStreak) in `frontend/stores/daily-bonus.ts` per data-model.md streak reset logic and state transitions
-- [ ] T006 [P] Create `useCountUp` hook in `frontend/hooks/use-count-up.ts` — accepts (end: number, duration?: number) returns animated number, uses requestAnimationFrame with easeOutCubic, respects reduced motion via `frontend/hooks/use-reduced-motion.ts`
-- [ ] T007 [P] Create `formatRelativeTime` utility in `frontend/lib/utils/format-relative-time.ts` — accepts ISO 8601 string, returns Russian relative time string ("2 часа назад", "вчера", "3 дня назад") using Intl.RelativeTimeFormat with locale "ru"
+- [x] T002 Add dashboard types (UserProfile, ProjectSummary, ProjectStatus, DailyBonusState, TemplateShortcut, UserProfileResponse, RecentProjectsResponse, DashboardState, DailyBonusStoreState) to `frontend/types/index.ts` per data-model.md and contracts/dashboard-api.md
+- [x] T003 Create mock API functions (getUserProfile, getRecentProjects) with 800ms delay and discriminated union responses in `frontend/lib/api/dashboard.ts` following the pattern from `frontend/lib/api/auth.ts` per contracts/dashboard-api.md mock data
+- [x] T004 [P] Create dashboard zustand store (user, projects, isLoading, loadDashboard) in `frontend/stores/dashboard.ts` that calls mock API from T003, following pattern of `frontend/stores/sidebar.ts`
+- [x] T005 [P] Create daily bonus zustand store with localStorage persist middleware (claimedToday, lastClaimedDate, streak, todayReward, nextReward, claim, checkStreak) in `frontend/stores/daily-bonus.ts` per data-model.md streak reset logic and state transitions
+- [x] T006 [P] Create `useCountUp` hook in `frontend/hooks/use-count-up.ts` — accepts (end: number, duration?: number) returns animated number, uses requestAnimationFrame with easeOutCubic, respects reduced motion via `frontend/hooks/use-reduced-motion.ts`
+- [x] T007 [P] Create `formatRelativeTime` utility in `frontend/lib/utils/format-relative-time.ts` — accepts ISO 8601 string, returns Russian relative time string ("2 часа назад", "вчера", "3 дня назад") using Intl.RelativeTimeFormat with locale "ru"
 
 **Checkpoint**: Foundation ready — types exported, mock API returns data, stores work, utilities tested manually
 
@@ -71,7 +72,7 @@
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Create WelcomeCard component in `frontend/components/dashboard/welcome-card.tsx`:
+- [x] T008 [US1] Create WelcomeCard component in `frontend/components/dashboard/welcome-card.tsx`:
   - Import UserProfile from types, useCountUp from hooks, FadeInUp, Card, Badge, Button from design system
   - Props: user: UserProfile
   - Layout: gradient subtle bg (bg-[var(--primary-subtle)]) with glow orb in corner (absolute positioned div with bg-[var(--primary-glow)] blur-3xl rounded-full)
@@ -87,7 +88,7 @@
   - Edge case: all zeros — show stats normally, zero is valid
   - Edge case: projects at limit — add "(лимит)" text next to count
 
-- [ ] T009 [US1] Wire WelcomeCard into dashboard page `frontend/app/dashboard/page.tsx`:
+- [x] T009 [US1] Wire WelcomeCard into dashboard page `frontend/app/dashboard/page.tsx`:
   - Import MainLayout, FadeInUp, WelcomeCard, useDashboardStore
   - Call store.loadDashboard() in useEffect on mount
   - Show Shimmer skeleton (matching WelcomeCard dimensions) while isLoading
@@ -107,7 +108,7 @@
 
 ### Implementation for User Story 2
 
-- [ ] T010 [US2] Create RecentProjects component in `frontend/components/dashboard/recent-projects.tsx`:
+- [x] T010 [US2] Create RecentProjects component in `frontend/components/dashboard/recent-projects.tsx`:
   - Import ProjectSummary from types, formatRelativeTime, Card, Badge, Button from design system
   - Props: projects: ProjectSummary[]
   - Section header: "Мои проекты" (font-heading text-xl) + "Все проекты →" Link to `/projects` (text-sm text-muted-foreground hover:text-primary)
@@ -121,7 +122,7 @@
     - "Создай первый бот за 60 секунд!" (text-muted-foreground)
     - Gradient Button "Создать проект →" Link to `/projects/new`
 
-- [ ] T011 [US2] Add RecentProjects to dashboard page `frontend/app/dashboard/page.tsx`:
+- [x] T011 [US2] Add RecentProjects to dashboard page `frontend/app/dashboard/page.tsx`:
   - Import RecentProjects component
   - Pass store.projects to RecentProjects
   - Wrap in FadeInUp with delay={0.2}
@@ -139,7 +140,7 @@
 
 ### Implementation for User Story 3
 
-- [ ] T012 [US3] Create QuickActions component in `frontend/components/dashboard/quick-actions.tsx`:
+- [x] T012 [US3] Create QuickActions component in `frontend/components/dashboard/quick-actions.tsx`:
   - Import TemplateShortcut from types, Card, Badge from design system
   - Define QUICK_ACTIONS constant array of TemplateShortcut: [{slug: "shop-bot", name: "Shop Bot", emoji: "🛒", badge: "Самый популярный", href: "/projects/new?template=shop-bot"}, {slug: "faq-bot", name: "FAQ Bot", emoji: "❓", badge: "Быстрый старт", href: "/projects/new?template=faq-bot"}]
   - Section header: "Быстрые действия" (font-heading text-xl)
@@ -149,7 +150,7 @@
     - Content: emoji (text-3xl), name (font-heading text-lg), "Создать →" in text-sm text-primary
     - Hover: inherits Card lift + gradient line
 
-- [ ] T013 [US3] Add QuickActions to dashboard page `frontend/app/dashboard/page.tsx`:
+- [x] T013 [US3] Add QuickActions to dashboard page `frontend/app/dashboard/page.tsx`:
   - Import QuickActions component
   - Place between WelcomeCard and RecentProjects sections
   - Wrap in FadeInUp with delay={0.1}
@@ -167,7 +168,7 @@
 
 ### Implementation for User Story 4
 
-- [ ] T014 [US4] Create DailyBonus component in `frontend/components/dashboard/daily-bonus.tsx`:
+- [x] T014 [US4] Create DailyBonus component in `frontend/components/dashboard/daily-bonus.tsx`:
   - Import DailyBonusStoreState from types, useDailyBonusStore, Card, Button, Badge from design system
   - Call store.checkStreak() in useEffect on mount (validates streak on page load)
   - **Not claimed state**:
@@ -186,7 +187,7 @@
   - **Streak milestone display**: when streak >= 7, show Badge "x2" variant="default" next to reward
   - Responsive: full width, internal padding p-6
 
-- [ ] T015 [US4] Add DailyBonus to dashboard page `frontend/app/dashboard/page.tsx`:
+- [x] T015 [US4] Add DailyBonus to dashboard page `frontend/app/dashboard/page.tsx`:
   - Import DailyBonus component
   - Place as last section after RecentProjects
   - Wrap in FadeInUp with delay={0.3}
@@ -204,7 +205,7 @@
 
 ### Implementation for User Story 5
 
-- [ ] T016 [US5] Verify and adjust staggered animation delays in `frontend/app/dashboard/page.tsx`:
+- [x] T016 [US5] Verify and adjust staggered animation delays in `frontend/app/dashboard/page.tsx`:
   - Review all FadeInUp wrappers have correct incremental delays: WelcomeCard(0), QuickActions(0.1), RecentProjects(0.2), DailyBonus(0.3)
   - Verify skeleton→content transitions are smooth (no layout shift)
   - Ensure all FadeInUp components properly respect reduced motion via existing use-reduced-motion hook
@@ -218,11 +219,11 @@
 
 **Purpose**: Final quality pass across all user stories
 
-- [ ] T017 [P] Responsive testing and fixes in `frontend/components/dashboard/*.tsx` — verify all components at 320px, 768px, 1024px, 1280px, 2560px viewports
-- [ ] T018 [P] Skeleton loading states — verify Shimmer components match real content dimensions for WelcomeCard and RecentProjects in `frontend/app/dashboard/page.tsx`
-- [ ] T019 Accessibility audit in `frontend/components/dashboard/*.tsx` — verify semantic HTML (section, h2 headings, nav landmarks), keyboard navigation (all links/buttons focusable), ARIA labels on stat cards (aria-label="Баланс кредитов: {n}"), focus-visible styles
-- [ ] T020 Dark mode verification — test all dashboard components in dark theme, verify contrast ratios, glow orb opacity difference (0.08 light vs 0.15 dark for welcome card)
-- [ ] T021 Run quality gates: `cd frontend && npm run type-check && npm run build && npm run lint`
+- [x] T017 [P] Responsive testing and fixes in `frontend/components/dashboard/*.tsx` — verify all components at 320px, 768px, 1024px, 1280px, 2560px viewports
+- [x] T018 [P] Skeleton loading states — verify Shimmer components match real content dimensions for WelcomeCard and RecentProjects in `frontend/app/dashboard/page.tsx`
+- [x] T019 Accessibility audit in `frontend/components/dashboard/*.tsx` — verify semantic HTML (section, h2 headings, nav landmarks), keyboard navigation (all links/buttons focusable), ARIA labels on stat cards (aria-label="Баланс кредитов: {n}"), focus-visible styles
+- [x] T020 Dark mode verification — test all dashboard components in dark theme, verify contrast ratios, glow orb opacity difference (0.08 light vs 0.15 dark for welcome card)
+- [x] T021 Run quality gates: `cd frontend && npm run type-check && npm run build && npm run lint`
 
 ---
 
