@@ -137,10 +137,10 @@
 
 **Purpose**: Verify all pages work together, mobile adaptation, edge cases, type-check and build.
 
-- [ ] T025 Verify mobile adaptation: horizontal tabs replace sidebar below md breakpoint, all pages render properly on mobile viewport, touch targets 44px minimum in all settings components
-- [ ] T026 Add edge case handling: avatar file size >5MB error toast, non-image file rejection, empty transaction history empty state, long name truncation in `frontend/components/settings/` components
-- [ ] T027 Run type-check (`npx tsc --noEmit`) and build (`npm run build`) in `frontend/`, fix any errors
-- [ ] T028 Run quickstart.md validation checklist — verify all 12 items pass
+- [x] T025 Verify mobile adaptation: horizontal tabs replace sidebar below md breakpoint, all pages render properly on mobile viewport, touch targets 44px minimum in all settings components
+- [x] T026 Add edge case handling: avatar file size >5MB error toast, non-image file rejection, empty transaction history empty state, long name truncation in `frontend/components/settings/` components
+- [x] T027 Run type-check (`npx tsc --noEmit`) and build (`npm run build`) in `frontend/`, fix any errors
+- [x] T028 Run quickstart.md validation checklist — verify all 12 items pass
 
 ---
 
