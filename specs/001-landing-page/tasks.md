@@ -95,15 +95,15 @@
 
 ### Implementation for User Story 1
 
-- [ ] T013 [P] [US1] Create `frontend/components/landing/hero.tsx` as client component with heading, subtitle, 2 CTA buttons, social proof text
-- [ ] T014 [P] [US1] Implement 3 glow orbs using CSS gradients (purple, blue, cyan) with absolute positioning and blur filter in Hero component
-- [ ] T015 [US1] Add mouse tracking with Motion `useMotionValue` and `useTransform` for glow orbs parallax effect (orbs move slower than mouse)
-- [ ] T016 [US1] Create animated demo card component with glass styling (backdrop-blur, border, shadow)
-- [ ] T017 [US1] Implement typing animation in demo card using `react-type-animation` with sequence: "Опиши идею..." → "Код генерируется..." → "Bot is live! ✓" (8-10 sec loop)
-- [ ] T018 [US1] Add scroll-triggered fadeInUp animation to Hero section using Motion `whileInView` with viewport detection (once: true, amount: 0.3)
-- [ ] T019 [US1] Style Hero layout: flex column on mobile, side-by-side on desktop (lg breakpoint), gradient text for "бот" keyword
-- [ ] T020 [US1] Wire CTA buttons: "Начать бесплатно" → /register, "Смотреть демо" → placeholder (future feature)
-- [ ] T021 [US1] Add `prefers-reduced-motion` media query to disable animations for accessibility
+- [x] T013 [P] [US1] Create `frontend/components/landing/hero.tsx` as client component with heading, subtitle, 2 CTAs, social proof [EXECUTOR: fullstack-nextjs-specialist]
+- [x] T014 [P] [US1] Reuse existing GlowOrbs from `@/components/ui/glow-orbs` (mouse tracking + parallax built-in)
+- [x] T015 [US1] Mouse tracking/parallax handled by GlowOrbs component — no additional work needed
+- [x] T016 [US1] Demo card with glass styling (backdrop-blur-xl, traffic lights, status bar, code area)
+- [x] T017 [US1] Typing animation via react-type-animation: 5-step sequence ~8.5s loop with Infinity repeat
+- [x] T018 [US1] Scroll-triggered fadeInUp using staggerContainer + whileInView (once: true, amount: 0.3)
+- [x] T019 [US1] Responsive layout: column mobile → side-by-side lg, gradient text on "бот", pt-28 for nav
+- [x] T020 [US1] CTAs wired: "Начать бесплатно" → /register, "Смотреть демо" → # (placeholder)
+- [x] T021 [US1] Reduced motion: useReducedMotion() disables all animations, TypeAnimation falls back to static text
 
 **Checkpoint**: Hero section complete with glow orbs, typing animation, CTAs functional, responsive layout works
 
