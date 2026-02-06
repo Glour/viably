@@ -71,10 +71,23 @@ export default function GeneratePage({ params }: GeneratePageProps) {
     }
   }, [])
 
-  // Handlers for ChatPanel
+  // beforeunload warning when generation is in progress (FR-018)
+  React.useEffect(() => {
+    if (!isGenerating) return
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload)
+  }, [isGenerating])
+
+  // Handlers for ChatPanel (with double-click protection FR-017)
   const handleGenerate = React.useCallback(() => {
+    if (isGenerating) return
     startGeneration()
-  }, [startGeneration])
+  }, [startGeneration, isGenerating])
 
   const handleFreeTextSubmit = React.useCallback(() => {
     if (freeTextInput.trim() && canGenerate) {

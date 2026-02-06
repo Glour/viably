@@ -98,7 +98,8 @@
   → Artifacts: [preview-panel.tsx](frontend/components/generation/preview-panel.tsx)
 - [x] T015 [US1] Create Generation page with split layout using react-resizable-panels (Group horizontal, Panel 40%/60%, Separator with hover highlight, minSize constraints 320px/400px, localStorage persistence via onLayoutChange/defaultLayout), CompactNavbar, ChatPanel in left panel, PreviewPanel in right panel, useGeneration hook integration in `frontend/app/projects/[id]/generate/page.tsx`
   → Artifacts: [page.tsx](frontend/app/projects/[id]/generate/page.tsx)
-- [ ] T016 [US1] Add double-click protection (FR-017) and beforeunload navigation warning (FR-018) to generation page in `frontend/app/projects/[id]/generate/page.tsx`
+- [x] T016 [US1] Add double-click protection (FR-017) and beforeunload navigation warning (FR-018) to generation page in `frontend/app/projects/[id]/generate/page.tsx`
+  → Artifacts: [page.tsx](frontend/app/projects/[id]/generate/page.tsx)
 
 **Checkpoint**: Generation page loads with split view, config form renders from template, generate button starts simulation, idle state visible in preview panel
 
