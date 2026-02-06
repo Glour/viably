@@ -62,8 +62,8 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 Create landing page route `frontend/app/(public)/page.tsx` with basic structure and placeholder sections for all components
-- [ ] T007 Create directory structure: `frontend/components/landing/` for all landing page components
+- [x] T006 Create landing page route `frontend/app/page.tsx` with metadata and placeholder sections [EXECUTOR: MAIN]
+- [x] T007 Create directory structure: `frontend/components/landing/` and `frontend/app/(public)/` [EXECUTOR: MAIN]
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -77,11 +77,11 @@
 
 ### Implementation for User Story 5
 
-- [ ] T008 [US5] Create `frontend/components/landing/landing-nav.tsx` with desktop navigation structure (Logo | Features Pricing Docs | Login Sign Up buttons)
-- [ ] T009 [US5] Implement sticky positioning with scroll-triggered glass effect (transparent → glass blur + opacity at 100px) using Motion `useScroll` hook
-- [ ] T010 [US5] Add responsive hamburger menu for mobile breakpoints (<768px) with Motion `AnimatePresence` for mobile menu toggle
-- [ ] T011 [US5] Style navigation links and CTA buttons with Tailwind CSS (gradient for Sign Up button, secondary for Login)
-- [ ] T012 [US5] Wire navigation links to correct routes: Features (#features), Pricing (#pricing), Docs (#docs), Login (/login), Sign Up (/register)
+- [x] T008 [US5] Create `frontend/components/landing/landing-nav.tsx` with desktop navigation structure [EXECUTOR: fullstack-nextjs-specialist]
+- [x] T009 [US5] Implement sticky positioning with scroll-triggered glass effect (transparent → glass at 100px)
+- [x] T010 [US5] Add responsive hamburger menu for mobile (<768px) with AnimatePresence + Esc to close
+- [x] T011 [US5] Style navigation links and CTA buttons (gradient Sign Up, outline Login, smooth scroll)
+- [x] T012 [US5] Wire navigation links: Features → #features, Pricing → #pricing, Login → /login, Sign Up → /register
 
 **Checkpoint**: Navigation functional, sticky behavior works, glass effect triggers on scroll, mobile menu operational
 
