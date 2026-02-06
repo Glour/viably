@@ -5,6 +5,7 @@ import { Panel, Group, Separator } from "react-resizable-panels"
 import { CompactNavbar } from "@/components/generation/compact-navbar"
 import { ChatPanel } from "@/components/generation/chat-panel"
 import { PreviewPanel } from "@/components/generation/preview-panel"
+import { DeployModal } from "@/components/generation/deploy-modal"
 import { useGeneration } from "@/lib/generation/use-generation"
 import { useProjectsStore } from "@/stores/projects"
 
@@ -22,18 +23,20 @@ export default function GeneratePage({ params }: GeneratePageProps) {
   // Load generation state and actions
   const {
     generation,
+    deployment,
     formValues,
     freeTextInput,
     template,
     setFormValues,
     setFreeTextInput,
     startGeneration,
+    startDeployment,
     downloadCode,
     canGenerate,
     isGenerating,
   } = useGeneration(id)
 
-  // Deploy modal state (will be wired in T024-T025)
+  // Deploy modal state
   const [deployOpen, setDeployOpen] = React.useState(false)
 
   // Load project on mount
@@ -162,6 +165,15 @@ export default function GeneratePage({ params }: GeneratePageProps) {
           credits={150} // Hardcoded for MVP
         />
       </div>
+
+      {/* Deploy Modal */}
+      <DeployModal
+        open={deployOpen}
+        onOpenChange={setDeployOpen}
+        deployment={deployment}
+        onDeploy={startDeployment}
+        onDownload={downloadCode}
+      />
     </div>
   )
 }

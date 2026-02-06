@@ -155,10 +155,14 @@
 
 ### Implementation for User Story 4
 
-- [ ] T022 [P] [US4] Create DeployProgress component with step list (same visual pattern as GenerationProgress but for deploy steps), animated gradient border around parent container in `frontend/components/generation/deploy-progress.tsx`
-- [ ] T023 [P] [US4] Create DeploySuccess component with canvas-confetti trigger (disableForReducedMotion), glow pulse animation, bot info card (@username, running status, t.me link), action buttons (Open in Telegram gradient, Back to projects secondary) in `frontend/components/generation/deploy-success.tsx`
-- [ ] T024 [US4] Create DeployModal component using Dialog, 3-phase flow: Phase 1 config (bot token password input with show/hide, additional env vars, warning text, Deploy + Cancel buttons, Download ZIP alternative), Phase 2 DeployProgress, Phase 3 DeploySuccess or failure state (error details, retry + download buttons), glass card max-w-[520px] in `frontend/components/generation/deploy-modal.tsx`
-- [ ] T025 [US4] Integrate DeployModal into CompleteState — Deploy button opens modal, wire deployment store actions in `frontend/components/generation/complete-state.tsx`
+- [x] T022 [P] [US4] Create DeployProgress component with step list (same visual pattern as GenerationProgress but for deploy steps), animated gradient border around parent container in `frontend/components/generation/deploy-progress.tsx`
+  → Artifacts: [deploy-progress.tsx](frontend/components/generation/deploy-progress.tsx)
+- [x] T023 [P] [US4] Create DeploySuccess component with canvas-confetti trigger (disableForReducedMotion), glow pulse animation, bot info card (@username, running status, t.me link), action buttons (Open in Telegram gradient, Back to projects secondary) in `frontend/components/generation/deploy-success.tsx`
+  → Artifacts: [deploy-success.tsx](frontend/components/generation/deploy-success.tsx)
+- [x] T024 [US4] Create DeployModal component using Dialog, 3-phase flow: Phase 1 config (bot token password input with show/hide, additional env vars, warning text, Deploy + Cancel buttons, Download ZIP alternative), Phase 2 DeployProgress, Phase 3 DeploySuccess or failure state (error details, retry + download buttons), glass card max-w-[520px] in `frontend/components/generation/deploy-modal.tsx`
+  → Artifacts: [deploy-modal.tsx](frontend/components/generation/deploy-modal.tsx)
+- [x] T025 [US4] Integrate DeployModal into CompleteState — Deploy button opens modal, wire deployment store actions in `frontend/components/generation/complete-state.tsx`
+  → Artifacts: [page.tsx](frontend/app/projects/[id]/generate/page.tsx)
 
 **Checkpoint**: Deploy modal flows through all 3 phases, confetti on success, retry on failure
 
