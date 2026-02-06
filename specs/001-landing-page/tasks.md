@@ -117,11 +117,12 @@
 
 ### Implementation for User Story 2
 
-- [ ] T022 [US2] Create `frontend/components/landing/how-it-works.tsx` with section heading (gradient underline styling)
-- [ ] T023 [US2] Implement 3 step cards structure with gradient number badges (circles), icons (✎, ⚡, 🚀), titles, descriptions
-- [ ] T024 [US2] Add staggered fadeInUp animation for cards using Motion with viewport trigger and delay calculation (100ms per card)
-- [ ] T025 [US2] Implement hover glow effect for step cards using Motion `whileHover` prop with scale and shadow transitions
-- [ ] T026 [US2] Style cards grid: single column mobile → 3 columns desktop (lg breakpoint), surface background, proper spacing
+- [x] T022 [US2] Create `frontend/components/landing/how-it-works.tsx` with section heading (gradient underline styling) [EXECUTOR: fullstack-nextjs-specialist]
+- [x] T023 [US2] Implement 3 step cards structure with gradient number badges (circles), icons (✎, ⚡, 🚀), titles, descriptions
+- [x] T024 [US2] Add staggered fadeInUp animation for cards using Motion with viewport trigger and delay calculation (100ms per card)
+- [x] T025 [US2] Implement hover glow effect for step cards using Motion `whileHover` prop with scale and shadow transitions
+- [x] T026 [US2] Style cards grid: single column mobile → 3 columns desktop (lg breakpoint), surface background, proper spacing
+→ Artifacts: [how-it-works.tsx](frontend/components/landing/how-it-works.tsx)
 
 **Checkpoint**: How It Works section displays 3 steps, stagger animation works on scroll, hover effects functional
 
@@ -135,15 +136,16 @@
 
 ### Implementation for User Story 4
 
-- [ ] T027 [P] [US4] Create custom hook `frontend/lib/hooks/use-pricing-toggle.ts` for managing monthly/yearly state with localStorage persistence
-- [ ] T028 [P] [US4] Create `frontend/components/landing/pricing.tsx` with section heading and billing period toggle (Monthly/Yearly switch)
-- [ ] T029 [US4] Implement 3 pricing plan cards loading data from `lib/data/pricing.ts`, displaying name, price, features list, CTA button
-- [ ] T030 [US4] Add "Popular" badge and gradient border styling specifically for Pro plan (conditional rendering based on `plan.popular` flag)
-- [ ] T031 [US4] Implement price calculation logic: display monthly price or yearly price based on toggle state, show monthly equivalent for yearly
-- [ ] T032 [US4] Add staggered appear animation for pricing cards using Motion viewport trigger with 100ms delay per card
-- [ ] T033 [US4] Style pricing grid: stack on mobile → 3 columns desktop (lg breakpoint), highlight Pro plan with gradient border
-- [ ] T034 [US4] Wire CTA buttons: Free → /register, Starter → /pricing/starter, Pro → /pricing/pro
-- [ ] T035 [US4] Add smooth price transition animation when toggling between monthly/yearly using Motion `AnimatePresence`
+- [x] T027 [P] [US4] Create custom hook `frontend/lib/hooks/use-pricing-toggle.ts` for managing monthly/yearly state with localStorage persistence [EXECUTOR: fullstack-nextjs-specialist]
+- [x] T028 [P] [US4] Create `frontend/components/landing/pricing.tsx` with section heading and billing period toggle (Monthly/Yearly switch) [EXECUTOR: fullstack-nextjs-specialist]
+- [x] T029 [US4] Implement 3 pricing plan cards loading data from `lib/data/pricing.ts`, displaying name, price, features list, CTA button
+- [x] T030 [US4] Add "Popular" badge and gradient border styling specifically for Pro plan (conditional rendering based on `plan.popular` flag)
+- [x] T031 [US4] Implement price calculation logic: display monthly price or yearly price based on toggle state, show monthly equivalent for yearly
+- [x] T032 [US4] Add staggered appear animation for pricing cards using Motion viewport trigger with 100ms delay per card
+- [x] T033 [US4] Style pricing grid: stack on mobile → 3 columns desktop (lg breakpoint), highlight Pro plan with gradient border
+- [x] T034 [US4] Wire CTA buttons: Free → /register, Starter → /pricing/starter, Pro → /pricing/pro
+- [x] T035 [US4] Add smooth price transition animation when toggling between monthly/yearly using Motion `AnimatePresence`
+→ Artifacts: [pricing.tsx](frontend/components/landing/pricing.tsx), [use-pricing-toggle.ts](frontend/lib/hooks/use-pricing-toggle.ts)
 
 **Checkpoint**: Pricing section displays 3 plans, toggle works and persists to localStorage, Popular badge shows, CTAs wired correctly
 
