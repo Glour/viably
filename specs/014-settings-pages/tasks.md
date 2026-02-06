@@ -126,8 +126,8 @@
 
 ### Implementation for User Story 5
 
-- [ ] T023 [US5] Create ThemeSelector component with 3 radio Card options (Light/Dark/System), each showing icon, title, description, mini preview (small Card mockup showing theme colors), selected state, smooth CSS transition on theme change via useTheme() from next-themes, useMounted() for hydration safety in `frontend/components/settings/theme-selector.tsx` (depends on T001)
-- [ ] T024 [US5] Create theme page with ThemeSelector wrapped in FadeInUp in `frontend/app/(main)/settings/theme/page.tsx` (depends on T023)
+- [x] T023 [US5] Create ThemeSelector component with 3 radio Card options (Light/Dark/System), each showing icon, title, description, mini preview (small Card mockup showing theme colors), selected state, smooth CSS transition on theme change via useTheme() from next-themes, useMounted() for hydration safety in `frontend/components/settings/theme-selector.tsx` (depends on T001) → Artifacts: [theme-selector.tsx](frontend/components/settings/theme-selector.tsx)
+- [x] T024 [US5] Create theme page with ThemeSelector wrapped in FadeInUp in `frontend/app/(main)/settings/theme/page.tsx` (depends on T023) → Artifacts: [theme/page.tsx](frontend/app/(main)/settings/theme/page.tsx)
 
 **Checkpoint**: Theme page fully functional — three options with previews, instant application, smooth transition, persistence across sessions.
 
