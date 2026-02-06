@@ -15,7 +15,7 @@ export interface SidebarState {
 
 // Dashboard types
 
-export type ProjectStatus = "deployed" | "ready" | "draft" | "failed"
+export type ProjectStatus = "draft" | "generating" | "generated" | "deployed" | "failed" | "stopped"
 
 export interface UserProfile {
   id: string
@@ -70,6 +70,102 @@ export interface DashboardStoreState {
 export interface DailyBonusStoreState extends DailyBonusState {
   claim: () => void
   checkStreak: () => void
+}
+
+// Projects types
+
+export interface DeploymentInfo {
+  url: string
+  botUsername: string
+  status: "running" | "stopped" | "deploying"
+  runningSince: string | null
+  costEstimate: string
+}
+
+export interface ProjectFile {
+  path: string
+  name: string
+  type: "file" | "folder"
+  content?: string
+  children?: ProjectFile[]
+}
+
+export type LogLevel = "info" | "warning" | "error"
+
+export interface LogEntry {
+  id: string
+  timestamp: string
+  level: LogLevel
+  message: string
+}
+
+export interface EnvVariable {
+  id: string
+  key: string
+  value: string
+  isRevealed: boolean
+}
+
+export interface Project {
+  id: string
+  name: string
+  emoji: string
+  description: string
+  status: ProjectStatus
+  category: string
+  createdAt: string
+  updatedAt: string
+  config: Record<string, string>
+  deployment: DeploymentInfo | null
+  files: ProjectFile[]
+  envVars: EnvVariable[]
+  logs: LogEntry[]
+}
+
+export type ViewMode = "grid" | "list"
+export type ProjectFilter = "all" | "deployed" | "generated" | "draft" | "failed"
+export type ProjectSort = "newest" | "oldest" | "name"
+
+export type ProjectsResponse =
+  | { success: true; projects: Project[] }
+  | { success: false; error: string }
+
+export type ProjectResponse =
+  | { success: true; project: Project }
+  | { success: false; error: string }
+
+export type DeleteProjectResponse =
+  | { success: true }
+  | { success: false; error: string }
+
+export type DuplicateProjectResponse =
+  | { success: true; projectId: string }
+  | { success: false; error: string }
+
+export type UpdateEnvVarsResponse =
+  | { success: true }
+  | { success: false; error: string }
+
+export type ToggleStatusResponse =
+  | { success: true; newStatus: ProjectStatus }
+  | { success: false; error: string }
+
+export interface ProjectsStoreState {
+  projects: Project[]
+  currentProject: Project | null
+  searchQuery: string
+  filter: ProjectFilter
+  sort: ProjectSort
+  viewMode: ViewMode
+  isLoading: boolean
+  loadProjects: () => Promise<void>
+  loadProject: (id: string) => Promise<void>
+  setSearchQuery: (query: string) => void
+  setFilter: (filter: ProjectFilter) => void
+  setSort: (sort: ProjectSort) => void
+  setViewMode: (mode: ViewMode) => void
+  deleteProject: (id: string) => Promise<void>
+  getFilteredProjects: () => Project[]
 }
 
 // Templates Gallery types

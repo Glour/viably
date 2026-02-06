@@ -35,7 +35,7 @@ export async function getRecentProjects(): Promise<RecentProjectsResponse> {
         id: "proj_2",
         name: "Поддержка клиентов",
         emoji: "💬",
-        status: "ready",
+        status: "generated",
         updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
       },
       {
