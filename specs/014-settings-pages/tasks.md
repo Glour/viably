@@ -109,10 +109,10 @@
 
 ### Implementation for User Story 4
 
-- [ ] T019 [P] [US4] Create PlanCard component with plan name, price (or "Contact us" for enterprise), features list, isPopular badge, isCurrent highlight border/badge, Upgrade/Downgrade/Current/Contact Us button variants in `frontend/components/settings/plan-card.tsx` (depends on T001)
-- [ ] T020 [P] [US4] Create CurrentPlanCard component with plan name + gradient Badge, features list, usage stats (X/Y projects, Z credits), renewal date in `frontend/components/settings/current-plan-card.tsx` (depends on T005)
-- [ ] T021 [US4] Create PlanComparison component with responsive grid of PlanCard components, current plan highlighted, proper button states per plan tier in `frontend/components/settings/plan-comparison.tsx` (depends on T019, T005)
-- [ ] T022 [US4] Create plan page with CurrentPlanCard and PlanComparison wrapped in FadeInUp, load plan on mount via store in `frontend/app/(main)/settings/plan/page.tsx` (depends on T020, T021)
+- [x] T019 [P] [US4] Create PlanCard component with plan name, price (or "Contact us" for enterprise), features list, isPopular badge, isCurrent highlight border/badge, Upgrade/Downgrade/Current/Contact Us button variants in `frontend/components/settings/plan-card.tsx` (depends on T001) → Artifacts: [plan-card.tsx](frontend/components/settings/plan-card.tsx)
+- [x] T020 [P] [US4] Create CurrentPlanCard component with plan name + gradient Badge, features list, usage stats (X/Y projects, Z credits), renewal date in `frontend/components/settings/current-plan-card.tsx` (depends on T005) → Artifacts: [current-plan-card.tsx](frontend/components/settings/current-plan-card.tsx)
+- [x] T021 [US4] Create PlanComparison component with responsive grid of PlanCard components, current plan highlighted, proper button states per plan tier in `frontend/components/settings/plan-comparison.tsx` (depends on T019, T005) → Artifacts: [plan-comparison.tsx](frontend/components/settings/plan-comparison.tsx)
+- [x] T022 [US4] Create plan page with CurrentPlanCard and PlanComparison wrapped in FadeInUp, load plan on mount via store in `frontend/app/(main)/settings/plan/page.tsx` (depends on T020, T021) → Artifacts: [plan/page.tsx](frontend/app/(main)/settings/plan/page.tsx)
 
 **Checkpoint**: Plan page fully functional — current plan with usage stats, plan comparison grid with highlighting and action buttons.
 
