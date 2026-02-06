@@ -227,3 +227,98 @@ export interface TemplatesStoreState {
   getFilteredTemplates: () => Template[]
   getTemplateBySlug: (slug: string) => Template | undefined
 }
+
+// Generation Flow types
+
+export type GenerationStatus = "idle" | "generating" | "complete" | "error"
+
+export type GenerationStepStatus = "pending" | "running" | "done" | "error"
+
+export interface GenerationStep {
+  id: string
+  name: string
+  status: GenerationStepStatus
+  duration: number | null
+}
+
+export interface GeneratedCode {
+  files: ProjectFile[]
+  totalFiles: number
+  totalLines: number
+}
+
+export interface GenerationSession {
+  status: GenerationStatus
+  currentStep: number
+  steps: GenerationStep[]
+  progress: number
+  code: GeneratedCode | null
+  error: string | null
+  startedAt: string | null
+  completedAt: string | null
+}
+
+export type DeploymentStatus = "config" | "deploying" | "success" | "failure"
+
+export type DeploymentStepStatus = "pending" | "running" | "done" | "error"
+
+export interface DeploymentStep {
+  id: string
+  name: string
+  status: DeploymentStepStatus
+  duration: number | null
+}
+
+export interface DeployedBotInfo {
+  username: string
+  url: string
+  status: "running"
+}
+
+export interface DeployConfig {
+  botToken: string
+  envVars: Record<string, string>
+}
+
+export interface DeploymentSession {
+  status: DeploymentStatus
+  steps: DeploymentStep[]
+  currentStep: number
+  progress: number
+  botInfo: DeployedBotInfo | null
+  error: string | null
+}
+
+export type ConfigFormValues = Record<string, string | string[] | number>
+
+export type StartGenerationResponse =
+  | { success: true }
+  | { success: false; error: string }
+
+export type StartDeploymentResponse =
+  | { success: true }
+  | { success: false; error: string }
+
+export interface GenerationStoreState {
+  projectId: string | null
+  template: Template | null
+  generation: GenerationSession
+  deployment: DeploymentSession
+  formValues: ConfigFormValues
+  freeTextInput: string
+  setProjectContext: (projectId: string, template: Template) => void
+  setFormValues: (values: ConfigFormValues) => void
+  setFreeTextInput: (text: string) => void
+  startGeneration: () => void
+  retryGeneration: () => void
+  resetGeneration: () => void
+  startDeployment: (config: DeployConfig) => void
+  resetDeployment: () => void
+  _updateStep: (stepIndex: number, status: GenerationStepStatus, duration: number | null) => void
+  _setProgress: (progress: number) => void
+  _completeGeneration: (code: GeneratedCode) => void
+  _failGeneration: (error: string) => void
+  _updateDeployStep: (stepIndex: number, status: DeploymentStepStatus, duration: number | null) => void
+  _completeDeployment: (botInfo: DeployedBotInfo) => void
+  _failDeployment: (error: string) => void
+}
