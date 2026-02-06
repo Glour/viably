@@ -79,10 +79,12 @@ export function Navbar() {
               150
             </Badge>
             <ThemeToggle />
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <User className="size-5" />
-              <span className="sr-only">Профиль</span>
-            </Button>
+            <Link href="/settings">
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <User className="size-5" />
+                <span className="sr-only">Настройки</span>
+              </Button>
+            </Link>
             <Button
               variant="ghost"
               size="icon"
