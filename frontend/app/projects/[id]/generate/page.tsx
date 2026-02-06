@@ -28,9 +28,13 @@ export default function GeneratePage({ params }: GeneratePageProps) {
     setFormValues,
     setFreeTextInput,
     startGeneration,
+    downloadCode,
     canGenerate,
     isGenerating,
   } = useGeneration(id)
+
+  // Deploy modal state (will be wired in T024-T025)
+  const [deployOpen, setDeployOpen] = React.useState(false)
 
   // Load project on mount
   React.useEffect(() => {
@@ -136,6 +140,8 @@ export default function GeneratePage({ params }: GeneratePageProps) {
               generation={generation}
               activeTab={activeTab}
               onTabChange={setActiveTab}
+              onDeploy={() => setDeployOpen(true)}
+              onDownload={downloadCode}
             />
           </Panel>
         </Group>

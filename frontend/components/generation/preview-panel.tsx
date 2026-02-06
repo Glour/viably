@@ -4,20 +4,23 @@ import { AnimatePresence, motion } from "motion/react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { IdleState } from "./idle-state"
 import { GenerationProgress } from "./generation-progress"
+import { CompleteState } from "./complete-state"
 import type { GenerationSession } from "@/types"
 
 interface PreviewPanelProps {
   generation: GenerationSession
   activeTab: string
   onTabChange: (tab: string) => void
-  children?: React.ReactNode
+  onDeploy?: () => void
+  onDownload?: () => void
 }
 
 export function PreviewPanel({
   generation,
   activeTab,
   onTabChange,
-  children,
+  onDeploy,
+  onDownload,
 }: PreviewPanelProps) {
   const renderPreviewContent = () => {
     switch (generation.status) {
@@ -59,11 +62,15 @@ export function PreviewPanel({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="h-full flex items-center justify-center"
+            className="h-full"
           >
-            <p className="text-muted-foreground">
-              Generated code will appear here
-            </p>
+            {generation.code && (
+              <CompleteState
+                code={generation.code}
+                onDeploy={onDeploy ?? (() => {})}
+                onDownload={onDownload ?? (() => {})}
+              />
+            )}
           </motion.div>
         )
       case "error":
@@ -86,18 +93,39 @@ export function PreviewPanel({
     }
   }
 
-  const renderCodeContent = () => (
-    <motion.div
-      key="code"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
-      className="h-full flex items-center justify-center"
-    >
-      <p className="text-muted-foreground">Code viewer will appear here</p>
-    </motion.div>
-  )
+  const renderCodeContent = () => {
+    if (generation.status === "complete" && generation.code) {
+      return (
+        <motion.div
+          key="code-complete"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="h-full"
+        >
+          <CompleteState
+            code={generation.code}
+            onDeploy={onDeploy ?? (() => {})}
+            onDownload={onDownload ?? (() => {})}
+          />
+        </motion.div>
+      )
+    }
+
+    return (
+      <motion.div
+        key="code-empty"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="h-full flex items-center justify-center"
+      >
+        <p className="text-muted-foreground">Код появится после генерации</p>
+      </motion.div>
+    )
+  }
 
   const renderLogsContent = () => (
     <motion.div

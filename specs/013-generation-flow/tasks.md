@@ -136,8 +136,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T020 [US3] Create CompleteState component with reused CodeViewer (from components/projects/code-viewer.tsx), action bar below with Deploy button (gradient), Download ZIP button (secondary, calls downloadGeneratedCode from api/generation.ts), Preview button (ghost) in `frontend/components/generation/complete-state.tsx`
-- [ ] T021 [US3] Update PreviewPanel to render CompleteState when generation.status === "complete", auto-switch to Code tab on completion in `frontend/components/generation/preview-panel.tsx`
+- [x] T020 [US3] Create CompleteState component with reused CodeViewer (from components/projects/code-viewer.tsx), action bar below with Deploy button (gradient), Download ZIP button (secondary, calls downloadGeneratedCode from api/generation.ts), Preview button (ghost) in `frontend/components/generation/complete-state.tsx`
+  → Artifacts: [complete-state.tsx](frontend/components/generation/complete-state.tsx)
+- [x] T021 [US3] Update PreviewPanel to render CompleteState when generation.status === "complete", auto-switch to Code tab on completion in `frontend/components/generation/preview-panel.tsx`
+  → Artifacts: [preview-panel.tsx](frontend/components/generation/preview-panel.tsx), [page.tsx](frontend/app/projects/[id]/generate/page.tsx)
 
 **Checkpoint**: Full generation flow works end-to-end: form → generate → progress → code viewer with actions
 
