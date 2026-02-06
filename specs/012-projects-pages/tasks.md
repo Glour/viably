@@ -184,9 +184,11 @@
 
 **Purpose**: Build verification, responsive polish, accessibility check
 
-- [ ] T030 Run `npm run build` in `frontend/` to verify type-check and build pass with zero errors
-- [ ] T031 Verify responsive behavior: projects grid 3→2→1 columns, list view default on mobile, detail page tabs stack properly, code viewer collapses file tree on mobile
-- [ ] T032 Mark all tasks complete in `specs/012-projects-pages/tasks.md` and add artifact links
+- [x] T030 Run `npm run build` in `frontend/` to verify type-check and build pass with zero errors
+- [x] T031 Verify responsive behavior: projects grid 3→2→1 columns, list view default on mobile, detail page tabs stack properly, code viewer collapses file tree on mobile
+- [x] T032 Mark all tasks complete in `specs/012-projects-pages/tasks.md` and add artifact links
+
+→ Artifacts: [button.tsx](frontend/components/ui/button.tsx), [code-viewer.tsx](frontend/components/projects/code-viewer.tsx)
 
 ---
 

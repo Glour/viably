@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from "react"
 import dynamic from "next/dynamic"
-import { Code2 } from "lucide-react"
+import { Code2, PanelLeftClose, PanelLeftOpen } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { Shimmer } from "@/components/ui/shimmer"
 import { FileTree } from "./file-tree"
 import type { ProjectFile } from "@/types"
@@ -77,6 +78,7 @@ interface CodeViewerProps {
 
 export function CodeViewer({ files }: CodeViewerProps) {
   const [selectedPath, setSelectedPath] = useState<string | null>(null)
+  const [showTree, setShowTree] = useState(true)
 
   const selectedFile = selectedPath
     ? findFileByPath(files, selectedPath)
@@ -84,6 +86,8 @@ export function CodeViewer({ files }: CodeViewerProps) {
 
   const handleSelectFile = useCallback((file: ProjectFile) => {
     setSelectedPath(file.path)
+    // Auto-collapse tree on mobile after file selection
+    if (window.innerWidth < 640) setShowTree(false)
   }, [])
 
   if (files.length === 0) {
@@ -99,17 +103,35 @@ export function CodeViewer({ files }: CodeViewerProps) {
 
   return (
     <div className="flex h-[600px] overflow-hidden rounded-xl border bg-card">
-      {/* File tree sidebar */}
-      <div className="w-56 shrink-0 overflow-y-auto border-r bg-muted/30 py-2">
-        <FileTree
-          files={files}
-          selectedPath={selectedPath}
-          onSelectFile={handleSelectFile}
-        />
-      </div>
+      {/* File tree sidebar — collapsible, hidden by default on mobile */}
+      {showTree && (
+        <div className="w-56 shrink-0 overflow-y-auto border-r bg-muted/30 py-2">
+          <FileTree
+            files={files}
+            selectedPath={selectedPath}
+            onSelectFile={handleSelectFile}
+          />
+        </div>
+      )}
 
       {/* Editor area */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* Toggle toolbar */}
+        <div className="flex items-center gap-2 border-b px-2 py-1">
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={() => setShowTree(!showTree)}
+            aria-label={showTree ? "Скрыть файлы" : "Показать файлы"}
+          >
+            {showTree ? <PanelLeftClose className="size-3.5" /> : <PanelLeftOpen className="size-3.5" />}
+          </Button>
+          {selectedFile && (
+            <span className="text-xs text-muted-foreground truncate">{selectedFile.path}</span>
+          )}
+        </div>
+
+        <div className="flex-1 min-h-0">
         {selectedFile ? (
           <MonacoEditor
             height="100%"
@@ -131,6 +153,7 @@ export function CodeViewer({ files }: CodeViewerProps) {
             <p className="text-sm">Выбери файл для просмотра</p>
           </div>
         )}
+        </div>
       </div>
     </div>
   )
