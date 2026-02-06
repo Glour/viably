@@ -61,15 +61,17 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T009 Create design tokens in `app/globals.css`: oklch color variables for light (:root) and dark (.dark) themes per data-model.md. Include shadcn/ui standard tokens + brand-specific tokens (--primary-hover, --primary-light, --primary-subtle, --primary-glow, --gradient-main/warm/cool, --success, --warning, --info). Add `@custom-variant dark (&:is(.dark *))`. Add `@theme inline` block mapping CSS vars to Tailwind colors. Add `@layer base` with border/outline/body defaults.
-- [ ] T010 Create font declarations in `app/fonts.ts`: Space Grotesk (variable --font-heading, subsets latin+cyrillic, weight 600-700), Inter (variable --font-body, subsets latin+cyrillic, weight 400-500), JetBrains Mono (variable --font-code, subsets latin, weight 400-500). Export font objects. Add font CSS variables to `@theme inline` in `app/globals.css`: `--font-heading`, `--font-body`, `--font-code`.
-- [ ] T011 Configure root layout in `app/layout.tsx`: import fonts from `app/fonts.ts`, apply font CSS variables to `<html>` className, wrap children in ThemeProvider from next-themes (attribute="class", defaultTheme="system", enableSystem=true, storageKey="viably-theme"), add `suppressHydrationWarning` to `<html>`, set metadata (title "Viably", description). Set `<body>` className to `font-body antialiased`.
-- [ ] T012 [P] Create `lib/utils.ts` with `cn()` helper function (clsx + tailwind-merge pattern per research.md R7)
-- [ ] T013 [P] Create `types/index.ts` with shared TypeScript types: NavItem interface (label, href, icon), SidebarState interface (isOpen, toggle, open, close)
-- [ ] T014 [P] Create `lib/animations.ts` with motion animation variants: fadeInUp (hidden/visible), shimmerGradient, springConfig (stiffness 300, damping 30), and reducedMotion media query check helper
-- [ ] T015 [P] Create sidebar zustand store in `stores/sidebar.ts`: isOpen boolean, toggle/open/close actions per data-model.md SidebarState
-- [ ] T016 Create placeholder `app/page.tsx` that redirects to `/dashboard` (or renders "Viably" heading temporarily)
-- [ ] T017 Verify foundational: run `npm run build` and `npm run type-check` -- all must pass
+- [x] T009 Create design tokens in `app/globals.css`: oklch color variables for light (:root) and dark (.dark) themes per data-model.md. Include shadcn/ui standard tokens + brand-specific tokens (--primary-hover, --primary-light, --primary-subtle, --primary-glow, --gradient-main/warm/cool, --success, --warning, --info). Add `@custom-variant dark (&:is(.dark *))`. Add `@theme inline` block mapping CSS vars to Tailwind colors. Add `@layer base` with border/outline/body defaults.
+- [x] T010 Create font declarations in `app/fonts.ts`: Space Grotesk (variable --font-heading, subsets latin+cyrillic, weight 600-700), Inter (variable --font-body, subsets latin+cyrillic, weight 400-500), JetBrains Mono (variable --font-code, subsets latin, weight 400-500). Export font objects. Add font CSS variables to `@theme inline` in `app/globals.css`: `--font-heading`, `--font-body`, `--font-code`.
+- [x] T011 Configure root layout in `app/layout.tsx`: import fonts from `app/fonts.ts`, apply font CSS variables to `<html>` className, wrap children in ThemeProvider from next-themes (attribute="class", defaultTheme="system", enableSystem=true, storageKey="viably-theme"), add `suppressHydrationWarning` to `<html>`, set metadata (title "Viably", description). Set `<body>` className to `font-body antialiased`.
+- [x] T012 [P] Create `lib/utils.ts` with `cn()` helper function (clsx + tailwind-merge pattern per research.md R7)
+- [x] T013 [P] Create `types/index.ts` with shared TypeScript types: NavItem interface (label, href, icon), SidebarState interface (isOpen, toggle, open, close)
+- [x] T014 [P] Create `lib/animations.ts` with motion animation variants: fadeInUp (hidden/visible), shimmerGradient, springConfig (stiffness 300, damping 30), and reducedMotion media query check helper
+- [x] T015 [P] Create sidebar zustand store in `stores/sidebar.ts`: isOpen boolean, toggle/open/close actions per data-model.md SidebarState
+- [x] T016 Create placeholder `app/page.tsx` that redirects to `/dashboard` (or renders "Viably" heading temporarily)
+- [x] T017 Verify foundational: run `npm run build` and `npm run type-check` -- all must pass
+
+→ Artifacts: [globals.css](frontend/app/globals.css), [fonts.ts](frontend/app/fonts.ts), [layout.tsx](frontend/app/layout.tsx), [utils.ts](frontend/lib/utils.ts), [types/index.ts](frontend/types/index.ts), [animations.ts](frontend/lib/animations.ts), [sidebar.ts](frontend/stores/sidebar.ts), [page.tsx](frontend/app/page.tsx), [dashboard/page.tsx](frontend/app/dashboard/page.tsx)
 
 **Checkpoint**: Design tokens, fonts, theme provider, utilities in place. Components can now use tokens.
 
