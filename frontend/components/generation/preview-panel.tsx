@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { IdleState } from "./idle-state"
 import { GenerationProgress } from "./generation-progress"
 import { CompleteState } from "./complete-state"
+import { ErrorState } from "./error-state"
 import type { GenerationSession } from "@/types"
 
 interface PreviewPanelProps {
@@ -13,6 +14,8 @@ interface PreviewPanelProps {
   onTabChange: (tab: string) => void
   onDeploy?: () => void
   onDownload?: () => void
+  onRetry?: () => void
+  onModify?: () => void
 }
 
 export function PreviewPanel({
@@ -21,6 +24,8 @@ export function PreviewPanel({
   onTabChange,
   onDeploy,
   onDownload,
+  onRetry,
+  onModify,
 }: PreviewPanelProps) {
   const renderPreviewContent = () => {
     switch (generation.status) {
@@ -81,11 +86,13 @@ export function PreviewPanel({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="h-full flex items-center justify-center"
+            className="h-full"
           >
-            <p className="text-muted-foreground">
-              Error state will appear here
-            </p>
+            <ErrorState
+              error={generation.error}
+              onRetry={onRetry ?? (() => {})}
+              onModify={onModify ?? (() => {})}
+            />
           </motion.div>
         )
       default:

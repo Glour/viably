@@ -178,8 +178,10 @@
 
 ### Implementation for User Story 5
 
-- [ ] T026 [US5] Create ErrorState component with error icon (red), error message in Russian, expandable error details (collapsible), "Credits not deducted" reassurance text, Retry button (primary, calls retryGeneration), Modify Parameters button (secondary, calls resetGeneration) in `frontend/components/generation/error-state.tsx`
-- [ ] T027 [US5] Update PreviewPanel to render ErrorState when generation.status === "error", add smooth transition from generating state in `frontend/components/generation/preview-panel.tsx`
+- [x] T026 [US5] Create ErrorState component with error icon (red), error message in Russian, expandable error details (collapsible), "Credits not deducted" reassurance text, Retry button (primary, calls retryGeneration), Modify Parameters button (secondary, calls resetGeneration) in `frontend/components/generation/error-state.tsx`
+  → Artifacts: [error-state.tsx](frontend/components/generation/error-state.tsx)
+- [x] T027 [US5] Update PreviewPanel to render ErrorState when generation.status === "error", add smooth transition from generating state in `frontend/components/generation/preview-panel.tsx`
+  → Artifacts: [preview-panel.tsx](frontend/components/generation/preview-panel.tsx), [page.tsx](frontend/app/projects/[id]/generate/page.tsx), [use-generation.ts](frontend/lib/generation/use-generation.ts)
 
 **Checkpoint**: Error flow works: generation fails → error state → retry or modify
 

@@ -308,6 +308,7 @@ export function useGeneration(projectId: string) {
     setFreeTextInput: store.setFreeTextInput,
     startGeneration,
     retryGeneration,
+    resetGeneration: store.resetGeneration,
     startDeployment,
     downloadCode,
 

@@ -30,6 +30,8 @@ export default function GeneratePage({ params }: GeneratePageProps) {
     setFormValues,
     setFreeTextInput,
     startGeneration,
+    retryGeneration,
+    resetGeneration,
     startDeployment,
     downloadCode,
     canGenerate,
@@ -145,6 +147,8 @@ export default function GeneratePage({ params }: GeneratePageProps) {
               onTabChange={setActiveTab}
               onDeploy={() => setDeployOpen(true)}
               onDownload={downloadCode}
+              onRetry={retryGeneration}
+              onModify={resetGeneration}
             />
           </Panel>
         </Group>
