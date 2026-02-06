@@ -5,32 +5,41 @@
 > *From vibe to viable* - Vibe coding for everyone
 
 ---
-команды для claude code:
+
+### Команды для Claude Code
+
+```bash
 # Повторяем цикл:
 /speckit.analyze docs/backend/users-module.md
 /speckit.specify
 /speckit.plan
-/speckit.implement (для каждой задачи)
+/speckit.implement  # для каждой задачи
 /speckit.checklist
-/push patch2
-После завершения всех модулей
-Health Checks → /health-*
-bash
+/push patch
+
+# После завершения всех модулей — Health Checks:
+
 # 1. Проверка багов
 /health-bugs
 # Сканирует весь код, находит и исправляет баги
+
 # 2. Security audit
 /health-security
 # Проверяет SQL injection, XSS, auth issues
+
 # 3. Dead code cleanup
 /health-cleanup
 # Находит unused imports, commented code
+
 # 4. Code reuse
 # Находит дублированный код и консолидирует
+
 # 5. Dependencies
 /health-deps
 # Проверяет outdated packages и обновляет
+
 /health-metrics
+```
 
 ## 📖 About
 
