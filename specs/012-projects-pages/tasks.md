@@ -117,9 +117,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T019 [P] [US3] Create FileTree recursive component (folder/file icons via lucide-react, click file → callback with file path, click folder → expand/collapse, active file highlighted, styled to match design system) in `frontend/components/projects/file-tree.tsx`
-- [ ] T020 [US3] Create CodeViewer component (split layout: FileTree 200px left + @monaco-editor/react right, read-only, vs-dark theme always, JetBrains Mono font, line numbers + minimap, Python syntax highlighting, Shimmer loading state while Monaco loads, empty state "No files available" when no files) in `frontend/components/projects/code-viewer.tsx`
-- [ ] T021 [US3] Integrate CodeViewer into project detail page Code tab (replace placeholder), pass project files from store in `frontend/app/projects/[id]/page.tsx`
+- [x] T019 [P] [US3] Create FileTree recursive component (folder/file icons via lucide-react, click file → callback with file path, click folder → expand/collapse, active file highlighted, styled to match design system) in `frontend/components/projects/file-tree.tsx`
+- [x] T020 [US3] Create CodeViewer component (split layout: FileTree 200px left + @monaco-editor/react right, read-only, vs-dark theme always, JetBrains Mono font, line numbers + minimap, Python syntax highlighting, Shimmer loading state while Monaco loads, empty state "No files available" when no files) in `frontend/components/projects/code-viewer.tsx`
+- [x] T021 [US3] Integrate CodeViewer into project detail page Code tab (replace placeholder), pass project files from store in `frontend/app/projects/[id]/page.tsx`
 
 **Checkpoint**: Code tab fully functional. File tree navigates mock files. Monaco displays Python code read-only with syntax highlighting.
 
@@ -135,8 +135,8 @@
 
 ### Implementation for User Story 4
 
-- [ ] T022 [US4] Create LogsViewer component (dark bg #0D1117, JetBrains Mono font, colored output: timestamps gray, INFO green, WARNING yellow, ERROR red; filter buttons All/Info/Warning/Error, Clear button, auto-scroll to bottom via useRef+scrollIntoView, mock log data from project) in `frontend/components/projects/logs-viewer.tsx`
-- [ ] T023 [US4] Integrate LogsViewer into project detail page Logs tab (replace placeholder), pass project logs from store in `frontend/app/projects/[id]/page.tsx`
+- [x] T022 [US4] Create LogsViewer component (dark bg #0D1117, JetBrains Mono font, colored output: timestamps gray, INFO green, WARNING yellow, ERROR red; filter buttons All/Info/Warning/Error, Clear button, auto-scroll to bottom via useRef+scrollIntoView, mock log data from project) in `frontend/components/projects/logs-viewer.tsx`
+- [x] T023 [US4] Integrate LogsViewer into project detail page Logs tab (replace placeholder), pass project logs from store in `frontend/app/projects/[id]/page.tsx`
 
 **Checkpoint**: Logs tab fully functional. Terminal appearance, color coding, level filter, clear, auto-scroll all working.
 
@@ -152,10 +152,10 @@
 
 ### Implementation for User Story 5
 
-- [ ] T024 [P] [US5] Create EnvVarEditor component (dynamic rows: key input + value input + show/hide eye toggle + delete row button, add variable button, key validation regex ^[a-zA-Z_][a-zA-Z0-9_-]*$, local state management) in `frontend/components/projects/env-var-editor.tsx`
-- [ ] T025 [P] [US5] Create DangerZone component (red border card, heading "Danger Zone", description about permanent deletion, Delete Project button in red, AlertDialog confirmation modal with warning text) in `frontend/components/projects/danger-zone.tsx`
-- [ ] T026 [US5] Create ProjectSettings component (three sections: Environment Variables with EnvVarEditor, Actions with Start/Stop Switch toggle green/red + Redeploy button + Download ZIP button, Danger Zone with DangerZone component; toast notifications for mock actions) in `frontend/components/projects/project-settings.tsx`
-- [ ] T027 [US5] Integrate ProjectSettings into project detail page Settings tab (replace placeholder), connect store actions (toggleProjectStatus, deleteProject with redirect) in `frontend/app/projects/[id]/page.tsx`
+- [x] T024 [P] [US5] Create EnvVarEditor component (dynamic rows: key input + value input + show/hide eye toggle + delete row button, add variable button, key validation regex ^[a-zA-Z_][a-zA-Z0-9_-]*$, local state management) in `frontend/components/projects/env-var-editor.tsx`
+- [x] T025 [P] [US5] Create DangerZone component (red border card, heading "Danger Zone", description about permanent deletion, Delete Project button in red, AlertDialog confirmation modal with warning text) in `frontend/components/projects/danger-zone.tsx`
+- [x] T026 [US5] Create ProjectSettings component (three sections: Environment Variables with EnvVarEditor, Actions with Start/Stop Switch toggle green/red + Redeploy button + Download ZIP button, Danger Zone with DangerZone component; toast notifications for mock actions) in `frontend/components/projects/project-settings.tsx`
+- [x] T027 [US5] Integrate ProjectSettings into project detail page Settings tab (replace placeholder), connect store actions (toggleProjectStatus, deleteProject with redirect) in `frontend/app/projects/[id]/page.tsx`
 
 **Checkpoint**: Settings tab fully functional. Env vars editable. Start/Stop toggles. Danger zone with delete confirmation working.
 

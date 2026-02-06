@@ -1,8 +1,9 @@
 "use client"
 
 import { useEffect, Suspense } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
+import { toast } from "sonner"
 import { MainLayout } from "@/components/layout/main-layout"
 import { FadeInUp } from "@/components/motion/fade-in-up"
 import { Shimmer } from "@/components/ui/shimmer"
@@ -11,11 +12,16 @@ import { TabsContent } from "@/components/ui/tabs"
 import { ProjectDetailHeader } from "@/components/projects/project-detail-header"
 import { ProjectTabs } from "@/components/projects/project-tabs"
 import { OverviewTab } from "@/components/projects/overview-tab"
+import { CodeViewer } from "@/components/projects/code-viewer"
+import { LogsViewer } from "@/components/projects/logs-viewer"
+import { ProjectSettings } from "@/components/projects/project-settings"
 import { useProjectsStore } from "@/stores/projects"
+import { toggleProjectStatus } from "@/lib/api/projects"
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { currentProject, isLoading, loadProject } = useProjectsStore()
+  const router = useRouter()
+  const { currentProject, isLoading, loadProject, deleteProject } = useProjectsStore()
 
   useEffect(() => {
     loadProject(id)
@@ -61,28 +67,30 @@ export default function ProjectDetailPage() {
                     <OverviewTab project={currentProject} />
                   </TabsContent>
 
-                  <TabsContent value="code" className="mt-0">
-                    <div className="rounded-2xl border bg-card p-6 mt-6">
-                      <p className="text-sm text-muted-foreground">
-                        Coming soon...
-                      </p>
-                    </div>
+                  <TabsContent value="code" className="mt-6">
+                    <CodeViewer files={currentProject.files} />
                   </TabsContent>
 
-                  <TabsContent value="logs" className="mt-0">
-                    <div className="rounded-2xl border bg-card p-6 mt-6">
-                      <p className="text-sm text-muted-foreground">
-                        Coming soon...
-                      </p>
-                    </div>
+                  <TabsContent value="logs" className="mt-6">
+                    <LogsViewer logs={currentProject.logs} />
                   </TabsContent>
 
-                  <TabsContent value="settings" className="mt-0">
-                    <div className="rounded-2xl border bg-card p-6 mt-6">
-                      <p className="text-sm text-muted-foreground">
-                        Coming soon...
-                      </p>
-                    </div>
+                  <TabsContent value="settings" className="mt-6">
+                    <ProjectSettings
+                      project={currentProject}
+                      onToggleStatus={async (action) => {
+                        const res = await toggleProjectStatus(currentProject.id, action)
+                        if (res.success) {
+                          toast.success(action === "start" ? "Бот запущен" : "Бот остановлен")
+                          loadProject(currentProject.id)
+                        }
+                      }}
+                      onDelete={async () => {
+                        await deleteProject(currentProject.id)
+                        toast.success(`Проект "${currentProject.name}" удалён`)
+                        router.push("/projects")
+                      }}
+                    />
                   </TabsContent>
                 </ProjectTabs>
               </Suspense>
