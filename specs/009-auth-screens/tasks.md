@@ -73,36 +73,15 @@
 
 ### Shared Utilities
 
-- [ ] T009 [P] Create Zod validation schemas for all auth forms in `frontend/lib/validations/auth.ts`
-  - `loginSchema`: email (valid format), password (min 8 chars)
-  - `registerSchema`: name (2-50 chars), email, password (min 8, uppercase, number, special), confirmPassword (match), agreeToTerms (literal true)
-  - `forgotPasswordSchema`: email (valid format)
-  - Export inferred TypeScript types: `LoginFormData`, `RegisterFormData`, `ForgotPasswordFormData`
-- [ ] T010 [P] Create mock auth API functions in `frontend/lib/api/auth.ts`
-  - `mockLogin(data: LoginFormData)`: 1s delay, returns AuthResponse. Error if email is "error@test.com"
-  - `mockRegister(data: RegisterFormData)`: 1s delay, returns AuthResponse. Error if email is "taken@test.com"
-  - `mockForgotPassword(data: ForgotPasswordFormData)`: 1s delay, returns ForgotPasswordResponse. Error if email is "unknown@test.com"
-  - Define types: `AuthResponse`, `ForgotPasswordResponse` per contracts/auth-api.md
-- [ ] T011 [P] Add CSS `@keyframes shake` animation to `frontend/app/globals.css` for form error shake effect
-  - Add `.animate-shake` utility class (short horizontal shake, 300ms)
-  - Wrap in `prefers-reduced-motion: no-preference` media query
+- [x] T009 [P] Create Zod validation schemas for all auth forms in `frontend/lib/validations/auth.ts`
+- [x] T010 [P] Create mock auth API functions in `frontend/lib/api/auth.ts`
+- [x] T011 [P] Add CSS `@keyframes shake` animation to `frontend/app/globals.css` for form error shake effect
 
 ### Auth Layout Components
 
-- [ ] T012 Create `AuthDecorativePanel` component in `frontend/components/auth/auth-decorative-panel.tsx`
-  - Gradient background using `var(--gradient-main)` from design tokens
-  - Reuse `GlowOrbs` component with `className="absolute inset-0"` override (not fixed)
-  - Tagline: "Create anything. Ship instantly." in Space Grotesk, 48px, white
-  - Social proof badge: "1,200+ bots deployed" using `Badge` component
-  - Hidden on mobile: `hidden md:flex` (768px breakpoint)
-  - Full height, 45% width on desktop
-  - `overflow-hidden relative` container for glow orbs containment
-- [ ] T013 Create auth split layout in `frontend/app/(auth)/layout.tsx`
-  - Flex row container: `AuthDecorativePanel` (45%) + form area (55%)
-  - Form area: vertically centered content, max-width constrained (~480px), padding
-  - Viably logo (icon + text) at top of form area
-  - Responsive: on mobile (<768px) decorative panel hidden, form takes full width
-  - Accept `children` prop for page content
+- [x] T012 Create `AuthDecorativePanel` component in `frontend/components/auth/auth-decorative-panel.tsx`
+- [x] T013 Create auth split layout in `frontend/app/(auth)/layout.tsx`
+  → Artifacts: [auth.ts](frontend/lib/validations/auth.ts), [auth.ts](frontend/lib/api/auth.ts), [globals.css](frontend/app/globals.css), [auth-decorative-panel.tsx](frontend/components/auth/auth-decorative-panel.tsx), [layout.tsx](frontend/app/(auth)/layout.tsx)
 
 **Checkpoint**: Auth layout structure complete. Any page placed inside `(auth)/` route group renders with split layout. Type-check and build must pass.
 
