@@ -138,10 +138,12 @@ export function LandingNav() {
       {/* Mobile menu */}
       {reduced ? (
         mobileMenuOpen && (
-          <MobileMenuContent
-            onAnchorClick={handleAnchorClick}
-            onClose={() => setMobileMenuOpen(false)}
-          />
+          <div id="landing-mobile-menu" className="md:hidden">
+            <MobileMenuContent
+              onAnchorClick={handleAnchorClick}
+              onClose={() => setMobileMenuOpen(false)}
+            />
+          </div>
         )
       ) : (
         <AnimatePresence>
