@@ -174,14 +174,15 @@
 
 **Purpose**: Auth redirect proxy, edge cases, final validation.
 
-- [ ] T021 Create auth redirect proxy in `frontend/proxy.ts`
+- [x] T021 Create auth redirect proxy in `frontend/proxy.ts`
   - Export named `proxy()` function (Next.js 16 convention, NOT `middleware`)
   - Check for `session` cookie existence (lightweight, no JWT validation)
   - Auth routes (`/login`, `/register`, `/forgot-password`): if session cookie exists → redirect to `/dashboard`
   - Protected routes (`/dashboard`): if no session cookie → redirect to `/login`
   - Export `config.matcher` excluding `_next/static`, `_next/image`, API routes, public assets
-- [ ] T022 Run type-check and build validation: `npm run type-check && npm run build` in `frontend/`
-- [ ] T023 Visual smoke test: verify all pages render correctly on desktop and mobile viewports
+  → Artifacts: [proxy.ts](frontend/proxy.ts)
+- [x] T022 Run type-check and build validation: `npm run type-check && npm run build` in `frontend/`
+- [x] T023 Visual smoke test: verify all pages render correctly on desktop and mobile viewports
   - `/login` — form + decorative panel on desktop, form only on mobile
   - `/register` — same layout, password strength indicator, terms checkbox
   - `/forgot-password` — same layout, success/error states
