@@ -10,10 +10,12 @@ const STATUS_CONFIG: Record<
   ProjectStatus,
   { label: string; variant: "success" | "warning" | "secondary" | "destructive" }
 > = {
-  deployed: { label: "Deployed", variant: "success" },
-  ready: { label: "Ready", variant: "warning" },
   draft: { label: "Draft", variant: "secondary" },
+  generating: { label: "Generating", variant: "warning" },
+  generated: { label: "Generated", variant: "warning" },
+  deployed: { label: "Deployed", variant: "success" },
   failed: { label: "Failed", variant: "destructive" },
+  stopped: { label: "Stopped", variant: "destructive" },
 }
 
 interface RecentProjectsProps {
