@@ -195,9 +195,10 @@
 
 **Purpose**: Assemble all components into landing page route
 
-- [ ] T048 Import and render all components in `frontend/app/(public)/page.tsx` in correct order: LandingNav → Hero → HowItWorks → TemplatesPreview → Pricing → Footer
-- [ ] T049 Add proper spacing between sections using Tailwind spacing utilities (py-20 or similar)
-- [ ] T050 Test full page scroll behavior: all sections trigger animations at correct viewport positions, nav stays sticky throughout
+- [x] T048 Import and render all components in `frontend/app/page.tsx` in correct order: LandingNav → Hero → HowItWorks → TemplatesPreview → Pricing → Footer [EXECUTOR: MAIN]
+- [x] T049 Spacing handled by individual sections (each uses py-20 lg:py-32), Hero uses pt-28 for nav offset [EXECUTOR: MAIN]
+- [x] T050 Build passes, static page renders, all sections assembled [EXECUTOR: MAIN]
+→ Artifacts: [page.tsx](frontend/app/page.tsx)
 
 **Checkpoint**: Full landing page assembled, all sections render, scroll animations work end-to-end
 

@@ -1,4 +1,10 @@
 import type { Metadata } from "next"
+import { LandingNav } from "@/components/landing/landing-nav"
+import { Hero } from "@/components/landing/hero"
+import { HowItWorks } from "@/components/landing/how-it-works"
+import { TemplatesPreview } from "@/components/landing/templates-preview"
+import { Pricing } from "@/components/landing/pricing"
+import { Footer } from "@/components/landing/footer"
 
 export const metadata: Metadata = {
   title: "Viably — AI-Powered Bot Builder",
@@ -8,16 +14,15 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen">
-      {/* LandingNav */}
-      {/* Hero */}
-      {/* HowItWorks */}
-      {/* TemplatesPreview */}
-      {/* Pricing */}
-      {/* Footer */}
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">Landing page — building...</p>
-      </div>
-    </main>
+    <>
+      <LandingNav />
+      <main className="min-h-screen">
+        <Hero />
+        <HowItWorks />
+        <TemplatesPreview />
+        <Pricing />
+      </main>
+      <Footer />
+    </>
   )
 }
