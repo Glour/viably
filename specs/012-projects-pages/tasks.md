@@ -60,9 +60,9 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T005 Create mock project data (6-8 projects with varied statuses, config, deployment info, files tree, env vars, logs) in `frontend/lib/data/projects.ts`
-- [ ] T006 Implement mock API functions (getProjects, getProjectById, deleteProject, duplicateProject, updateProjectEnvVars, toggleProjectStatus) with delays per contracts/api.md in `frontend/lib/api/projects.ts`
-- [ ] T007 Create Zustand projects store with all state, actions, and getFilteredProjects computed method per data-model.md in `frontend/stores/projects.ts`
+- [x] T005 Create mock project data (6-8 projects with varied statuses, config, deployment info, files tree, env vars, logs) in `frontend/lib/data/projects.ts`
+- [x] T006 Implement mock API functions (getProjects, getProjectById, deleteProject, duplicateProject, updateProjectEnvVars, toggleProjectStatus) with delays per contracts/api.md in `frontend/lib/api/projects.ts`
+- [x] T007 Create Zustand projects store with all state, actions, and getFilteredProjects computed method per data-model.md in `frontend/stores/projects.ts`
 
 **Checkpoint**: Data layer complete. Store can load projects, filter/sort/search, delete. All user stories can now begin.
 
