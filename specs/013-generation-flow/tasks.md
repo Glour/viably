@@ -115,9 +115,12 @@
 
 ### Implementation for User Story 2
 
-- [ ] T017 [P] [US2] Create CodeSnippetAnimation component with typewriter effect using prism-react-renderer (Highlight with nightOwl theme), character-by-character reveal with cursor blink, dark background code block, staggered appearance of multiple snippets in `frontend/components/generation/code-snippet-animation.tsx`
-- [ ] T018 [US2] Create GenerationProgress component with step list (done=checkmark, running=animated pulse dot, pending=circle, error=x), gradient animated progress bar, elapsed time per step, CodeSnippetAnimation below progress during "Writing code" step in `frontend/components/generation/generation-progress.tsx`
-- [ ] T019 [US2] Update PreviewPanel to render GenerationProgress when generation.status === "generating", add smooth transition animation between states in `frontend/components/generation/preview-panel.tsx`
+- [x] T017 [P] [US2] Create CodeSnippetAnimation component with typewriter effect using prism-react-renderer (Highlight with nightOwl theme), character-by-character reveal with cursor blink, dark background code block, staggered appearance of multiple snippets in `frontend/components/generation/code-snippet-animation.tsx`
+  → Artifacts: [code-snippet-animation.tsx](frontend/components/generation/code-snippet-animation.tsx)
+- [x] T018 [US2] Create GenerationProgress component with step list (done=checkmark, running=animated pulse dot, pending=circle, error=x), gradient animated progress bar, elapsed time per step, CodeSnippetAnimation below progress during "Writing code" step in `frontend/components/generation/generation-progress.tsx`
+  → Artifacts: [generation-progress.tsx](frontend/components/generation/generation-progress.tsx)
+- [x] T019 [US2] Update PreviewPanel to render GenerationProgress when generation.status === "generating", add smooth transition animation between states in `frontend/components/generation/preview-panel.tsx`
+  → Artifacts: [preview-panel.tsx](frontend/components/generation/preview-panel.tsx)
 
 **Checkpoint**: Generation progress animates with all 6 steps, progress bar, and typewriter code snippets
 

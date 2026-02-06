@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "motion/react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { IdleState } from "./idle-state"
+import { GenerationProgress } from "./generation-progress"
 import type { GenerationSession } from "@/types"
 
 interface PreviewPanelProps {
@@ -41,11 +42,13 @@ export function PreviewPanel({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="h-full flex items-center justify-center"
+            className="h-full"
           >
-            <p className="text-muted-foreground">
-              Generation progress will appear here
-            </p>
+            <GenerationProgress
+              steps={generation.steps}
+              progress={generation.progress}
+              currentStep={generation.currentStep}
+            />
           </motion.div>
         )
       case "complete":
