@@ -21,7 +21,7 @@ export interface UserProfile {
   id: string
   name: string
   email: string
-  plan: "free" | "pro" | "business"
+  plan: "free" | "starter" | "pro" | "business"
   credits: number
   projectsCount: number
   projectsLimit: number
