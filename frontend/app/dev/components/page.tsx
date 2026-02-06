@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { GlowOrbs } from "@/components/ui/glow-orbs"
+import { Shimmer } from "@/components/ui/shimmer"
+import { FadeInUp } from "@/components/motion/fade-in-up"
 
 export default function ComponentsPage() {
   // Color tokens for swatch display
@@ -295,6 +298,59 @@ export default function ComponentsPage() {
                 <Badge variant="warning">Warning</Badge>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Animations Section */}
+        <section>
+          <h2 className="font-heading text-xl font-semibold mb-6">Анимации</h2>
+          <div className="space-y-8">
+            {/* GlowOrbs */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">GlowOrbs (фоновые)</h3>
+              <div className="relative h-48 rounded-2xl border overflow-hidden bg-background">
+                <GlowOrbs />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <p className="text-sm text-muted-foreground">Подвигайте мышью для интерактивного эффекта</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Shimmer */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Shimmer (загрузка)</h3>
+              <div className="max-w-md space-y-3">
+                <Shimmer height="1.5rem" width="60%" />
+                <Shimmer height="1rem" />
+                <Shimmer height="1rem" width="80%" />
+              </div>
+            </div>
+
+            {/* FadeInUp */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">FadeInUp (скролл)</h3>
+              <div className="space-y-4">
+                <FadeInUp>
+                  <div className="rounded-xl border bg-card p-4">
+                    <p className="text-sm">Этот блок появляется с анимацией снизу вверх при прокрутке.</p>
+                  </div>
+                </FadeInUp>
+                <FadeInUp delay={0.1}>
+                  <div className="rounded-xl border bg-card p-4">
+                    <p className="text-sm">Этот блок появляется с задержкой 0.1 секунды.</p>
+                  </div>
+                </FadeInUp>
+                <FadeInUp delay={0.2}>
+                  <div className="rounded-xl border bg-card p-4">
+                    <p className="text-sm">Этот блок появляется с задержкой 0.2 секунды.</p>
+                  </div>
+                </FadeInUp>
+              </div>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Примечание: все анимации отключаются при включенной настройке &quot;Уменьшить движение&quot; в ОС.
+            </p>
           </div>
         </section>
       </main>
