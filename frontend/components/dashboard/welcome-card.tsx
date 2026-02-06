@@ -13,6 +13,7 @@ const planBadgeVariant: Record<
   "default" | "secondary"
 > = {
   free: "secondary",
+  starter: "default",
   pro: "default",
   business: "default",
 }

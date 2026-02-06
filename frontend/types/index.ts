@@ -21,7 +21,7 @@ export interface UserProfile {
   id: string
   name: string
   email: string
-  plan: "free" | "pro" | "business"
+  plan: "free" | "starter" | "pro" | "business"
   credits: number
   projectsCount: number
   projectsLimit: number
@@ -321,4 +321,94 @@ export interface GenerationStoreState {
   _updateDeployStep: (stepIndex: number, status: DeploymentStepStatus, duration: number | null) => void
   _completeDeployment: (botInfo: DeployedBotInfo) => void
   _failDeployment: (error: string) => void
+}
+
+// Settings types
+
+export type SettingsSection = "profile" | "billing" | "plan" | "theme"
+
+export type TransactionType = "earned" | "spent" | "purchased"
+export type TransactionFilter = "all" | "earned" | "spent" | "purchased"
+
+export interface CreditTransaction {
+  id: string
+  amount: number
+  type: TransactionType
+  description: string
+  createdAt: string
+}
+
+export interface CreditPackage {
+  id: string
+  credits: number
+  price: number
+  badge: string | null
+}
+
+export type PlanTier = "free" | "starter" | "pro" | "business" | "enterprise"
+
+export interface SubscriptionPlan {
+  id: string
+  name: string
+  tier: PlanTier
+  price: number | null
+  period: "month" | "year" | null
+  features: string[]
+  projectLimit: number | null
+  creditsPerMonth: number | null
+  isPopular: boolean
+}
+
+export interface UserPlanInfo {
+  plan: SubscriptionPlan
+  usage: {
+    projectsUsed: number
+    creditsRemaining: number
+  }
+  renewalDate: string | null
+}
+
+export type ThemeMode = "light" | "dark" | "system"
+
+export type UpdateProfileResponse =
+  | { success: true; user: UserProfile }
+  | { success: false; error: string }
+
+export type ChangePasswordResponse =
+  | { success: true }
+  | { success: false; error: string }
+
+export type TransactionsResponse =
+  | { success: true; transactions: CreditTransaction[]; hasMore: boolean }
+  | { success: false; error: string }
+
+export type UserPlanResponse =
+  | { success: true; planInfo: UserPlanInfo; availablePlans: SubscriptionPlan[] }
+  | { success: false; error: string }
+
+export interface SettingsStoreState {
+  profile: UserProfile | null
+  isLoadingProfile: boolean
+  isSavingProfile: boolean
+
+  transactions: CreditTransaction[]
+  transactionFilter: TransactionFilter
+  isLoadingTransactions: boolean
+  hasMoreTransactions: boolean
+
+  currentPlan: UserPlanInfo | null
+  availablePlans: SubscriptionPlan[]
+  isLoadingPlan: boolean
+
+  loadProfile: () => Promise<void>
+  updateProfile: (data: { name: string; avatarFile: File | null }) => Promise<boolean>
+  changePassword: (data: { currentPassword: string; newPassword: string }) => Promise<boolean>
+
+  loadTransactions: () => Promise<void>
+  loadMoreTransactions: () => Promise<void>
+  setTransactionFilter: (filter: TransactionFilter) => void
+
+  loadPlan: () => Promise<void>
+
+  getFilteredTransactions: () => CreditTransaction[]
 }
