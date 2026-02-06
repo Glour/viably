@@ -97,18 +97,8 @@
 
 ### Implementation for User Story 1
 
-- [ ] T014 [US1] Create Login page in `frontend/app/(auth)/login/page.tsx`
-  - Heading: "Welcome back" (Space Grotesk, 28px) + subtitle "Sign in to continue building amazing bots"
-  - Form using react-hook-form + zodResolver with `loginSchema`
-  - Email input field with `FormField` + `FormItem` + `FormLabel` + `FormControl` + `FormMessage`
-  - Password input field with visibility toggle (eye/eye-off icon button from lucide-react)
-  - "Forgot password?" link → `/forgot-password` (text-primary, hover:underline)
-  - "Sign In" button: gradient default variant, full width, `loading` prop during submission
-  - "Don't have an account? Sign up →" link → `/register`
-  - On submit: call `mockLogin()`, on success → `router.push('/dashboard')`, on error → `toast.error()` + shake animation
-  - Field-level errors shown via `FormMessage` (red text below input)
-  - Shake animation on form container when submission fails (`animate-shake` class)
-  - Use `useWatch` for any reactive field watching (React 19 compatibility)
+- [x] T014 [US1] Create Login page in `frontend/app/(auth)/login/page.tsx`
+  → Artifacts: [page.tsx](frontend/app/(auth)/login/page.tsx)
 
 **Checkpoint**: Login page fully functional. Validation works, loading state shows, errors display as toast + field errors, password toggle works, navigation links work. Type-check and build pass.
 
@@ -124,27 +114,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T015 [P] [US2] Create `PasswordStrength` component in `frontend/components/auth/password-strength.tsx`
-  - Props: `password: string`
-  - Compute strength score (0-4): +1 for length>=8, +1 uppercase, +1 number, +1 special char
-  - Visual: 4 horizontal bar segments
-  - Colors: Weak=red (1/4), Fair=orange (2/4), Good=yellow (3/4), Strong=green (4/4)
-  - Empty state (score 0): all segments gray
-  - Rules text below bar: "8+ chars, uppercase, number, special char" (muted text)
-  - Accessible: `aria-label="Password strength: {level}"`, `role="meter"`, `aria-valuemin/max/now`
-- [ ] T016 [US2] Create Register page in `frontend/app/(auth)/register/page.tsx`
-  - Heading: "Create your account" (Space Grotesk, 28px) + subtitle "Start building bots in 60 seconds"
-  - Form using react-hook-form + zodResolver with `registerSchema`
-  - Name input field (FormField)
-  - Email input field (FormField)
-  - Password input field with visibility toggle + `PasswordStrength` component below
-  - Use `useWatch({ control, name: 'password' })` to pass real-time password value to PasswordStrength
-  - Confirm Password input field with visibility toggle
-  - Terms checkbox: "I agree to Terms of Service and Privacy Policy" using shadcn/ui `Checkbox` + `FormField`
-  - "Create Account" button: gradient default variant, full width, loading state
-  - "Already have an account? Sign in →" link → `/login`
-  - On submit: call `mockRegister()`, on success → `router.push('/dashboard')`, on error → `toast.error()` + shake
-  - Confirm password validation: "Passwords do not match" error via Zod `.refine()`
+- [x] T015 [P] [US2] Create `PasswordStrength` component in `frontend/components/auth/password-strength.tsx`
+- [x] T016 [US2] Create Register page in `frontend/app/(auth)/register/page.tsx`
+  → Artifacts: [password-strength.tsx](frontend/components/auth/password-strength.tsx), [page.tsx](frontend/app/(auth)/register/page.tsx)
 
 **Checkpoint**: Register page fully functional. All 5 fields validate, password strength indicator updates per keystroke, confirm password match works, terms required, navigation links work. Type-check and build pass.
 
@@ -160,16 +132,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T017 [US3] Create Forgot Password page in `frontend/app/(auth)/forgot-password/page.tsx`
-  - Heading: "Reset your password" (Space Grotesk, 28px) + subtitle "Enter your email and we'll send you a reset link"
-  - Form using react-hook-form + zodResolver with `forgotPasswordSchema`
-  - Email input field (FormField)
-  - "Send Reset Link" button: gradient default variant, full width, loading state
-  - "← Back to Sign In" link → `/login`
-  - Two states after submission:
-    - Success: Hide form, show success message "Check your email! We sent a reset link to {email}" with email icon, show "← Back to Sign In" link
-    - Error: `toast.error("No account found with this email")`
-  - Use React `useState` for tracking success state (show form vs. success message)
+- [x] T017 [US3] Create Forgot Password page in `frontend/app/(auth)/forgot-password/page.tsx`
+  → Artifacts: [page.tsx](frontend/app/(auth)/forgot-password/page.tsx)
 
 **Checkpoint**: Forgot password page functional. Email validates, success state shows confirmation with email address, error state shows toast, back link works. Type-check and build pass.
 
