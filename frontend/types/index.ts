@@ -71,3 +71,63 @@ export interface DailyBonusStoreState extends DailyBonusState {
   claim: () => void
   checkStreak: () => void
 }
+
+// Templates Gallery types
+
+export type TemplateCategory = "telegram_bot"
+
+export type ConfigFieldType =
+  | "text"
+  | "textarea"
+  | "select"
+  | "multiselect"
+  | "number"
+
+export interface ConfigField {
+  name: string
+  label: string
+  type: ConfigFieldType
+  required: boolean
+  placeholder?: string
+  options?: string[]
+}
+
+export interface Template {
+  slug: string
+  name: string
+  emoji: string
+  description: string
+  category: TemplateCategory
+  creditCost: number
+  features: string[]
+  tags: string[]
+  configFields: ConfigField[]
+  isPopular: boolean
+}
+
+export type FilterTab = "all" | "telegram" | "popular" | "cheap"
+
+export type TemplatesResponse =
+  | { success: true; templates: Template[] }
+  | { success: false; error: string }
+
+export type TemplateResponse =
+  | { success: true; template: Template }
+  | { success: false; error: string }
+
+export type CreateProjectResponse =
+  | { success: true; projectId: string; redirectUrl: string }
+  | { success: false; error: string }
+
+export interface TemplatesStoreState {
+  templates: Template[]
+  searchQuery: string
+  activeTab: FilterTab
+  isLoading: boolean
+  loadTemplates: () => Promise<void>
+  setSearchQuery: (query: string) => void
+  setActiveTab: (tab: FilterTab) => void
+  resetFilters: () => void
+  getFilteredTemplates: () => Template[]
+  getTemplateBySlug: (slug: string) => Template | undefined
+}
