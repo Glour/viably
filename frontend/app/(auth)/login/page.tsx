@@ -20,6 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import { SocialLoginButtons } from "@/components/auth/social-login-buttons"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -144,6 +145,8 @@ export default function LoginPage() {
           </form>
         </Form>
       </div>
+
+      <SocialLoginButtons />
 
       <p className="text-sm text-center text-muted-foreground">
         Don&apos;t have an account?{" "}

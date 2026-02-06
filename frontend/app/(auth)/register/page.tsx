@@ -22,6 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { PasswordStrength } from "@/components/auth/password-strength"
+import { SocialLoginButtons } from "@/components/auth/social-login-buttons"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -241,6 +242,8 @@ export default function RegisterPage() {
           </form>
         </Form>
       </div>
+
+      <SocialLoginButtons />
 
       {/* Sign In Link */}
       <p className="text-sm text-center text-muted-foreground">

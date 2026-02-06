@@ -149,7 +149,7 @@
 
 ### Implementation for User Story 5
 
-- [ ] T018 [US5] Create `SocialLoginButtons` component in `frontend/components/auth/social-login-buttons.tsx`
+- [x] T018 [US5] Create `SocialLoginButtons` component in `frontend/components/auth/social-login-buttons.tsx`
   - Separator with text "or" in the middle (using shadcn/ui `Separator` + centered text overlay)
   - Two buttons in a row: Google, GitHub
   - Button style: `variant="secondary"` (outline with border), full width each, gap between
@@ -158,12 +158,13 @@
   - onClick: no action (MVP), buttons are visual-only
   - Hover/active states via existing button component styling
   - Accessible: `aria-label` on each button
-- [ ] T019 [US5] Add `SocialLoginButtons` to Login page in `frontend/app/(auth)/login/page.tsx`
+- [x] T019 [US5] Add `SocialLoginButtons` to Login page in `frontend/app/(auth)/login/page.tsx`
   - Place below the "Sign In" button and "Forgot password" link
   - Import and render `<SocialLoginButtons />` component
-- [ ] T020 [US5] Add `SocialLoginButtons` to Register page in `frontend/app/(auth)/register/page.tsx`
+- [x] T020 [US5] Add `SocialLoginButtons` to Register page in `frontend/app/(auth)/register/page.tsx`
   - Place below the "Create Account" button
   - Import and render `<SocialLoginButtons />` component
+  → Artifacts: [page.tsx](frontend/app/(auth)/register/page.tsx)
 
 **Checkpoint**: Social buttons visible on both login and register pages with divider. Hover states work. No action on click. Type-check and build pass.
 
