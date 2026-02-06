@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { motion, useMotionValue, useSpring } from "motion/react"
 import { cn } from "@/lib/utils"
-import { prefersReducedMotion } from "@/lib/animations"
+import { useReducedMotion } from "@/hooks/use-reduced-motion"
 
 const orbs = [
   { color: "#7C3AED", size: 400, x: "20%", y: "30%" },
@@ -12,15 +12,11 @@ const orbs = [
 ]
 
 export function GlowOrbs({ className, count = 3 }: { className?: string; count?: number }) {
-  const [reduced, setReduced] = useState(false)
+  const reduced = useReducedMotion()
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
   const springX = useSpring(mouseX, { stiffness: 50, damping: 30 })
   const springY = useSpring(mouseY, { stiffness: 50, damping: 30 })
-
-  useEffect(() => {
-    setReduced(prefersReducedMotion())
-  }, [])
 
   useEffect(() => {
     if (reduced) return

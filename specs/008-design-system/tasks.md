@@ -170,13 +170,15 @@
 
 **Purpose**: Final validation, accessibility audit, and cleanup.
 
-- [ ] T039 Run full quality gate: `npm run type-check && npm run build && npm run lint` -- all must pass with zero errors
-- [ ] T040 Verify WCAG 2.1 AA contrast ratios: inspect all text/background combinations in both themes on `/dev/components` page, ensure 4.5:1 for normal text, 3:1 for large text. Fix any violations.
-- [ ] T041 Verify keyboard navigation: Tab through all interactive elements on `/dev/components` and nav pages, ensure focus indicators visible on every focusable element. Test Enter/Space activation on buttons, Escape closes mobile menu.
-- [ ] T042 Verify responsive layout: check 320px, 768px, 1024px, 1280px+ viewports. Ensure no overflow, hamburger menu works on mobile, content centered on desktop.
-- [ ] T043 [P] Verify edge cases from spec.md: font fallback (disable custom fonts in DevTools), rapid theme toggle (no flicker), viewport <320px (no overlap).
-- [ ] T044 Run quickstart.md validation: follow setup steps as new developer, verify all 12 checklist items pass.
-- [ ] T045 Clean up any TODO comments, unused imports, console.log statements. Ensure no hardcoded color values (all via CSS variables or Tailwind classes).
+- [x] T039 Run full quality gate: `npm run type-check && npm run build && npm run lint` -- all must pass with zero errors
+- [x] T040 Verify WCAG 2.1 AA contrast ratios: inspect all text/background combinations in both themes on `/dev/components` page, ensure 4.5:1 for normal text, 3:1 for large text. Fix any violations.
+- [x] T041 Verify keyboard navigation: Tab through all interactive elements on `/dev/components` and nav pages, ensure focus indicators visible on every focusable element. Test Enter/Space activation on buttons, Escape closes mobile menu.
+- [x] T042 Verify responsive layout: check 320px, 768px, 1024px, 1280px+ viewports. Ensure no overflow, hamburger menu works on mobile, content centered on desktop.
+- [x] T043 [P] Verify edge cases from spec.md: font fallback (disable custom fonts in DevTools), rapid theme toggle (no flicker), viewport <320px (no overlap).
+- [x] T044 Run quickstart.md validation: follow setup steps as new developer, verify all 12 checklist items pass.
+- [x] T045 Clean up any TODO comments, unused imports, console.log statements. Ensure no hardcoded color values (all via CSS variables or Tailwind classes).
+
+→ Artifacts: [use-mounted.ts](frontend/hooks/use-mounted.ts), [use-reduced-motion.ts](frontend/hooks/use-reduced-motion.ts)
 
 ---
 

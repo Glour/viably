@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useRef } from "react"
 import { motion, useInView } from "motion/react"
 import { cn } from "@/lib/utils"
-import { prefersReducedMotion } from "@/lib/animations"
+import { useReducedMotion } from "@/hooks/use-reduced-motion"
 
 export function FadeInUp({
   children,
@@ -16,11 +16,7 @@ export function FadeInUp({
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
-  const [reduced, setReduced] = useState(false)
-
-  useEffect(() => {
-    setReduced(prefersReducedMotion())
-  }, [])
+  const reduced = useReducedMotion()
 
   if (reduced) {
     return <div className={className}>{children}</div>

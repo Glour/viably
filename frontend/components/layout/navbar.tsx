@@ -28,20 +28,14 @@ export function Navbar() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  // Close mobile menu on Escape key
+  // Close mobile menu on Escape key (subscribing to external event)
   useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setMobileMenuOpen(false)
     }
-
     document.addEventListener("keydown", handleKeyDown)
     return () => document.removeEventListener("keydown", handleKeyDown)
   }, [])
-
-  // Close mobile menu on pathname change
-  useEffect(() => {
-    setMobileMenuOpen(false)
-  }, [pathname])
 
   return (
     <nav aria-label="Основная навигация" className="sticky top-0 z-50">
