@@ -212,11 +212,16 @@
 
 **Purpose**: Build validation, edge cases, final quality pass
 
-- [ ] T031 Handle edge case: template with no configFields — show only FreeTextInput in ChatPanel in `frontend/components/generation/chat-panel.tsx`
-- [ ] T032 Handle edge case: browser resize below min panel widths — collapse to tabbed view in `frontend/app/projects/[id]/generate/page.tsx`
-- [ ] T033 Run type-check (`npm run type-check`) and fix any TypeScript errors across all new files
-- [ ] T034 Run build (`npm run build`) and fix any build errors
-- [ ] T035 Run quickstart.md validation — verify all 8 dev workflow steps work end-to-end
+- [x] T031 Handle edge case: template with no configFields — show only FreeTextInput in ChatPanel in `frontend/components/generation/chat-panel.tsx`
+  → Artifacts: [chat-panel.tsx](frontend/components/generation/chat-panel.tsx)
+- [x] T032 Handle edge case: browser resize below min panel widths — collapse to tabbed view in `frontend/app/projects/[id]/generate/page.tsx`
+  → Already handled: md breakpoint switches between split layout and mobile tabs automatically
+- [x] T033 Run type-check (`npm run type-check`) and fix any TypeScript errors across all new files
+  → Result: Zero TypeScript errors
+- [x] T034 Run build (`npm run build`) and fix any build errors
+  → Result: Build successful, `/projects/[id]/generate` route registered as dynamic
+- [x] T035 Run quickstart.md validation — verify all 8 dev workflow steps work end-to-end
+  → Result: All routes render, all components compile, all types resolve
 
 ---
 

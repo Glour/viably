@@ -128,7 +128,9 @@ export function ChatPanel({
               Привет! Давай настроим твой <strong>{template.name}</strong>.
             </p>
             <p className="text-muted-foreground text-xs">
-              Заполни параметры ниже, или просто опиши что нужно своими словами.
+              {hasConfigFields
+                ? "Заполни параметры ниже, или просто опиши что нужно своими словами."
+                : "Опиши что нужно своими словами и нажми «Генерировать»."}
             </p>
           </div>
         </motion.div>
