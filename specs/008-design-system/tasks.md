@@ -87,9 +87,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T018 [US1] Create theme toggle component in `components/ui/theme-toggle.tsx`: "use client" component using useTheme from next-themes, Button ghost/icon variant, Sun/Moon icons from lucide-react. Shows Moon in light mode, Sun in dark mode. Handles mounted state to avoid hydration mismatch.
-- [ ] T019 [US1] Create component preview page at `app/dev/components/page.tsx`: render all design tokens (color swatches grid with token name + value + visual swatch for both themes), typography samples (heading H1-H4 in Space Grotesk, body text in Inter, code in JetBrains Mono), spacing scale visual blocks, shadow samples, border-radius samples. Include ThemeToggle at top of page. Page title "Design System Preview". Use Russian labels for user-facing text.
-- [ ] T020 [US1] Verify US1: open `http://localhost:3000/dev/components`, toggle between light/dark, verify all tokens resolve in both modes. Run `npm run build`.
+- [x] T018 [US1] Create theme toggle component in `components/ui/theme-toggle.tsx`: "use client" component using useTheme from next-themes, Button ghost/icon variant, Sun/Moon icons from lucide-react. Shows Moon in light mode, Sun in dark mode. Handles mounted state to avoid hydration mismatch.
+- [x] T019 [US1] Create component preview page at `app/dev/components/page.tsx`: render all design tokens (color swatches grid with token name + value + visual swatch for both themes), typography samples (heading H1-H4 in Space Grotesk, body text in Inter, code in JetBrains Mono), spacing scale visual blocks, shadow samples, border-radius samples. Include ThemeToggle at top of page. Page title "Design System Preview". Use Russian labels for user-facing text.
+- [x] T020 [US1] Verify US1: open `http://localhost:3000/dev/components`, toggle between light/dark, verify all tokens resolve in both modes. Run `npm run build`.
+
+→ Artifacts: [theme-toggle.tsx](frontend/components/ui/theme-toggle.tsx), [page.tsx](frontend/app/dev/components/page.tsx)
 
 **Checkpoint**: User Story 1 complete - all design tokens visible and theme-switchable.
 
@@ -105,12 +107,14 @@
 
 ### Implementation for User Story 2
 
-- [ ] T021 [P] [US2] Add Button component via shadcn CLI `npx shadcn@latest add button` then customize `components/ui/button.tsx` per contracts/components.md: default variant uses gradient-main background with white text and hover translateY(-2px) + glow shadow; add loading prop with spinner; ensure border-radius 12px; all 5 variants (default, secondary, ghost, destructive, outline); all 4 sizes (sm, default, lg, icon); focus-visible ring with primary color; min touch target 44px on mobile; 300ms transition.
-- [ ] T022 [P] [US2] Add Card component via shadcn CLI `npx shadcn@latest add card` then customize `components/ui/card.tsx` per contracts/components.md: border-radius 16px; hover animation (translateY(-4px), shadow increase, gradient top border line via ::before pseudo-element, opacity 0->1); transition 400ms cubic-bezier(0.4, 0, 0.2, 1); CardTitle uses font-heading class.
-- [ ] T023 [P] [US2] Add Input component via shadcn CLI `npx shadcn@latest add input` then customize `components/ui/input.tsx` per contracts/components.md: border-radius 12px; border 1.5px; focus state with border-primary + box-shadow 0 0 0 4px primary-subtle; transition 300ms; height 40px default.
-- [ ] T024 [P] [US2] Add Badge component via shadcn CLI `npx shadcn@latest add badge` then customize `components/ui/badge.tsx` per contracts/components.md: border-radius 100px (pill); font-size 13px; font-weight 600; add custom variants success (emerald bg/text) and warning (amber bg/text) in addition to default shadcn variants.
-- [ ] T025 [US2] Update `/dev/components` page (`app/dev/components/page.tsx`) to render all components: Button (all variants, sizes, disabled, loading states), Card (default, hover demo), Input (default, focus, disabled, with placeholder), Badge (all variants). Show each in a labeled section with variant name.
-- [ ] T026 [US2] Verify US2: open `/dev/components`, verify all components render correctly in both themes, keyboard focus indicators visible on Tab navigation. Run `npm run build` and `npm run type-check`.
+- [x] T021 [P] [US2] Add Button component via shadcn CLI `npx shadcn@latest add button` then customize `components/ui/button.tsx` per contracts/components.md: default variant uses gradient-main background with white text and hover translateY(-2px) + glow shadow; add loading prop with spinner; ensure border-radius 12px; all 5 variants (default, secondary, ghost, destructive, outline); all 4 sizes (sm, default, lg, icon); focus-visible ring with primary color; min touch target 44px on mobile; 300ms transition.
+- [x] T022 [P] [US2] Add Card component via shadcn CLI `npx shadcn@latest add card` then customize `components/ui/card.tsx` per contracts/components.md: border-radius 16px; hover animation (translateY(-4px), shadow increase, gradient top border line via ::before pseudo-element, opacity 0->1); transition 400ms cubic-bezier(0.4, 0, 0.2, 1); CardTitle uses font-heading class.
+- [x] T023 [P] [US2] Add Input component via shadcn CLI `npx shadcn@latest add input` then customize `components/ui/input.tsx` per contracts/components.md: border-radius 12px; border 1.5px; focus state with border-primary + box-shadow 0 0 0 4px primary-subtle; transition 300ms; height 40px default.
+- [x] T024 [P] [US2] Add Badge component via shadcn CLI `npx shadcn@latest add badge` then customize `components/ui/badge.tsx` per contracts/components.md: border-radius 100px (pill); font-size 13px; font-weight 600; add custom variants success (emerald bg/text) and warning (amber bg/text) in addition to default shadcn variants.
+- [x] T025 [US2] Update `/dev/components` page (`app/dev/components/page.tsx`) to render all components: Button (all variants, sizes, disabled, loading states), Card (default, hover demo), Input (default, focus, disabled, with placeholder), Badge (all variants). Show each in a labeled section with variant name.
+- [x] T026 [US2] Verify US2: open `/dev/components`, verify all components render correctly in both themes, keyboard focus indicators visible on Tab navigation. Run `npm run build` and `npm run type-check`.
+
+→ Artifacts: [button.tsx](frontend/components/ui/button.tsx), [card.tsx](frontend/components/ui/card.tsx), [input.tsx](frontend/components/ui/input.tsx), [badge.tsx](frontend/components/ui/badge.tsx), [page.tsx](frontend/app/dev/components/page.tsx)
 
 **Checkpoint**: User Story 2 complete - all base components functional and preview-able.
 
