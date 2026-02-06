@@ -6,6 +6,8 @@ import { FadeInUp } from "@/components/motion/fade-in-up"
 import { Shimmer } from "@/components/ui/shimmer"
 import { TemplateCard } from "@/components/templates/template-card"
 import { EmptyState } from "@/components/templates/empty-state"
+import { SearchBar } from "@/components/templates/search-bar"
+import { FilterTabs } from "@/components/templates/filter-tabs"
 import { useTemplatesStore } from "@/stores/templates"
 
 export default function TemplatesPage() {
@@ -33,8 +35,18 @@ export default function TemplatesPage() {
           </div>
         </FadeInUp>
 
-        {/* Grid */}
+        {/* Search */}
         <FadeInUp delay={0.1}>
+          <SearchBar />
+        </FadeInUp>
+
+        {/* Filters */}
+        <FadeInUp delay={0.15}>
+          <FilterTabs />
+        </FadeInUp>
+
+        {/* Grid */}
+        <FadeInUp delay={0.2}>
           {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
