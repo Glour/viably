@@ -48,8 +48,6 @@ function Button({
     asChild?: boolean
     loading?: boolean
   }) {
-  const Comp = asChild ? Slot.Root : "button"
-
   if (asChild) {
     return (
       <Slot.Root

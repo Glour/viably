@@ -8,10 +8,7 @@ export function useCountUp(end: number, duration: number = 1000): number {
   const [current, setCurrent] = useState(0)
 
   useEffect(() => {
-    if (end === 0 || prefersReducedMotion) {
-      setCurrent(end)
-      return
-    }
+    if (end === 0 || prefersReducedMotion) return
 
     const start = performance.now()
     let frameId: number
@@ -26,6 +23,8 @@ export function useCountUp(end: number, duration: number = 1000): number {
     frameId = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frameId)
   }, [end, duration, prefersReducedMotion])
+
+  if (end === 0 || prefersReducedMotion) return end
 
   return current
 }

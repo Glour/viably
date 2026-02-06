@@ -66,7 +66,14 @@ export function DailyBonus() {
           </p>
 
           {/* Progress bar */}
-          <div className="bg-muted rounded-full h-2 mt-4">
+          <div
+            className="bg-muted rounded-full h-2 mt-4"
+            role="progressbar"
+            aria-valuenow={store.streak % 7}
+            aria-valuemin={0}
+            aria-valuemax={7}
+            aria-label={`Прогресс серии: ${store.streak % 7} из 7 дней`}
+          >
             <div
               className="bg-[image:var(--gradient-main)] rounded-full h-2 transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
