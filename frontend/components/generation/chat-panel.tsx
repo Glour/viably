@@ -23,6 +23,7 @@ interface ChatPanelProps {
   canGenerate: boolean
   isGenerating: boolean
   credits: number
+  isMobile?: boolean
 }
 
 export function ChatPanel({
@@ -36,6 +37,7 @@ export function ChatPanel({
   canGenerate,
   isGenerating,
   credits,
+  isMobile,
 }: ChatPanelProps) {
   const [isHeaderExpanded, setIsHeaderExpanded] = React.useState(true)
 
@@ -147,7 +149,7 @@ export function ChatPanel({
             disabled={!canGenerate || isGenerating || hasInsufficientCredits}
             loading={isGenerating}
             className={cn(
-              "w-full",
+              "w-full min-h-[44px]",
               !hasInsufficientCredits && "bg-[image:var(--gradient-main)] text-white hover:opacity-90"
             )}
             variant={hasInsufficientCredits ? "destructive" : "default"}
@@ -184,6 +186,33 @@ export function ChatPanel({
           disabled={isGenerating}
         />
       </div>
+
+      {/* Mobile: Floating generate button bar */}
+      {isMobile && template && (
+        <div className="md:hidden sticky bottom-0 z-10 bg-background/95 backdrop-blur-sm border-t px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+          <Button
+            onClick={onGenerate}
+            disabled={!canGenerate || isGenerating || hasInsufficientCredits}
+            loading={isGenerating}
+            className={cn(
+              "w-full min-h-[44px]",
+              !hasInsufficientCredits && "bg-[image:var(--gradient-main)] text-white hover:opacity-90"
+            )}
+            variant={hasInsufficientCredits ? "destructive" : "default"}
+          >
+            {isGenerating ? (
+              "Генерируем..."
+            ) : hasInsufficientCredits ? (
+              "Недостаточно кредитов"
+            ) : (
+              <>
+                <Sparkles className="size-4" />
+                Генерировать
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

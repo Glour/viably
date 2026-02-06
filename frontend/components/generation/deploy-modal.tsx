@@ -50,7 +50,7 @@ export function DeployModal({
         if (deployment.status !== "deploying") onOpenChange(v)
       }}
     >
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className="sm:max-w-[520px] max-md:h-full max-md:max-h-full max-md:rounded-none max-md:border-0 max-md:translate-y-0 max-md:data-[state=open]:slide-in-from-bottom max-md:data-[state=closed]:slide-out-to-bottom">
         <DialogHeader>
           <DialogTitle>
             {deployment.status === "config" && "Развернуть бота"}

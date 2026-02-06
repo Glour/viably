@@ -197,9 +197,12 @@
 
 ### Implementation for User Story 6
 
-- [ ] T028 [US6] Update Generation page to conditionally render MobileTabs (bottom tab bar) instead of split view on mobile (md breakpoint), with ChatPanel and PreviewPanel as full-width tab content, auto-switch to Preview tab on generation start in `frontend/app/projects/[id]/generate/page.tsx`
-- [ ] T029 [US6] Add floating Generate button bar (fixed bottom, gradient, full-width, 44px min height) for mobile in ChatPanel, ensure all interactive elements have min 44px tap targets in `frontend/components/generation/chat-panel.tsx`
-- [ ] T030 [US6] Update DeployModal to render as full-screen bottom sheet on mobile (slide-up animation, full height) in `frontend/components/generation/deploy-modal.tsx`
+- [x] T028 [US6] Update Generation page to conditionally render MobileTabs (bottom tab bar) instead of split view on mobile (md breakpoint), with ChatPanel and PreviewPanel as full-width tab content, auto-switch to Preview tab on generation start in `frontend/app/projects/[id]/generate/page.tsx`
+  → Artifacts: [page.tsx](frontend/app/projects/[id]/generate/page.tsx)
+- [x] T029 [US6] Add floating Generate button bar (fixed bottom, gradient, full-width, 44px min height) for mobile in ChatPanel, ensure all interactive elements have min 44px tap targets in `frontend/components/generation/chat-panel.tsx`
+  → Artifacts: [chat-panel.tsx](frontend/components/generation/chat-panel.tsx)
+- [x] T030 [US6] Update DeployModal to render as full-screen bottom sheet on mobile (slide-up animation, full height) in `frontend/components/generation/deploy-modal.tsx`
+  → Artifacts: [deploy-modal.tsx](frontend/components/generation/deploy-modal.tsx)
 
 **Checkpoint**: Full mobile flow works: tabs → form → generate → progress → code → deploy
 

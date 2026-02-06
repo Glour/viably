@@ -6,6 +6,7 @@ import { CompactNavbar } from "@/components/generation/compact-navbar"
 import { ChatPanel } from "@/components/generation/chat-panel"
 import { PreviewPanel } from "@/components/generation/preview-panel"
 import { DeployModal } from "@/components/generation/deploy-modal"
+import { MobileTabs } from "@/components/generation/mobile-tabs"
 import { useGeneration } from "@/lib/generation/use-generation"
 import { useProjectsStore } from "@/stores/projects"
 
@@ -38,6 +39,9 @@ export default function GeneratePage({ params }: GeneratePageProps) {
     isGenerating,
   } = useGeneration(id)
 
+  // Mobile tab state
+  const [mobileTab, setMobileTab] = React.useState<"chat" | "preview">("chat")
+
   // Deploy modal state
   const [deployOpen, setDeployOpen] = React.useState(false)
 
@@ -52,6 +56,13 @@ export default function GeneratePage({ params }: GeneratePageProps) {
       setActiveTab("code")
     }
   }, [generation.status])
+
+  // Auto-switch mobile tab to "preview" on generation start
+  React.useEffect(() => {
+    if (isGenerating) {
+      setMobileTab("preview")
+    }
+  }, [isGenerating])
 
   // localStorage persistence for split layout
   const defaultLayout = React.useMemo(() => {
@@ -154,20 +165,38 @@ export default function GeneratePage({ params }: GeneratePageProps) {
         </Group>
       </div>
 
-      {/* Mobile: Full-width ChatPanel only (mobile tabs integration comes in T028) */}
-      <div className="flex md:hidden flex-1 overflow-hidden">
-        <ChatPanel
-          template={template}
-          formValues={formValues}
-          freeTextInput={freeTextInput}
-          onFormChange={setFormValues}
-          onFreeTextChange={setFreeTextInput}
-          onGenerate={handleGenerate}
-          onFreeTextSubmit={handleFreeTextSubmit}
-          canGenerate={canGenerate}
-          isGenerating={isGenerating}
-          credits={150} // Hardcoded for MVP
-        />
+      {/* Mobile: Tabbed interface */}
+      <div className="flex md:hidden flex-1 overflow-hidden flex-col">
+        <div className="flex-1 overflow-hidden">
+          {mobileTab === "chat" ? (
+            <ChatPanel
+              template={template}
+              formValues={formValues}
+              freeTextInput={freeTextInput}
+              onFormChange={setFormValues}
+              onFreeTextChange={setFreeTextInput}
+              onGenerate={handleGenerate}
+              onFreeTextSubmit={handleFreeTextSubmit}
+              canGenerate={canGenerate}
+              isGenerating={isGenerating}
+              credits={150}
+              isMobile
+            />
+          ) : (
+            <PreviewPanel
+              generation={generation}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              onDeploy={() => setDeployOpen(true)}
+              onDownload={downloadCode}
+              onRetry={retryGeneration}
+              onModify={resetGeneration}
+            />
+          )}
+        </div>
+
+        {/* Bottom tabs */}
+        <MobileTabs activeTab={mobileTab} onTabChange={setMobileTab} />
       </div>
 
       {/* Deploy Modal */}
