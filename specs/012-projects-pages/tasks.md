@@ -98,10 +98,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T015 [P] [US2] Create ProjectDetailHeader component (breadcrumb "← Назад к проектам", project info card: emoji+name H2+status badge, category+created date, action buttons: Open in Telegram, Redeploy, Download ZIP, Settings dropdown; disable actions for generating/draft status) using Tooltip and Button in `frontend/components/projects/project-detail-header.tsx`
-- [ ] T016 [P] [US2] Create ProjectTabs component (shadcn Tabs controlled by useSearchParams ?tab=, values: overview/code/logs/settings, default overview, shallow URL navigation with useRouter) in `frontend/components/projects/project-tabs.tsx`
-- [ ] T017 [P] [US2] Create OverviewTab component (two sections: Config — key-value pairs in card grid, Deployment Info — URL, bot username, status, running since, cost estimate in info card) in `frontend/components/projects/overview-tab.tsx`
-- [ ] T018 [US2] Create project detail page: load project by id from store, show Shimmer while loading, render ProjectDetailHeader + ProjectTabs with tab content switching (Overview, Code placeholder, Logs placeholder, Settings placeholder), handle 404 in `frontend/app/projects/[id]/page.tsx`
+- [x] T015 [P] [US2] Create ProjectDetailHeader component (breadcrumb "← Назад к проектам", project info card: emoji+name H2+status badge, category+created date, action buttons: Open in Telegram, Redeploy, Download ZIP, Settings dropdown; disable actions for generating/draft status) using Tooltip and Button in `frontend/components/projects/project-detail-header.tsx`
+- [x] T016 [P] [US2] Create ProjectTabs component (shadcn Tabs controlled by useSearchParams ?tab=, values: overview/code/logs/settings, default overview, shallow URL navigation with useRouter) in `frontend/components/projects/project-tabs.tsx`
+- [x] T017 [P] [US2] Create OverviewTab component (two sections: Config — key-value pairs in card grid, Deployment Info — URL, bot username, status, running since, cost estimate in info card) in `frontend/components/projects/overview-tab.tsx`
+- [x] T018 [US2] Create project detail page: load project by id from store, show Shimmer while loading, render ProjectDetailHeader + ProjectTabs with tab content switching (Overview, Code placeholder, Logs placeholder, Settings placeholder), handle 404 in `frontend/app/projects/[id]/page.tsx`
 
 **Checkpoint**: Project detail page navigable from list. Header shows all info. Tabs switch via URL. Overview displays config and deployment data. Code/Logs/Settings show placeholders.
 
@@ -171,8 +171,8 @@
 
 ### Implementation for User Story 6
 
-- [ ] T028 [US6] Create ProjectEmptyState component (centered layout, illustration/icon, heading "У тебя пока нет проектов", subheading "Создай первый бот за 60 секунд!", gradient button "Выбрать шаблон →" linking to /templates, secondary button "Создать с нуля →" linking to /projects/new) in `frontend/components/projects/project-empty-state.tsx`
-- [ ] T029 [US6] Integrate ProjectEmptyState into projects list page (show when projects array is empty and not loading, replace grid/list content) in `frontend/app/projects/page.tsx`
+- [x] T028 [US6] Create ProjectEmptyState component (centered layout, illustration/icon, heading "У тебя пока нет проектов", subheading "Создай первый бот за 60 секунд!", gradient button "Выбрать шаблон →" linking to /templates, secondary button "Создать с нуля →" linking to /projects/new) in `frontend/components/projects/project-empty-state.tsx`
+- [x] T029 [US6] Integrate ProjectEmptyState into projects list page (show when projects array is empty and not loading, replace grid/list content) in `frontend/app/projects/page.tsx`
 
 **Checkpoint**: Empty state displays correctly when no projects. Both CTAs navigate to correct routes.
 
