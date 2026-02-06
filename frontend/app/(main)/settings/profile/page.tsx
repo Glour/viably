@@ -1,10 +1,26 @@
 "use client"
 
+import { useEffect } from "react"
+import { FadeInUp } from "@/components/motion/fade-in-up"
+import { ProfileInfoForm } from "@/components/settings/profile-info-form"
+import { ChangePasswordForm } from "@/components/settings/change-password-form"
+import { useSettingsStore } from "@/stores/settings"
+
 export default function ProfileSettingsPage() {
+  const { loadProfile } = useSettingsStore()
+
+  useEffect(() => {
+    loadProfile()
+  }, [loadProfile])
+
   return (
     <div className="space-y-6">
-      <h2 className="font-heading text-xl font-semibold">Профиль</h2>
-      <p className="text-muted-foreground">Placeholder — profile forms will be added in US2.</p>
+      <FadeInUp delay={0}>
+        <ProfileInfoForm />
+      </FadeInUp>
+      <FadeInUp delay={0.1}>
+        <ChangePasswordForm />
+      </FadeInUp>
     </div>
   )
 }
