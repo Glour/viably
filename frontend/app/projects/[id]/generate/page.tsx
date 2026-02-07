@@ -33,6 +33,7 @@ export default function GeneratePage({ params }: GeneratePageProps) {
     startGeneration,
     retryGeneration,
     resetGeneration,
+    cancelGeneration,
     startDeployment,
     downloadCode,
     canGenerate,
@@ -159,6 +160,7 @@ export default function GeneratePage({ params }: GeneratePageProps) {
               onDownload={downloadCode}
               onRetry={retryGeneration}
               onModify={resetGeneration}
+              onCancel={cancelGeneration}
               reconnectAttempts={reconnectAttempts}
               isReconnecting={isReconnecting}
               maxReconnectAttempts={maxReconnectAttempts}
@@ -194,6 +196,7 @@ export default function GeneratePage({ params }: GeneratePageProps) {
               onDownload={downloadCode}
               onRetry={retryGeneration}
               onModify={resetGeneration}
+              onCancel={cancelGeneration}
               reconnectAttempts={reconnectAttempts}
               isReconnecting={isReconnecting}
               maxReconnectAttempts={maxReconnectAttempts}

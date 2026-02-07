@@ -179,6 +179,7 @@ export function useGenerationWrapper(projectId: string) {
     startGeneration,
     retryGeneration,
     resetGeneration,
+    cancelGeneration: wsGeneration.cancelGeneration,
     startDeployment,
     downloadCode,
     canGenerate,

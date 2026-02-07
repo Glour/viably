@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react"
 import { Check, Circle, Loader2, X } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { CodeSnippetAnimation } from "./code-snippet-animation"
 import type { GenerationStep } from "@/types"
 
@@ -10,6 +11,7 @@ interface GenerationProgressProps {
   progress: number
   currentStep: number
   codeSnippets?: string[]
+  onCancel?: () => void
 }
 
 function StepIcon({ status }: { status: GenerationStep["status"] }) {
@@ -57,10 +59,24 @@ export function GenerationProgress({
   progress,
   currentStep,
   codeSnippets = [],
+  onCancel,
 }: GenerationProgressProps) {
   return (
     <div className="flex flex-col h-full p-6">
-      <h3 className="text-lg font-semibold mb-4">Генерация кода...</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold">Генерация кода...</h3>
+        {onCancel && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onCancel}
+            className="text-muted-foreground hover:text-destructive"
+          >
+            <X className="size-4 mr-1" />
+            Отменить
+          </Button>
+        )}
+      </div>
 
       {/* Steps list */}
       <div className="space-y-1">

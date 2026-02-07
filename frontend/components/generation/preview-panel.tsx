@@ -18,6 +18,7 @@ interface PreviewPanelProps {
   onDownload?: () => void
   onRetry?: () => void
   onModify?: () => void
+  onCancel?: () => void
   // T036-T037: Reconnection UI props
   reconnectAttempts?: number
   isReconnecting?: boolean
@@ -33,6 +34,7 @@ export function PreviewPanel({
   onDownload,
   onRetry,
   onModify,
+  onCancel,
   reconnectAttempts,
   isReconnecting,
   maxReconnectAttempts,
@@ -77,6 +79,7 @@ export function PreviewPanel({
               progress={generation.progress}
               currentStep={generation.currentStep}
               codeSnippets={generation.codeSnippets}
+              onCancel={onCancel}
             />
           </motion.div>
         )

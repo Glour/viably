@@ -185,3 +185,22 @@ export async function startDeploy(
     },
   }).json()
 }
+
+/**
+ * Cancel ongoing generation
+ *
+ * POST /api/projects/{id}/cancel-generation
+ *
+ * @param projectId - Project UUID
+ * @returns Credits refunded
+ *
+ * @throws {ApiError} on HTTP errors (404 if no active generation)
+ */
+export async function cancelGeneration(
+  projectId: string
+): Promise<{ creditsRefunded: number }> {
+  const response = await api.post(`projects/${projectId}/cancel-generation`).json<{
+    data: { credits_refunded: number }
+  }>()
+  return { creditsRefunded: response.data.credits_refunded }
+}

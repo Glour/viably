@@ -3,8 +3,9 @@ import useWebSocket, { ReadyState } from "react-use-websocket"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuthStore } from "@/stores/auth"
 import { getAccessToken } from "@/lib/api/tokens"
-import { startGeneration as apiStartGeneration } from "@/lib/api/generation"
+import { startGeneration as apiStartGeneration, cancelGeneration as apiCancelGeneration } from "@/lib/api/generation"
 import { queryKeys } from "@/lib/api/query-keys"
+import { toast } from "sonner"
 import {
   GENERATION_STEPS,
   MAX_RECONNECT_ATTEMPTS,
@@ -270,15 +271,26 @@ export function useGeneration(projectId: string) {
     setState(INITIAL_STATE)
   }
 
-  // Cancel generation (optional for now, requires backend support)
-  const cancelGeneration = () => {
-    // TODO: Implement cancel endpoint when backend supports it
-    setState((prev) => ({
-      ...prev,
-      status: "idle",
-      error: "Generation cancelled",
-    }))
-  }
+  // T055-T056, T059: Cancel generation mutation
+  const cancelGenerationMutation = useMutation({
+    mutationFn: () => apiCancelGeneration(projectId),
+    onSuccess: (result) => {
+      // T059: Reset state to idle
+      setState(INITIAL_STATE)
+
+      // T058: Show credits refunded notification
+      toast.success(`Генерация отменена. Возвращено ${result.creditsRefunded} кредитов`)
+
+      // Invalidate queries to refresh balance
+      queryClient.invalidateQueries({ queryKey: queryKeys.credits.balance })
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) })
+    },
+    onError: (error: Error) => {
+      toast.error(`Не удалось отменить: ${error.message}`)
+    },
+  })
+
+  const cancelGeneration = cancelGenerationMutation.mutate
 
   return {
     // Generation state
