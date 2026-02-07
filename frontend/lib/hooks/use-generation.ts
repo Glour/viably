@@ -163,7 +163,14 @@ export function useGeneration(projectId: string) {
         const { step, step_name, step_status, progress, log, code_snippet } =
           lastJsonMessage.data
 
+        // T061: Out-of-order message protection
         setState((prev) => {
+          // Ignore messages from past steps (out-of-order delivery)
+          if (step < prev.currentStep) {
+            console.warn(`[WebSocket] Ignoring out-of-order message: step ${step} received after step ${prev.currentStep}`)
+            return prev
+          }
+
           // Map backend step_status to frontend StepStatus
           const mappedStatus: StepStatus = step_status === "complete" ? "complete" : "running"
 
@@ -230,9 +237,17 @@ export function useGeneration(projectId: string) {
         break
       }
 
-      // Ignore other message types (deploy_*, etc.)
-      default:
+      // T060: Unknown message type handler - graceful degradation
+      default: {
+        // Ignore deploy_* messages (handled by useDeploy hook)
+        if (lastJsonMessage.type?.startsWith('deploy_')) {
+          break
+        }
+
+        // Log warning for truly unknown message types
+        console.warn('[WebSocket] Unknown message type received:', lastJsonMessage.type, lastJsonMessage)
         break
+      }
     }
   }, [lastJsonMessage, projectId, queryClient])
 
