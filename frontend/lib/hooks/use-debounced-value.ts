@@ -1,0 +1,27 @@
+import { useState, useEffect } from "react"
+
+/**
+ * Debounce Hook
+ *
+ * Task: T068
+ * Purpose: Debounce rapidly changing values (e.g., progress updates)
+ *
+ * @param value - The value to debounce
+ * @param delay - Debounce delay in milliseconds
+ * @returns Debounced value
+ */
+export function useDebouncedValue<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value)
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value)
+    }, delay)
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [value, delay])
+
+  return debouncedValue
+}
