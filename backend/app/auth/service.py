@@ -1,6 +1,7 @@
 """Authentication service with JWT token management and business logic."""
 
 import logging
+import uuid
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
@@ -14,7 +15,7 @@ from app.auth.models import User
 from app.auth.security import hash_password, verify_password
 from app.core.config import settings
 from app.core.redis import get_redis
-from app.core.utils import generate_referral_code, generate_unique_referral_code
+from app.core.utils import generate_unique_referral_code
 
 logger = logging.getLogger(__name__)
 
@@ -96,6 +97,7 @@ def create_access_token(user_id: UUID, expires_delta: timedelta | None = None) -
     to_encode = {
         "sub": str(user_id),
         "type": "access",
+        "jti": str(uuid.uuid4()),
         "exp": expire,
         "iat": datetime.now(UTC),
     }
@@ -119,6 +121,7 @@ def create_refresh_token(user_id: UUID, expires_delta: timedelta | None = None) 
     to_encode = {
         "sub": str(user_id),
         "type": "refresh",
+        "jti": str(uuid.uuid4()),
         "exp": expire,
         "iat": datetime.now(UTC),
     }
@@ -283,15 +286,18 @@ async def authenticate_user(
 async def refresh_access_token(
     refresh_token: str,
     db: AsyncSession,
-) -> str:
+) -> tuple[str, str]:
     """Refresh access token using a valid refresh token.
+
+    Implements refresh token rotation: the old refresh token is blacklisted
+    and a new refresh token is issued alongside the new access token.
 
     Args:
         refresh_token: JWT refresh token.
         db: Database session.
 
     Returns:
-        New access token string.
+        Tuple of (new_access_token, new_refresh_token).
 
     Raises:
         HTTPException 401: If refresh token is invalid or expired.
@@ -322,7 +328,10 @@ async def refresh_access_token(
             detail="Account is inactive",
         )
 
-    return create_access_token(user.id)
+    # Blacklist the old refresh token to prevent reuse
+    await blacklist_token(refresh_token, settings.REFRESH_TOKEN_EXPIRE_DAYS * 86400)
+
+    return create_access_token(user.id), create_refresh_token(user.id)
 
 
 async def blacklist_token(token: str, ttl_seconds: int) -> None:

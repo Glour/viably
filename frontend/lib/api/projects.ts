@@ -3,9 +3,7 @@ import type {
   ProjectResponse,
   DeleteProjectResponse,
   DuplicateProjectResponse,
-  UpdateEnvVarsResponse,
   ToggleStatusResponse,
-  EnvVariable,
 } from "@/types"
 import { PROJECTS } from "@/lib/data/projects"
 
@@ -60,21 +58,6 @@ export async function duplicateProject(
   const newProjectId = `proj_${Date.now()}`
 
   return { success: true, projectId: newProjectId }
-}
-
-export async function updateProjectEnvVars(
-  id: string,
-  envVars: EnvVariable[]
-): Promise<UpdateEnvVarsResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 300))
-
-  const project = PROJECTS.find((p) => p.id === id)
-
-  if (!project) {
-    return { success: false, error: "Project not found" }
-  }
-
-  return { success: true }
 }
 
 export async function toggleProjectStatus(

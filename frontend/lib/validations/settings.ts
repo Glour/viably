@@ -32,17 +32,6 @@ export const changePasswordSchema = z
     path: ["confirmPassword"],
   })
 
-/**
- * Custom credits purchase form validation schema
- */
-export const customCreditsSchema = z.object({
-  amount: z
-    .number()
-    .min(10, "Minimum 10 credits")
-    .max(10000, "Maximum 10000 credits"),
-})
-
 // Inferred TypeScript types
 export type ProfileFormData = z.infer<typeof profileSchema>
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>
-export type CustomCreditsFormData = z.infer<typeof customCreditsSchema>

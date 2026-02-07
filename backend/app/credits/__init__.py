@@ -2,8 +2,6 @@
 
 from app.credits.models import CreditTransaction, DailyBonus
 from app.credits.schemas import (
-    CreditAdd,
-    CreditDeduct,
     DailyBonusClaimResponse,
     DailyBonusInfo,
     TransactionResponse,
@@ -25,8 +23,6 @@ __all__ = [
     "CreditTransaction",
     "DailyBonus",
     # Schemas
-    "CreditAdd",
-    "CreditDeduct",
     "DailyBonusClaimResponse",
     "DailyBonusInfo",
     "TransactionResponse",

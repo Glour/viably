@@ -1,8 +1,4 @@
 import type {
-  ConfigFormValues,
-  DeployConfig,
-  StartGenerationResponse,
-  StartDeploymentResponse,
   ProjectFile,
   TemplateResponse,
 } from "@/types"
@@ -28,45 +24,6 @@ function flattenFiles(files: ProjectFile[]): ProjectFile[] {
 
   traverse(files)
   return result
-}
-
-/**
- * Start code generation for a project
- * Mock implementation: returns success after 300ms delay
- * Actual progress simulation happens in the generation hook
- */
-export async function startGeneration(
-  projectId: string,
-  config: ConfigFormValues | { freeText: string },
-  templateSlug: string
-): Promise<StartGenerationResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 300))
-
-  // In production, this would validate inputs and trigger backend generation
-  // For mock, we just acknowledge the request
-  return { success: true }
-}
-
-/**
- * Start deployment for a generated project
- * Mock implementation: validates bot token and returns success after 300ms
- */
-export async function startDeployment(
-  projectId: string,
-  config: DeployConfig
-): Promise<StartDeploymentResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 300))
-
-  // Validate bot token is not empty
-  if (!config.botToken || config.botToken.trim() === "") {
-    return {
-      success: false,
-      error: "Bot token is required for deployment",
-    }
-  }
-
-  // In production, this would validate the token format and start deployment
-  return { success: true }
 }
 
 /**

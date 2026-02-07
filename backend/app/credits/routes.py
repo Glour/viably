@@ -4,6 +4,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
+from fastapi_limiter.depends import RateLimiter
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -23,7 +24,7 @@ from app.credits.service import claim_daily_bonus, get_daily_bonus_info
 router = APIRouter()
 
 
-@router.get("/balance", response_model=dict)
+@router.get("/balance", response_model=dict, dependencies=[Depends(RateLimiter(times=30, minutes=1))])
 async def get_balance(
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> dict:
@@ -36,7 +37,7 @@ async def get_balance(
     }
 
 
-@router.get("/transactions", response_model=TransactionsListResponse)
+@router.get("/transactions", response_model=TransactionsListResponse, dependencies=[Depends(RateLimiter(times=30, minutes=1))])
 async def get_transactions(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -94,7 +95,7 @@ async def get_transactions(
     )
 
 
-@router.get("/daily-bonus", response_model=dict)
+@router.get("/daily-bonus", response_model=dict, dependencies=[Depends(RateLimiter(times=30, minutes=1))])
 async def get_daily_bonus_status(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -104,7 +105,7 @@ async def get_daily_bonus_status(
     return {"data": info}
 
 
-@router.post("/daily-bonus", response_model=dict)
+@router.post("/daily-bonus", response_model=dict, dependencies=[Depends(RateLimiter(times=10, minutes=1))])
 async def claim_daily_bonus_endpoint(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],

@@ -201,7 +201,7 @@ async def claim_daily_bonus(user_id: UUID, db: AsyncSession) -> DailyBonusClaimR
             detail="Your plan does not include daily bonuses",
         )
 
-    today = date.today()
+    today = datetime.now(timezone.utc).date()
 
     # Check if already claimed today
     stmt = select(DailyBonus).where(
@@ -282,7 +282,7 @@ async def get_daily_bonus_info(user_id: UUID, db: AsyncSession) -> DailyBonusInf
             next_available_at=None,
         )
 
-    today = date.today()
+    today = datetime.now(timezone.utc).date()
 
     # Check if claimed today
     stmt = select(DailyBonus).where(
@@ -360,48 +360,49 @@ async def process_monthly_rollover(db: AsyncSession) -> dict:
     Returns:
         dict with processed count and total deducted
     """
-    # Get all users with credits > 0
-    stmt = select(User).where(User.credits > 0)
+    # Get all users with credits > 0, processed in chunks to avoid memory issues
+    CHUNK_SIZE = 500
+    stmt = select(User).where(User.credits > 0).execution_options(yield_per=CHUNK_SIZE)
     result = await db.execute(stmt)
-    users = result.scalars().all()
 
     processed = 0
     total_deducted = 0
     errors = 0
 
-    for user in users:
-        limit = get_rollover_limit(user.plan)
+    for partition in result.scalars().partitions(CHUNK_SIZE):
+        for user in partition:
+            limit = get_rollover_limit(user.plan)
 
-        if user.credits > limit:
-            excess = user.credits - limit
-            try:
-                await deduct_credits(
-                    user_id=user.id,
-                    amount=excess,
-                    transaction_type="rollover",
-                    description=f"Monthly rollover: excess credits removed (limit: {limit})",
-                    db=db,
-                )
-                processed += 1
-                total_deducted += excess
+            if user.credits > limit:
+                excess = user.credits - limit
+                try:
+                    await deduct_credits(
+                        user_id=user.id,
+                        amount=excess,
+                        transaction_type="rollover",
+                        description=f"Monthly rollover: excess credits removed (limit: {limit})",
+                        db=db,
+                    )
+                    processed += 1
+                    total_deducted += excess
 
-                logger.info(
-                    "Rollover applied",
-                    extra={
-                        "user_id": str(user.id),
-                        "plan": user.plan,
-                        "limit": limit,
-                        "excess": excess,
-                    },
-                )
-            except Exception as e:
-                errors += 1
-                logger.error(
-                    "Rollover failed for user %s: %s",
-                    user.id,
-                    e,
-                    extra={"user_id": str(user.id), "error": str(e)},
-                )
+                    logger.info(
+                        "Rollover applied",
+                        extra={
+                            "user_id": str(user.id),
+                            "plan": user.plan,
+                            "limit": limit,
+                            "excess": excess,
+                        },
+                    )
+                except Exception as e:
+                    errors += 1
+                    logger.error(
+                        "Rollover failed for user %s: %s",
+                        user.id,
+                        e,
+                        extra={"user_id": str(user.id), "error": str(e)},
+                    )
 
     logger.info(
         "Monthly rollover completed",

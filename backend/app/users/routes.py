@@ -1,6 +1,7 @@
 """FastAPI routes for users module."""
 
 from fastapi import APIRouter, Depends, Query
+from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.deps import get_current_user
@@ -13,7 +14,7 @@ from app.users.schemas import (
     TransactionsListResponse,
     UserUpdate,
 )
-from app.credits.schemas import DailyBonusInfo, TransactionResponse
+from app.credits.schemas import TransactionResponse
 from app.users.service import (
     get_credit_balance,
     get_credit_transactions,
@@ -23,7 +24,7 @@ from app.users.service import (
 router = APIRouter()
 
 
-@router.get("/me", response_model=dict)
+@router.get("/me", response_model=dict, dependencies=[Depends(RateLimiter(times=30, minutes=1))])
 async def get_current_user_profile(
     current_user: User = Depends(get_current_user),
 ) -> dict:
@@ -38,7 +39,7 @@ async def get_current_user_profile(
     return {"data": UserResponse.model_validate(current_user).model_dump()}
 
 
-@router.patch("/me", response_model=dict)
+@router.patch("/me", response_model=dict, dependencies=[Depends(RateLimiter(times=10, minutes=1))])
 async def update_current_user_profile(
     user_data: UserUpdate,
     current_user: User = Depends(get_current_user),
@@ -65,7 +66,7 @@ async def update_current_user_profile(
     return {"data": UserResponse.model_validate(updated_user).model_dump()}
 
 
-@router.get("/me/credits", response_model=dict)
+@router.get("/me/credits", response_model=dict, dependencies=[Depends(RateLimiter(times=30, minutes=1))])
 async def get_current_user_credits(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -80,16 +81,16 @@ async def get_current_user_credits(
     balance = await get_credit_balance(current_user, db)
 
     response = CreditBalanceResponse(
-        credits=balance["credits"],
-        plan=balance["plan"],
-        daily_bonus=DailyBonusInfo(**balance["daily_bonus"]) if balance["daily_bonus"] else None,
-        rollover_limit=balance["rollover_limit"],
+        credits=balance.credits,
+        plan=balance.plan,
+        daily_bonus=balance.daily_bonus,
+        rollover_limit=balance.rollover_limit,
     )
 
     return {"data": response.model_dump()}
 
 
-@router.get("/me/transactions", response_model=dict)
+@router.get("/me/transactions", response_model=dict, dependencies=[Depends(RateLimiter(times=30, minutes=1))])
 async def get_current_user_transactions(
     page: int = Query(1, ge=1, description="Page number (1-indexed)"),
     per_page: int = Query(20, ge=1, le=100, description="Items per page (max 100)"),
@@ -113,12 +114,12 @@ async def get_current_user_transactions(
     )
 
     transactions = [
-        CreditTransactionResponse.model_validate(tx).model_dump()
+        TransactionResponse.model_validate(tx).model_dump()
         for tx in result["transactions"]
     ]
 
     response = TransactionsListResponse(
-        transactions=[CreditTransactionResponse(**tx) for tx in transactions],
+        transactions=[TransactionResponse(**tx) for tx in transactions],
         pagination=PaginationInfo(**result["pagination"]),
     )
 

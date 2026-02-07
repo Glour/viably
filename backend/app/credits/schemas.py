@@ -21,30 +21,6 @@ class TransactionType(str, Enum):
     ADMIN_ADJUSTMENT = "admin_adjustment"
 
 
-class CreditDeduct(BaseModel):
-    """Request to deduct credits."""
-
-    amount: int = Field(..., gt=0, description="Credits to deduct (positive number)")
-    transaction_type: TransactionType = Field(
-        ...,
-        description="Type of deduction (generation or admin_adjustment)",
-    )
-    project_id: UUID | None = Field(None, description="Optional project reference")
-    description: str | None = Field(None, max_length=255, description="Optional description")
-
-
-class CreditAdd(BaseModel):
-    """Request to add credits."""
-
-    amount: int = Field(..., gt=0, description="Credits to add (positive number)")
-    transaction_type: TransactionType = Field(
-        ...,
-        description="Type of credit addition",
-    )
-    related_user_id: UUID | None = Field(None, description="Related user for referrals")
-    description: str | None = Field(None, max_length=255, description="Optional description")
-
-
 class TransactionResponse(BaseModel):
     """Single transaction response."""
 
@@ -96,11 +72,3 @@ class BalanceResponse(BaseModel):
     plan: str
     daily_bonus: DailyBonusInfo | None = Field(None, description="Daily bonus info")
     rollover_limit: int | None = Field(None, description="Credit rollover limit for plan")
-
-
-class CreditOperationResponse(BaseModel):
-    """Response for credit add/deduct operations."""
-
-    transaction_id: UUID
-    balance_after: int
-    success: bool = True

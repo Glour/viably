@@ -1,8 +1,21 @@
-"""FastAPI routes for templates module."""
+"""FastAPI routes for templates module.
+
+DESIGN DECISION: Templates endpoints are intentionally public (no authentication).
+Templates serve as a public catalog for the MVP, allowing users to browse
+available project templates before signing up. This is a deliberate product
+decision to reduce friction in the user journey.
+
+Security considerations:
+- Templates contain no user-specific data
+- Prompt templates and config schemas are non-proprietary
+- Rate limiting is applied to prevent abuse
+- Future versions may add authentication for premium templates
+"""
 
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
+from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -12,7 +25,7 @@ from app.templates.service import get_template_by_id, get_template_by_slug, list
 router = APIRouter()
 
 
-@router.get("", response_model=dict)
+@router.get("", response_model=dict, dependencies=[Depends(RateLimiter(times=30, minutes=1))])
 async def get_templates(
     category: str | None = Query(None, description="Filter by category"),
     search: str | None = Query(None, min_length=1, max_length=100, description="Search term"),
@@ -39,7 +52,7 @@ async def get_templates(
     }
 
 
-@router.get("/{template_id}", response_model=dict)
+@router.get("/{template_id}", response_model=dict, dependencies=[Depends(RateLimiter(times=30, minutes=1))])
 async def get_template(
     template_id: str,
     db: AsyncSession = Depends(get_db),

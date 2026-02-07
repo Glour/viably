@@ -59,11 +59,12 @@ class UserResponse(BaseModel):
 
 
 class TokenResponse(BaseModel):
-    """Schema for token-only response (refresh endpoint)."""
+    """Schema for token response (refresh endpoint with token rotation)."""
 
     access_token: str
+    refresh_token: str | None = None
     token_type: str = "bearer"
-    expires_in: int = 86400  # 24 hours in seconds
+    expires_in: int = 900  # ACCESS_TOKEN_EXPIRE_MINUTES (15) * 60
 
 
 class AuthResponse(BaseModel):
@@ -73,4 +74,4 @@ class AuthResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
-    expires_in: int = 86400
+    expires_in: int = 900  # ACCESS_TOKEN_EXPIRE_MINUTES (15) * 60

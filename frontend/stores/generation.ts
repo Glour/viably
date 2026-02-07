@@ -35,6 +35,7 @@ export const useGenerationStore = create<GenerationStoreState>((set, get) => ({
   template: null,
   formValues: {},
   freeTextInput: "",
+  deployConfig: null,
 
   generation: {
     status: "idle",
@@ -115,6 +116,7 @@ export const useGenerationStore = create<GenerationStoreState>((set, get) => ({
 
   startDeployment: (config: DeployConfig) => {
     set({
+      deployConfig: config,
       deployment: {
         status: "deploying",
         steps: DEFAULT_DEPLOYMENT_STEPS.map((s) => ({ ...s })),
@@ -196,6 +198,16 @@ export const useGenerationStore = create<GenerationStoreState>((set, get) => ({
         ...deployment,
         steps: updatedSteps,
         currentStep: stepIndex,
+      },
+    })
+  },
+
+  _setDeployProgress: (progress: number) => {
+    const { deployment } = get()
+    set({
+      deployment: {
+        ...deployment,
+        progress,
       },
     })
   },

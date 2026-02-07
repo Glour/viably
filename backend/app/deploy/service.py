@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.security import validate_deployment_url
 from app.deploy.models import Deployment
-from app.deploy.railway import railway_client
+from app.deploy.railway import get_railway_client
 from app.deploy.schemas import DeploymentCreate, DeploymentStatus
 from app.projects.models import Project, ProjectStatus
 
@@ -79,7 +79,8 @@ class DeploymentService:
 
             # Create Railway project
             project_name = f"viably-{project.name[:20]}-{str(project_id)[:8]}"
-            railway_project = await railway_client.create_project(name=project_name)
+            railway = get_railway_client()
+            railway_project = await railway.create_project(name=project_name)
 
             deployment.platform_data = {
                 "railway_project_id": railway_project["id"]
@@ -87,7 +88,7 @@ class DeploymentService:
             await self.db.commit()
 
             # Create service
-            service = await railway_client.create_service(
+            service = await railway.create_service(
                 project_id=railway_project["id"],
                 name="bot",
             )
@@ -97,14 +98,14 @@ class DeploymentService:
             await self.db.commit()
 
             # Set environment variables
-            await railway_client.set_env_variables(
+            await railway.set_env_variables(
                 project_id=railway_project["id"],
                 service_id=service["id"],
                 env_vars=data.env_variables,
             )
 
             # Deploy code
-            deploy_result = await railway_client.deploy_from_source(
+            deploy_result = await railway.deploy_from_source(
                 project_id=railway_project["id"],
                 service_id=service["id"],
                 source_code=project.generated_code.get("files", {}),
@@ -139,9 +140,9 @@ class DeploymentService:
             logger.error("Deployment failed: %s", e)
 
             deployment.status = DeploymentStatus.FAILED.value
-            deployment.error_message = str(e)
+            deployment.error_message = "Deployment failed"
             project.status = ProjectStatus.ERROR.value
-            project.error_message = f"Deployment failed: {e}"
+            project.error_message = "Deployment failed"
 
             await self.db.commit()
             raise
@@ -153,18 +154,19 @@ class DeploymentService:
         service_id: str,
     ) -> str:
         """Poll Railway for deployment status until complete or timeout."""
+        railway = get_railway_client()
         timeout = settings.DEPLOYMENT_TIMEOUT_SECONDS
         interval = settings.DEPLOYMENT_POLL_INTERVAL_SECONDS
         elapsed = 0
 
         while elapsed < timeout:
-            status = await railway_client.get_deployment_status(
+            status = await railway.get_deployment_status(
                 railway_deployment_id
             )
 
             if status["status"] == "SUCCESS":
                 # Get URL
-                url = await railway_client.get_service_domain(service_id)
+                url = await railway.get_service_domain(service_id)
                 return f"https://{url}" if url else status.get("url", "")
 
             if status["status"] == "FAILED":
@@ -202,7 +204,7 @@ class DeploymentService:
         if not deployment or not deployment.external_id:
             return ""
 
-        return await railway_client.get_deployment_logs(deployment.external_id)
+        return await get_railway_client().get_deployment_logs(deployment.external_id)
 
     async def stop_deployment(
         self,
@@ -220,7 +222,7 @@ class DeploymentService:
                 deployment.platform_data
                 and "railway_project_id" in deployment.platform_data
             ):
-                await railway_client.delete_project(
+                await get_railway_client().delete_project(
                     deployment.platform_data["railway_project_id"]
                 )
 
@@ -246,7 +248,9 @@ class DeploymentService:
         # Validate URL to prevent SSRF attacks
         if not validate_deployment_url(deployment.url):
             logger.warning(
-                f"Invalid deployment URL detected for {deployment_id}: {deployment.url}"
+                "Invalid deployment URL detected for %s: %s",
+                deployment_id,
+                deployment.url,
             )
             return False
 
@@ -264,5 +268,5 @@ class DeploymentService:
                 return healthy
 
         except Exception as e:
-            logger.warning(f"Health check failed for deployment {deployment_id}: {e}")
+            logger.warning("Health check failed for deployment %s: %s", deployment_id, e)
             return False

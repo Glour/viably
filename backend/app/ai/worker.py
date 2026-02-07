@@ -245,7 +245,7 @@ async def _process_generation_async(project_id: str) -> dict:
                         user_id=UUID(str(project.user_id)),
                         amount=settings.GENERATION_COST,
                         transaction_type="generation_refund",
-                        description=f"Refund for failed generation: {str(e)[:100]}",
+                        description=f"Refund for failed generation of {project.name}",
                         db=db,
                     )
                     await db.commit()

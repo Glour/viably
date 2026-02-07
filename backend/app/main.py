@@ -47,6 +47,9 @@ app = FastAPI(
     description="Backend API for Viably application",
     version="0.1.0",
     lifespan=lifespan,
+    docs_url="/docs" if settings.DEBUG else None,
+    redoc_url="/redoc" if settings.DEBUG else None,
+    openapi_url="/openapi.json" if settings.DEBUG else None,
 )
 
 
@@ -78,8 +81,8 @@ async def add_security_headers(request: Request, call_next):
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
-    response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'"
     return response
 
 

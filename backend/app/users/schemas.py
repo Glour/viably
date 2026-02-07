@@ -16,7 +16,6 @@ __all__ = [
     "CreditBalanceResponse",
     "DailyBonusInfo",
     "TransactionResponse",
-    "ProjectInfo",
     "TransactionsListResponse",
     "PaginationInfo",
 ]
@@ -36,10 +35,6 @@ class CreditBalanceResponse(BaseModel):
     plan: str
     daily_bonus: DailyBonusInfo | None = None
     rollover_limit: int
-
-
-# NOTE: ProjectInfo was removed as it's never populated in transaction responses.
-# If needed in future, can be added to TransactionResponse in credits module.
 
 
 class PaginationInfo(BaseModel):

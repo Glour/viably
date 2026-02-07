@@ -7,7 +7,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.ai.client import anthropic_client
+from app.ai.client import get_anthropic_client
 from app.ai.prompts import SYSTEM_PROMPT, build_generation_prompt, extract_code_files
 from app.projects.models import Project, ProjectStatus
 from app.templates.models import Template
@@ -106,7 +106,8 @@ class AIGenerationService:
             )
 
             # Generate code via AI
-            response = await anthropic_client.generate_code(
+            client = get_anthropic_client()
+            response = await client.generate_code(
                 prompt=user_prompt,
                 system_prompt=SYSTEM_PROMPT,
             )
@@ -119,7 +120,7 @@ class AIGenerationService:
 
             # Save generated code to project
             project.generated_code = {"files": files}
-            project.ai_model_used = anthropic_client.default_model
+            project.ai_model_used = client.default_model
             project.status = ProjectStatus.READY.value
             project.generated_at = datetime.now(timezone.utc)
             project.generation_logs = f"Generated {len(files)} files"
@@ -134,7 +135,7 @@ class AIGenerationService:
                     "project_id": str(project_id),
                     "files_count": len(files),
                     "files": list(files.keys()),
-                    "model_used": anthropic_client.default_model,
+                    "model_used": client.default_model,
                 },
             )
 
@@ -155,9 +156,16 @@ class AIGenerationService:
                 },
             )
 
-            # Update project with error status
+            # Update project with sanitized error status
             project.status = ProjectStatus.ERROR.value
-            project.error_message = str(e)
+            error_type = type(e).__name__
+            safe_errors = {
+                "AuthenticationError": "AI service authentication failed",
+                "APITimeoutError": "AI service timed out",
+                "RateLimitError": "AI service rate limit exceeded",
+                "APIConnectionError": "AI service connection failed",
+            }
+            project.error_message = safe_errors.get(error_type, "Code generation failed")
             await self.db.commit()
 
             # Re-raise for caller to handle (e.g., credit refund)

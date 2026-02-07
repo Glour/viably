@@ -37,7 +37,7 @@ class RailwayClient:
 
             if "errors" in data:
                 error_msg = str(data["errors"])
-                logger.error(f"Railway API error: {error_msg}")
+                logger.error("Railway API error: %s", error_msg)
                 raise Exception(f"Railway API error: {error_msg}")
 
             return data["data"]
@@ -180,5 +180,17 @@ class RailwayClient:
         )
 
 
-# Singleton instance
-railway_client = RailwayClient()
+# Lazy singleton instance
+_railway_client: Optional[RailwayClient] = None
+
+
+def get_railway_client() -> RailwayClient:
+    """Get or create the RailwayClient singleton.
+
+    Uses lazy initialization to avoid import-time side effects
+    when RAILWAY_API_TOKEN is not configured.
+    """
+    global _railway_client
+    if _railway_client is None:
+        _railway_client = RailwayClient()
+    return _railway_client
