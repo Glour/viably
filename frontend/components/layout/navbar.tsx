@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { cn } from "@/lib/utils"
+import { useCreditBalance } from "@/lib/hooks/use-credits"
 import type { NavItem } from "@/types"
 
 const navItems: NavItem[] = [
@@ -27,6 +28,7 @@ const navItems: NavItem[] = [
 export function Navbar() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { data: creditBalance, isLoading: isCreditsLoading } = useCreditBalance()
 
   // Close mobile menu on Escape key (subscribing to external event)
   useEffect(() => {
@@ -76,7 +78,7 @@ export function Navbar() {
           <div className="flex items-center gap-2 ml-auto md:ml-0">
             <Badge variant="default">
               <Gem className="size-3" />
-              150
+              {isCreditsLoading ? "…" : (creditBalance?.credits ?? 0)}
             </Badge>
             <ThemeToggle />
             <Link href="/settings">

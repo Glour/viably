@@ -11,7 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { duplicateProject } from "@/lib/api/projects"
 
 interface ProjectActionMenuProps {
   projectId: string
@@ -26,14 +25,8 @@ export function ProjectActionMenu({
 }: ProjectActionMenuProps) {
   const router = useRouter()
 
-  async function handleDuplicate() {
-    const result = await duplicateProject(projectId)
-
-    if (result.success) {
-      toast.success("Проект дублирован")
-    } else {
-      toast.error(result.error ?? "Не удалось дублировать проект")
-    }
+  function handleDuplicate() {
+    toast.info("Дублирование проектов скоро будет доступно")
   }
 
   function handleDownload() {

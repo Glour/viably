@@ -1,30 +1,50 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useState, useCallback } from "react"
 import { Check } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { useDailyBonusStore } from "@/stores/daily-bonus"
+import { Shimmer } from "@/components/ui/shimmer"
+import { useDailyBonusStatus, useClaimDailyBonus } from "@/lib/hooks/use-credits"
 
 export function DailyBonus() {
-  const store = useDailyBonusStore()
+  const { data, isLoading } = useDailyBonusStatus()
+  const claimMutation = useClaimDailyBonus()
   const [justClaimed, setJustClaimed] = useState(false)
 
-  useEffect(() => {
-    store.checkStreak()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   const handleClaim = useCallback(() => {
-    store.claim()
-    setJustClaimed(true)
-    setTimeout(() => setJustClaimed(false), 600)
-  }, [store])
+    claimMutation.mutate(undefined, {
+      onSuccess: () => {
+        setJustClaimed(true)
+        setTimeout(() => setJustClaimed(false), 600)
+      },
+    })
+  }, [claimMutation])
 
-  const progressPercent = ((store.streak % 7) / 7) * 100
+  if (isLoading) {
+    return (
+      <section>
+        <Card>
+          <CardContent className="p-6">
+            <Shimmer width="60%" height="1.5rem" />
+            <Shimmer className="mt-2" width="40%" height="1rem" />
+            <Shimmer className="mt-4" height="0.5rem" />
+            <Shimmer className="mt-4" width="8rem" height="2.5rem" />
+          </CardContent>
+        </Card>
+      </section>
+    )
+  }
+
+  if (!data) return null
+
+  const amount = data.amount ?? 5
+  const claimedToday = data.claimedToday
+  const streak = data.streakDays ?? 0
+  const progressPercent = ((streak % 7) / 7) * 100
 
   return (
     <section>
@@ -34,17 +54,17 @@ export function DailyBonus() {
         )}
       >
         <CardContent className="p-6">
-          {store.claimedToday ? (
+          {claimedToday ? (
             <>
               {/* Claimed state */}
               <div className="flex items-center gap-2">
                 <p className="font-heading text-lg font-semibold">
-                  {"🎁"} +{store.todayReward} кредитов получено сегодня!
+                  {"🎁"} +{amount} кредитов получено сегодня!
                 </p>
                 <Badge variant="success">
                   <Check className="size-3" />
                 </Badge>
-                {store.streak >= 7 && <Badge variant="default">x2</Badge>}
+                {streak >= 7 && <Badge variant="default">x2</Badge>}
               </div>
             </>
           ) : (
@@ -52,27 +72,26 @@ export function DailyBonus() {
               {/* Not claimed state */}
               <div className="flex items-center gap-2">
                 <p className="font-heading text-lg font-semibold">
-                  {"🎁"} Получи +{store.todayReward} кредитов
+                  {"🎁"} Получи +{amount} кредитов
                 </p>
-                {store.streak >= 7 && <Badge variant="default">x2</Badge>}
+                {streak >= 7 && <Badge variant="default">x2</Badge>}
               </div>
             </>
           )}
 
           {/* Info line */}
           <p className="text-sm text-muted-foreground mt-1">
-            Серия: {store.streak} дней подряд · Завтра: +{store.nextReward}{" "}
-            кредитов
+            Серия: {streak} дней подряд · Завтра: +{amount} кредитов
           </p>
 
           {/* Progress bar */}
           <div
             className="bg-muted rounded-full h-2 mt-4"
             role="progressbar"
-            aria-valuenow={store.streak % 7}
+            aria-valuenow={streak % 7}
             aria-valuemin={0}
             aria-valuemax={7}
-            aria-label={`Прогресс серии: ${store.streak % 7} из 7 дней`}
+            aria-label={`Прогресс серии: ${streak % 7} из 7 дней`}
           >
             <div
               className="bg-[image:var(--gradient-main)] rounded-full h-2 transition-all duration-500"
@@ -82,13 +101,17 @@ export function DailyBonus() {
 
           {/* Progress label */}
           <p className="text-xs text-muted-foreground mt-1">
-            {store.streak % 7}/7 дней до бонуса x2
+            {streak % 7}/7 дней до бонуса x2
           </p>
 
           {/* Claim button — only when not claimed */}
-          {!store.claimedToday && (
-            <Button className="mt-4" onClick={handleClaim}>
-              Получить бонус
+          {!claimedToday && (
+            <Button
+              className="mt-4"
+              onClick={handleClaim}
+              disabled={claimMutation.isPending}
+            >
+              {claimMutation.isPending ? "Получаем..." : "Получить бонус"}
             </Button>
           )}
         </CardContent>

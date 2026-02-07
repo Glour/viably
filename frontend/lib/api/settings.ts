@@ -1,74 +1,25 @@
-import type {
-  UserProfileResponse,
-  UpdateProfileResponse,
-  ChangePasswordResponse,
-  TransactionsResponse,
-  UserPlanResponse,
-  TransactionFilter,
-} from "@/types"
-import { MOCK_TRANSACTIONS, MOCK_USER_PLAN, AVAILABLE_PLANS } from "@/lib/data/settings"
+// Re-exports from dedicated API modules
+export { fetchCurrentUser as getProfile } from "./users"
+export { updateProfile } from "./users"
+// Stubs for unimplemented backend endpoints
 
-const MOCK_USER = {
-  id: "user-1",
-  name: "Алексей Петров",
-  email: "alex@example.com",
-  plan: "starter" as const,
-  credits: 47,
-  projectsCount: 4,
-  projectsLimit: 10,
-  deployedCount: 2,
-}
+import type { UserPlanInfo, SubscriptionPlan } from "@/types"
+import { AVAILABLE_PLANS, MOCK_USER_PLAN } from "@/lib/data/settings"
 
-export async function getProfile(): Promise<UserProfileResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 300))
-  return { success: true, user: MOCK_USER }
-}
-
-export async function updateProfile(data: {
-  name: string
-  avatarFile: File | null
-}): Promise<UpdateProfileResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 500))
-  if (!data.name.trim()) {
-    return { success: false, error: "Name is required" }
-  }
-  return { success: true, user: { ...MOCK_USER, name: data.name } }
-}
-
-export async function changePassword(data: {
+export async function changePassword(_data: {
   currentPassword: string
   newPassword: string
-}): Promise<ChangePasswordResponse> {
+}): Promise<{ success: boolean; error?: string }> {
+  // TODO: Backend endpoint POST /api/users/me/password not yet implemented
   await new Promise((resolve) => setTimeout(resolve, 500))
-  if (!data.currentPassword) {
-    return { success: false, error: "Current password is incorrect" }
-  }
   return { success: true }
 }
 
-export async function getTransactions(params: {
-  filter: TransactionFilter
-  offset: number
-  limit: number
-}): Promise<TransactionsResponse> {
+export async function getUserPlan(): Promise<{
+  planInfo: UserPlanInfo
+  availablePlans: SubscriptionPlan[]
+}> {
+  // TODO: Backend endpoint for plan info not yet implemented
   await new Promise((resolve) => setTimeout(resolve, 300))
-
-  let filtered = MOCK_TRANSACTIONS
-  if (params.filter !== "all") {
-    filtered = MOCK_TRANSACTIONS.filter((t) => t.type === params.filter)
-  }
-
-  const sliced = filtered.slice(params.offset, params.offset + params.limit)
-  const hasMore = params.offset + params.limit < filtered.length
-
-  return { success: true, transactions: sliced, hasMore }
-}
-
-export async function getUserPlan(): Promise<UserPlanResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 300))
-  return {
-    success: true,
-    planInfo: MOCK_USER_PLAN,
-    availablePlans: AVAILABLE_PLANS,
-  }
+  return { planInfo: MOCK_USER_PLAN, availablePlans: AVAILABLE_PLANS }
 }

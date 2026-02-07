@@ -1,78 +1,83 @@
+import { api, parseApiError } from "./client"
+import {
+  mapProject,
+  mapProjectsPaginated,
+  toCreateProjectPayload,
+  toUpdateProjectPayload,
+} from "./mappers"
 import type {
-  ProjectsResponse,
-  ProjectResponse,
-  DeleteProjectResponse,
-  DuplicateProjectResponse,
-  ToggleStatusResponse,
+  ApiProject,
+  ProjectsPaginated,
+  CreateProjectPayload,
+  UpdateProjectPayload,
 } from "@/types"
-import { PROJECTS } from "@/lib/data/projects"
 
-export async function getProjects(): Promise<ProjectsResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 800))
+export async function fetchProjects(
+  params?: { status?: string; page?: number; per_page?: number },
+  signal?: AbortSignal
+): Promise<ProjectsPaginated> {
+  try {
+    const searchParams: Record<string, string | number> = {}
+    if (params?.status) searchParams.status = params.status
+    if (params?.page) searchParams.page = params.page
+    if (params?.per_page) searchParams.per_page = params.per_page
 
-  return {
-    success: true,
-    projects: PROJECTS,
+    const response = await api
+      .get("projects", { searchParams, signal })
+      .json<Record<string, unknown>>()
+
+    return mapProjectsPaginated(response)
+  } catch (error) {
+    return await parseApiError(error)
   }
 }
 
-export async function getProjectById(
-  id: string
-): Promise<ProjectResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 500))
-
-  const project = PROJECTS.find((p) => p.id === id)
-
-  if (!project) {
-    return { success: false, error: "Project not found" }
-  }
-
-  return { success: true, project }
-}
-
-export async function deleteProject(
-  id: string
-): Promise<DeleteProjectResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 500))
-
-  const project = PROJECTS.find((p) => p.id === id)
-
-  if (!project) {
-    return { success: false, error: "Project not found" }
-  }
-
-  return { success: true }
-}
-
-export async function duplicateProject(
-  id: string
-): Promise<DuplicateProjectResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 500))
-
-  const project = PROJECTS.find((p) => p.id === id)
-
-  if (!project) {
-    return { success: false, error: "Project not found" }
-  }
-
-  const newProjectId = `proj_${Date.now()}`
-
-  return { success: true, projectId: newProjectId }
-}
-
-export async function toggleProjectStatus(
+export async function fetchProject(
   id: string,
-  action: "start" | "stop"
-): Promise<ToggleStatusResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 500))
+  signal?: AbortSignal
+): Promise<ApiProject> {
+  try {
+    const response = await api
+      .get(`projects/${id}`, { signal })
+      .json<Record<string, unknown>>()
 
-  const project = PROJECTS.find((p) => p.id === id)
-
-  if (!project) {
-    return { success: false, error: "Project not found" }
+    return mapProject(response)
+  } catch (error) {
+    return await parseApiError(error)
   }
+}
 
-  const newStatus = action === "start" ? "deployed" : "stopped"
+export async function createProject(payload: CreateProjectPayload): Promise<ApiProject> {
+  try {
+    const response = await api
+      .post("projects", { json: toCreateProjectPayload(payload) })
+      .json<Record<string, unknown>>()
 
-  return { success: true, newStatus }
+    return mapProject(response)
+  } catch (error) {
+    return await parseApiError(error)
+  }
+}
+
+export async function deleteProject(id: string): Promise<void> {
+  try {
+    await api.delete(`projects/${id}`)
+  } catch (error) {
+    return await parseApiError(error)
+  }
+}
+
+export async function updateProject(
+  id: string,
+  payload: UpdateProjectPayload
+): Promise<ApiProject> {
+  try {
+    const response = await api
+      .patch(`projects/${id}`, { json: toUpdateProjectPayload(payload) })
+      .json<Record<string, unknown>>()
+
+    return mapProject(response)
+  } catch (error) {
+    return await parseApiError(error)
+  }
 }

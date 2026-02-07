@@ -17,14 +17,15 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useSettingsStore } from "@/stores/settings"
+import { useCurrentUser, useUpdateProfile } from "@/lib/hooks/use-user"
 import { profileSchema, type ProfileFormData } from "@/lib/validations/settings"
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"]
 
 export function ProfileInfoForm() {
-  const { profile, isSavingProfile, updateProfile } = useSettingsStore()
+  const { data: profile } = useCurrentUser()
+  const updateProfile = useUpdateProfile()
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -33,9 +34,9 @@ export function ProfileInfoForm() {
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: profile?.name ?? "",
+      name: profile?.fullName ?? "",
     },
-    values: profile ? { name: profile.name } : undefined,
+    values: profile ? { name: profile.fullName ?? "" } : undefined,
   })
 
   const handleFileSelect = useCallback((file: File) => {
@@ -75,17 +76,24 @@ export function ProfileInfoForm() {
     [handleFileSelect]
   )
 
-  const onSubmit = async (data: ProfileFormData) => {
-    const success = await updateProfile({ name: data.name, avatarFile })
-    if (success) {
-      toast.success("Профиль обновлён")
-      setAvatarFile(null)
-    } else {
-      toast.error("Не удалось обновить профиль")
-    }
+  const onSubmit = (data: ProfileFormData) => {
+    // TODO: avatarFile upload not yet supported by backend
+    void avatarFile
+    updateProfile.mutate(
+      { fullName: data.name },
+      {
+        onSuccess: () => {
+          toast.success("Профиль обновлён")
+          setAvatarFile(null)
+        },
+        onError: () => {
+          toast.error("Не удалось обновить профиль")
+        },
+      }
+    )
   }
 
-  const avatarSrc = avatarPreview ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name ?? "U")}&size=120&background=random`
+  const avatarSrc = avatarPreview ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.fullName ?? "U")}&size=120&background=random`
 
   return (
     <Card>
@@ -161,7 +169,7 @@ export function ProfileInfoForm() {
               />
             </div>
 
-            <Button type="submit" loading={isSavingProfile} disabled={isSavingProfile}>
+            <Button type="submit" loading={updateProfile.isPending} disabled={updateProfile.isPending}>
               Сохранить изменения
             </Button>
           </form>

@@ -8,7 +8,7 @@ import { PreviewPanel } from "@/components/generation/preview-panel"
 import { DeployModal } from "@/components/generation/deploy-modal"
 import { MobileTabs } from "@/components/generation/mobile-tabs"
 import { useGeneration } from "@/lib/generation/use-generation"
-import { useProjectsStore } from "@/stores/projects"
+import { useProject } from "@/lib/hooks/use-projects"
 
 interface GeneratePageProps {
   params: Promise<{ id: string }>
@@ -18,8 +18,8 @@ export default function GeneratePage({ params }: GeneratePageProps) {
   const { id } = React.use(params)
   const [activeTab, setActiveTab] = React.useState("preview")
 
-  // Load project details
-  const { currentProject, loadProject } = useProjectsStore()
+  // Load project details via React Query hook
+  const { data: currentProject } = useProject(id)
 
   // Load generation state and actions
   const {
@@ -44,11 +44,6 @@ export default function GeneratePage({ params }: GeneratePageProps) {
 
   // Deploy modal state
   const [deployOpen, setDeployOpen] = React.useState(false)
-
-  // Load project on mount
-  React.useEffect(() => {
-    loadProject(id)
-  }, [id, loadProject])
 
   // Auto-switch to "code" tab when generation completes
   React.useEffect(() => {

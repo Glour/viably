@@ -3,7 +3,7 @@
 import { Crown, FolderKanban, Gem, CalendarClock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useSettingsStore } from "@/stores/settings"
+import { MOCK_USER_PLAN } from "@/lib/data/settings"
 
 function formatDate(dateStr: string): string {
   const [year, month, day] = dateStr.split("-")
@@ -11,25 +11,8 @@ function formatDate(dateStr: string): string {
 }
 
 export function CurrentPlanCard() {
-  const { currentPlan } = useSettingsStore()
-
-  if (!currentPlan) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Crown className="size-5 text-primary" />
-            Текущий план
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">Загрузка...</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  const { plan, usage, renewalDate } = currentPlan
+  // TODO: Replace with real API when backend plan endpoint is available
+  const { plan, usage, renewalDate } = MOCK_USER_PLAN
   const projectLimitLabel =
     plan.projectLimit !== null ? String(plan.projectLimit) : "\u221E"
 

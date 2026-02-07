@@ -1,13 +1,13 @@
 "use client"
 
-import { useEffect } from "react"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { TransactionRow } from "@/components/settings/transaction-row"
 import { useSettingsStore } from "@/stores/settings"
+import { useCreditTransactions } from "@/lib/hooks/use-credits"
 import { cn } from "@/lib/utils"
-import type { TransactionFilter } from "@/types"
+import type { TransactionFilter, CreditTransaction, TransactionType } from "@/types"
 
 const filters: { label: string; value: TransactionFilter }[] = [
   { label: "Все", value: "all" },
@@ -17,19 +17,27 @@ const filters: { label: string; value: TransactionFilter }[] = [
 ]
 
 export function TransactionHistory() {
+  const { transactionFilter, setTransactionFilter } = useSettingsStore()
+  const filterParam = transactionFilter === "all" ? undefined : transactionFilter
   const {
-    transactions,
-    transactionFilter,
-    isLoadingTransactions,
-    hasMoreTransactions,
-    loadTransactions,
-    loadMoreTransactions,
-    setTransactionFilter,
-  } = useSettingsStore()
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useCreditTransactions(filterParam ? { type: filterParam } : undefined)
 
-  useEffect(() => {
-    loadTransactions()
-  }, [loadTransactions])
+  const transactions: CreditTransaction[] = (
+    data?.pages.flatMap((page) => page.transactions) ?? []
+  ).map((tx) => ({
+    id: tx.id,
+    amount: tx.amount,
+    type: tx.transactionType as TransactionType,
+    description: tx.description ?? "",
+    createdAt: tx.createdAt,
+  }))
+
+  const isLoadingAny = isLoading || isFetchingNextPage
 
   return (
     <Card>
@@ -58,7 +66,7 @@ export function TransactionHistory() {
 
         {/* Transaction list */}
         <div>
-          {transactions.length === 0 && !isLoadingTransactions ? (
+          {transactions.length === 0 && !isLoadingAny ? (
             <p className="text-center text-sm text-muted-foreground py-8">
               Нет транзакций
             </p>
@@ -70,15 +78,15 @@ export function TransactionHistory() {
         </div>
 
         {/* Load more */}
-        {hasMoreTransactions && transactions.length > 0 && (
+        {hasNextPage && transactions.length > 0 && (
           <div className="mt-4 flex justify-center">
             <Button
               variant="outline"
               size="sm"
-              onClick={loadMoreTransactions}
-              disabled={isLoadingTransactions}
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage}
             >
-              {isLoadingTransactions && (
+              {isFetchingNextPage && (
                 <Loader2 className="size-4 animate-spin" />
               )}
               Загрузить ещё

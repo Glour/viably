@@ -1,96 +1,33 @@
 import { create } from "zustand"
-import type { ProjectsStoreState, ProjectFilter, ProjectSort, ViewMode } from "@/types"
-import { getProjects, getProjectById, deleteProject as deleteProjectApi } from "@/lib/api/projects"
+import type { ProjectFilter, ProjectSort, ViewMode } from "@/types"
 
-export const useProjectsStore = create<ProjectsStoreState>((set, get) => ({
-  projects: [],
-  currentProject: null,
+/**
+ * UI-only store for the projects list page.
+ *
+ * Data fetching and mutations are handled by React Query hooks
+ * (`useProjects`, `useDeleteProject`, etc.) in `@/lib/hooks/use-projects`.
+ * This store only tracks ephemeral client-side UI state (search, filters,
+ * sort order, view mode).
+ */
+
+interface ProjectsUIState {
+  searchQuery: string
+  filter: ProjectFilter
+  sort: ProjectSort
+  viewMode: ViewMode
+  setSearchQuery: (query: string) => void
+  setFilter: (filter: ProjectFilter) => void
+  setSort: (sort: ProjectSort) => void
+  setViewMode: (mode: ViewMode) => void
+}
+
+export const useProjectsStore = create<ProjectsUIState>((set) => ({
   searchQuery: "",
-  filter: "all" as ProjectFilter,
-  sort: "newest" as ProjectSort,
-  viewMode: "grid" as ViewMode,
-  isLoading: false,
-
-  loadProjects: async () => {
-    set({ isLoading: true })
-
-    const res = await getProjects()
-
-    set({
-      projects: res.success ? res.projects : [],
-      isLoading: false,
-    })
-  },
-
-  loadProject: async (id: string) => {
-    set({ isLoading: true })
-
-    const res = await getProjectById(id)
-
-    set({
-      currentProject: res.success ? res.project : null,
-      isLoading: false,
-    })
-  },
-
-  setSearchQuery: (query: string) => {
-    set({ searchQuery: query })
-  },
-
-  setFilter: (filter: ProjectFilter) => {
-    set({ filter })
-  },
-
-  setSort: (sort: ProjectSort) => {
-    set({ sort })
-  },
-
-  setViewMode: (mode: ViewMode) => {
-    set({ viewMode: mode })
-  },
-
-  deleteProject: async (id: string) => {
-    const res = await deleteProjectApi(id)
-
-    if (res.success) {
-      const { projects, currentProject } = get()
-
-      set({
-        projects: projects.filter((p) => p.id !== id),
-        currentProject: currentProject?.id === id ? null : currentProject,
-      })
-    }
-  },
-
-  getFilteredProjects: () => {
-    const { projects, searchQuery, filter, sort } = get()
-    const query = searchQuery.toLowerCase()
-
-    const filtered = projects.filter((p) => {
-      const matchesFilter =
-        filter === "all" || p.status === filter
-
-      const matchesSearch =
-        !query ||
-        p.name.toLowerCase().includes(query) ||
-        p.description.toLowerCase().includes(query)
-
-      return matchesFilter && matchesSearch
-    })
-
-    const sorted = [...filtered].sort((a, b) => {
-      switch (sort) {
-        case "newest":
-          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        case "oldest":
-          return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
-        case "name":
-          return a.name.localeCompare(b.name)
-        default:
-          return 0
-      }
-    })
-
-    return sorted
-  },
+  filter: "all",
+  sort: "newest",
+  viewMode: "grid",
+  setSearchQuery: (query) => set({ searchQuery: query }),
+  setFilter: (filter) => set({ filter }),
+  setSort: (sort) => set({ sort }),
+  setViewMode: (mode) => set({ viewMode: mode }),
 }))

@@ -17,11 +17,10 @@ import {
 } from "@/components/ui/form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PasswordStrength } from "@/components/auth/password-strength"
-import { useSettingsStore } from "@/stores/settings"
+import { changePassword } from "@/lib/api/settings"
 import { changePasswordSchema, type ChangePasswordFormData } from "@/lib/validations/settings"
 
 export function ChangePasswordForm() {
-  const { changePassword } = useSettingsStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showCurrent, setShowCurrent] = useState(false)
   const [showNew, setShowNew] = useState(false)

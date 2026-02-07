@@ -1,15 +1,18 @@
 "use client"
 
 import Link from "next/link"
-import { Gem, FolderKanban, Rocket } from "lucide-react"
+import { Gem } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Shimmer } from "@/components/ui/shimmer"
 import { useCountUp } from "@/hooks/use-count-up"
-import type { UserProfile } from "@/types"
+import { useCurrentUser } from "@/lib/hooks/use-user"
+import { useCreditBalance } from "@/lib/hooks/use-credits"
+import type { PlanType } from "@/types"
 
 const planBadgeVariant: Record<
-  UserProfile["plan"],
+  PlanType,
   "default" | "secondary"
 > = {
   free: "secondary",
@@ -18,16 +21,32 @@ const planBadgeVariant: Record<
   business: "default",
 }
 
-interface WelcomeCardProps {
-  user: UserProfile
-}
+export function WelcomeCard() {
+  const { data: user, isLoading: isLoadingUser } = useCurrentUser()
+  const { data: balance, isLoading: isLoadingBalance } = useCreditBalance()
 
-export function WelcomeCard({ user }: WelcomeCardProps) {
-  const animatedCredits = useCountUp(user.credits)
-  const animatedProjects = useCountUp(user.projectsCount)
-  const animatedDeployed = useCountUp(user.deployedCount)
+  const credits = balance?.credits ?? user?.credits ?? 0
+  const plan = (balance?.plan ?? user?.plan ?? "free") as PlanType
+  const animatedCredits = useCountUp(credits)
 
-  const atProjectLimit = user.projectsCount >= user.projectsLimit
+  const isLoading = isLoadingUser || isLoadingBalance
+
+  if (isLoading || !user) {
+    return (
+      <div className="relative rounded-2xl p-6 bg-[var(--primary-subtle)] overflow-hidden">
+        <Shimmer width="40%" height="1.75rem" />
+        <div className="flex flex-col sm:flex-row gap-3 mt-4">
+          <Shimmer className="rounded-xl" height="6rem" />
+        </div>
+        <div className="flex gap-3 mt-6">
+          <Shimmer width="10rem" height="2.5rem" className="rounded-md" />
+          <Shimmer width="12rem" height="2.5rem" className="rounded-md" />
+        </div>
+      </div>
+    )
+  }
+
+  const displayName = user.fullName || user.email.split("@")[0]
 
   return (
     <div className="relative rounded-2xl p-6 bg-[var(--primary-subtle)] overflow-hidden">
@@ -39,15 +58,15 @@ export function WelcomeCard({ user }: WelcomeCardProps) {
 
       {/* Greeting */}
       <h2 className="font-heading text-2xl font-bold truncate max-w-[300px]">
-        Привет, {user.name}!
+        Привет, {displayName}!
       </h2>
 
-      {/* Stat cards */}
+      {/* Stat card */}
       <div className="flex flex-col sm:flex-row gap-3 mt-4">
         {/* Credits */}
         <div
           className="bg-card/60 backdrop-blur-sm border rounded-xl p-4 flex-1 min-w-0"
-          aria-label={`Баланс кредитов: ${user.credits}`}
+          aria-label={`Баланс кредитов: ${credits}`}
         >
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Gem className="size-4 shrink-0" />
@@ -57,47 +76,10 @@ export function WelcomeCard({ user }: WelcomeCardProps) {
             {animatedCredits}
           </p>
           <div className="mt-1">
-            <Badge variant={planBadgeVariant[user.plan]}>
-              {user.plan}
+            <Badge variant={planBadgeVariant[plan]}>
+              {plan}
             </Badge>
           </div>
-        </div>
-
-        {/* Projects */}
-        <div
-          className="bg-card/60 backdrop-blur-sm border rounded-xl p-4 flex-1 min-w-0"
-          aria-label={`Проектов: ${user.projectsCount} из ${user.projectsLimit}`}
-        >
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <FolderKanban className="size-4 shrink-0" />
-            <span>Проектов</span>
-          </div>
-          <p className="font-code text-2xl font-bold mt-1">
-            {animatedProjects}
-          </p>
-          <p className="text-sm text-muted-foreground mt-1">
-            из {user.projectsLimit}
-            {atProjectLimit && (
-              <span className="text-destructive"> (лимит)</span>
-            )}
-          </p>
-        </div>
-
-        {/* Deployed */}
-        <div
-          className="bg-card/60 backdrop-blur-sm border rounded-xl p-4 flex-1 min-w-0"
-          aria-label={`Deployed: ${user.deployedCount} из ${user.projectsCount}`}
-        >
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Rocket className="size-4 shrink-0" />
-            <span>Deployed</span>
-          </div>
-          <p className="font-code text-2xl font-bold mt-1">
-            {animatedDeployed}
-          </p>
-          <p className="text-sm text-muted-foreground mt-1">
-            из {user.projectsCount}
-          </p>
         </div>
       </div>
 

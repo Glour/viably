@@ -1,12 +1,13 @@
 "use client"
 
-import { useSettingsStore } from "@/stores/settings"
 import { PlanCard } from "@/components/settings/plan-card"
+import { AVAILABLE_PLANS, MOCK_USER_PLAN } from "@/lib/data/settings"
 
 export function PlanComparison() {
-  const { currentPlan, availablePlans } = useSettingsStore()
-
-  const currentTier = currentPlan?.plan.tier ?? "free"
+  // TODO: Replace with real API when backend plan endpoint is available
+  const currentPlan = MOCK_USER_PLAN
+  const availablePlans = AVAILABLE_PLANS
+  const currentTier = currentPlan.plan.tier
 
   return (
     <div className="space-y-4">
