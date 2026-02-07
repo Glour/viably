@@ -56,6 +56,7 @@ export function PreviewPanel({
               steps={generation.steps}
               progress={generation.progress}
               currentStep={generation.currentStep}
+              codeSnippets={generation.codeSnippets}
             />
           </motion.div>
         )

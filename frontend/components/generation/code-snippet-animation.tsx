@@ -1,30 +1,49 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { Highlight, themes } from "prism-react-renderer"
 import { motion, AnimatePresence } from "motion/react"
 
 interface CodeSnippetAnimationProps {
-  snippets: { language: string; code: string }[]
+  snippets: string[] | { language: string; code: string }[]
+}
+
+/**
+ * Normalize snippets to structured format
+ * Accepts either plain strings or structured objects
+ */
+function normalizeSnippets(
+  snippets: string[] | { language: string; code: string }[]
+): { language: string; code: string }[] {
+  if (snippets.length === 0) return []
+
+  // Check if first element is a string
+  if (typeof snippets[0] === "string") {
+    return (snippets as string[]).map((code) => ({
+      language: "python", // Default for bot templates
+      code,
+    }))
+  }
+
+  return snippets as { language: string; code: string }[]
 }
 
 export function CodeSnippetAnimation({ snippets }: CodeSnippetAnimationProps) {
+  const normalizedSnippets = useMemo(() => normalizeSnippets(snippets), [snippets])
   const [currentSnippetIndex, setCurrentSnippetIndex] = useState(0)
   const [charIndex, setCharIndex] = useState(0)
   const [isComplete, setIsComplete] = useState(false)
 
-  const currentSnippet = snippets[currentSnippetIndex] as
-    | { language: string; code: string }
-    | undefined
+  const currentSnippet = normalizedSnippets[currentSnippetIndex]
 
   const advanceToNextSnippet = useCallback(() => {
-    if (currentSnippetIndex < snippets.length - 1) {
+    if (currentSnippetIndex < normalizedSnippets.length - 1) {
       setCurrentSnippetIndex((prev) => prev + 1)
       setCharIndex(0)
     } else {
       setIsComplete(true)
     }
-  }, [currentSnippetIndex, snippets.length])
+  }, [currentSnippetIndex, normalizedSnippets.length])
 
   useEffect(() => {
     if (isComplete || !currentSnippet) return
@@ -43,12 +62,12 @@ export function CodeSnippetAnimation({ snippets }: CodeSnippetAnimationProps) {
     return () => clearInterval(interval)
   }, [charIndex, currentSnippet, isComplete, advanceToNextSnippet])
 
-  if (snippets.length === 0) return null
+  if (normalizedSnippets.length === 0) return null
 
   return (
     <div className="space-y-3">
       <AnimatePresence>
-        {snippets.map((snippet, index) => {
+        {normalizedSnippets.map((snippet, index) => {
           if (index > currentSnippetIndex) return null
 
           const isActive = index === currentSnippetIndex && !isComplete

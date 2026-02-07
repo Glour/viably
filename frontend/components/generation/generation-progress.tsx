@@ -3,13 +3,13 @@
 import { motion } from "motion/react"
 import { Check, Circle, Loader2, X } from "lucide-react"
 import { CodeSnippetAnimation } from "./code-snippet-animation"
-import { MOCK_CODE_SNIPPETS } from "@/lib/data/generation"
 import type { GenerationStep } from "@/types"
 
 interface GenerationProgressProps {
   steps: GenerationStep[]
   progress: number
   currentStep: number
+  codeSnippets?: string[]
 }
 
 function StepIcon({ status }: { status: GenerationStep["status"] }) {
@@ -56,6 +56,7 @@ export function GenerationProgress({
   steps,
   progress,
   currentStep,
+  codeSnippets = [],
 }: GenerationProgressProps) {
   return (
     <div className="flex flex-col h-full p-6">
@@ -100,9 +101,9 @@ export function GenerationProgress({
       </div>
 
       {/* Code snippets */}
-      {currentStep >= 2 && (
+      {currentStep >= 2 && codeSnippets.length > 0 && (
         <div className="mt-6 flex-1 overflow-auto">
-          <CodeSnippetAnimation snippets={MOCK_CODE_SNIPPETS.slice(0, 3)} />
+          <CodeSnippetAnimation snippets={codeSnippets} />
         </div>
       )}
     </div>

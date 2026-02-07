@@ -105,6 +105,7 @@ export function useGenerationWrapper(projectId: string) {
       error: wsGeneration.error,
       startedAt: null, // WebSocket hook doesn't track timestamps
       completedAt: null,
+      codeSnippets: wsGeneration.codeSnippets,
     }
   }, [wsGeneration])
 
