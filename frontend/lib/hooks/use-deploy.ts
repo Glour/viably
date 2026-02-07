@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import useWebSocket, { ReadyState } from "react-use-websocket"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuthStore } from "@/stores/auth"
@@ -48,15 +48,24 @@ export function useDeploy(projectId: string) {
   // T067: Offline detection
   const isOffline = useOfflineDetection()
 
+  // T069: Memoize initial steps computation to avoid recreating on every render
+  const initialSteps = useMemo(
+    () => DEPLOY_STEPS.map((s) => ({ ...s, status: "pending" as StepStatus })),
+    []
+  )
+
   // Initial state
-  const INITIAL_STATE: DeployProgressState = {
-    status: "idle",
-    currentStep: 0,
-    steps: DEPLOY_STEPS.map((s) => ({ ...s, status: "pending" as StepStatus })),
-    progress: 0,
-    deploymentInfo: null,
-    error: null,
-  }
+  const INITIAL_STATE: DeployProgressState = useMemo(
+    () => ({
+      status: "idle",
+      currentStep: 0,
+      steps: initialSteps,
+      progress: 0,
+      deploymentInfo: null,
+      error: null,
+    }),
+    [initialSteps]
+  )
 
   const [state, setState] = useState<DeployProgressState>(INITIAL_STATE)
 

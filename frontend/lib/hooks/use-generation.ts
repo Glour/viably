@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import useWebSocket, { ReadyState } from "react-use-websocket"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuthStore } from "@/stores/auth"
@@ -57,16 +57,25 @@ export function useGeneration(projectId: string) {
   // T067: Offline detection
   const isOffline = useOfflineDetection()
 
+  // T069: Memoize initial steps computation to avoid recreating on every render
+  const initialSteps = useMemo(
+    () => GENERATION_STEPS.map((s) => ({ ...s, status: "pending" as StepStatus })),
+    []
+  )
+
   // Initial state
-  const INITIAL_STATE: GenerationProgressState = {
-    status: "idle",
-    currentStep: 0,
-    steps: GENERATION_STEPS.map((s) => ({ ...s, status: "pending" as StepStatus })),
-    progress: 0,
-    codeSnippets: [],
-    generatedCode: null,
-    error: null,
-  }
+  const INITIAL_STATE: GenerationProgressState = useMemo(
+    () => ({
+      status: "idle",
+      currentStep: 0,
+      steps: initialSteps,
+      progress: 0,
+      codeSnippets: [],
+      generatedCode: null,
+      error: null,
+    }),
+    [initialSteps]
+  )
 
   const [state, setState] = useState<GenerationProgressState>(INITIAL_STATE)
 
