@@ -9,7 +9,8 @@ import { Eye, EyeOff } from "lucide-react"
 import { toast } from "sonner"
 
 import { registerSchema, type RegisterFormData } from "@/lib/validations/auth"
-import { mockRegister } from "@/lib/api/auth"
+import { useAuthStore } from "@/stores/auth"
+import { ApiError } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -51,23 +52,16 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      const response = await mockRegister({
-        name: data.name,
+      await useAuthStore.getState().register({
         email: data.email,
         password: data.password,
+        fullName: data.name,
       })
-
-      if (response.success) {
-        toast.success("Account created successfully!")
-        router.push(response.redirectTo)
-      } else {
-        toast.error(response.error)
-        // Trigger shake animation
-        setIsShaking(true)
-        setTimeout(() => setIsShaking(false), 300)
-      }
+      toast.success("Account created successfully!")
+      router.push("/dashboard")
     } catch (error) {
-      toast.error("An unexpected error occurred. Please try again.")
+      const message = error instanceof ApiError ? error.message : "An unexpected error occurred. Please try again."
+      toast.error(message)
       setIsShaking(true)
       setTimeout(() => setIsShaking(false), 300)
     }

@@ -1,11 +1,11 @@
 import { NextResponse, NextRequest } from "next/server"
 
 const authRoutes = ["/login", "/register", "/forgot-password"]
-const protectedRoutes = ["/dashboard"]
+const protectedRoutes = ["/dashboard", "/projects", "/settings", "/templates"]
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const hasSession = request.cookies.has("session")
+  const hasSession = request.cookies.has("viably_session")
 
   // Authenticated users visiting auth pages → redirect to dashboard
   if (authRoutes.includes(pathname) && hasSession) {
@@ -13,8 +13,13 @@ export function proxy(request: NextRequest) {
   }
 
   // Unauthenticated users visiting protected pages → redirect to login
-  if (protectedRoutes.includes(pathname) && !hasSession) {
-    return NextResponse.redirect(new URL("/login", request.url))
+  const isProtected = protectedRoutes.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  )
+  if (isProtected && !hasSession) {
+    const loginUrl = new URL("/login", request.url)
+    loginUrl.searchParams.set("returnUrl", pathname)
+    return NextResponse.redirect(loginUrl)
   }
 
   return NextResponse.next()
