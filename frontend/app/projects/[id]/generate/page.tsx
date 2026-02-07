@@ -7,7 +7,7 @@ import { ChatPanel } from "@/components/generation/chat-panel"
 import { PreviewPanel } from "@/components/generation/preview-panel"
 import { DeployModal } from "@/components/generation/deploy-modal"
 import { MobileTabs } from "@/components/generation/mobile-tabs"
-import { useGeneration } from "@/lib/generation/use-generation"
+import { useGenerationWrapper as useGeneration } from "@/lib/generation/use-generation-wrapper"
 import { useProject } from "@/lib/hooks/use-projects"
 
 interface GeneratePageProps {
