@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -9,7 +9,8 @@ import { Eye, EyeOff } from "lucide-react"
 import { toast } from "sonner"
 
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth"
-import { mockLogin } from "@/lib/api/auth"
+import { useAuthStore } from "@/stores/auth"
+import { ApiError } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -24,6 +25,7 @@ import { SocialLoginButtons } from "@/components/auth/social-login-buttons"
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [showPassword, setShowPassword] = useState(false)
   const [isShaking, setIsShaking] = useState(false)
 
@@ -39,22 +41,13 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const response = await mockLogin({
-        email: data.email,
-        password: data.password,
-      })
-
-      if (response.success) {
-        toast.success("Successfully signed in!")
-        router.push(response.redirectTo)
-      } else {
-        toast.error(response.error)
-        // Trigger shake animation
-        setIsShaking(true)
-        setTimeout(() => setIsShaking(false), 300)
-      }
+      await useAuthStore.getState().login(data.email, data.password)
+      toast.success("Successfully signed in!")
+      const returnUrl = searchParams.get("returnUrl") || "/dashboard"
+      router.push(returnUrl)
     } catch (error) {
-      toast.error("An unexpected error occurred. Please try again.")
+      const message = error instanceof ApiError ? error.message : "An unexpected error occurred. Please try again."
+      toast.error(message)
       setIsShaking(true)
       setTimeout(() => setIsShaking(false), 300)
     }

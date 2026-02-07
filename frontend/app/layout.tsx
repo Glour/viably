@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { ThemeProvider } from "next-themes"
 import { Toaster } from "@/components/ui/sonner"
+import { AuthInitializer } from "@/components/auth/auth-initializer"
 import { spaceGrotesk, inter, jetbrainsMono } from "./fonts"
 import "./globals.css"
 
@@ -28,6 +29,7 @@ export default function RootLayout({
           storageKey="viably-theme"
           disableTransitionOnChange={false}
         >
+          <AuthInitializer />
           {children}
           <Toaster richColors position="top-right" />
         </ThemeProvider>
