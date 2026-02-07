@@ -183,8 +183,8 @@
 
 **Independent Test**: Change name in settings, verify navbar updates immediately after save
 
-- [ ] T043 [US7] Update profile settings page in frontend/app/(main)/settings/profile/page.tsx — replace useSettingsStore.loadProfile/updateProfile with useCurrentUser() + useUpdateProfile(); form submits to updateProfile mutation; onSuccess navbar reflects updated name; add loading/saving states; show error toast on failure
-- [ ] T044 [US7] Simplify settings store in frontend/stores/settings.ts — remove loadProfile, updateProfile, profile, isLoadingProfile, isSavingProfile, changePassword, loadPlan, currentPlan, availablePlans, isLoadingPlan; keep only transactionFilter from US6
+- [x] T043 [US7] Update profile settings page + profile-info-form — replaced useSettingsStore with useCurrentUser() + useUpdateProfile() hooks
+- [x] T044 [US7] Final settings store simplification — UI-only: transactionFilter. Plan/password components use mock data and API directly
 
 → Artifacts: `frontend/app/(main)/settings/profile/page.tsx`, `frontend/stores/settings.ts` (final simplification)
 
