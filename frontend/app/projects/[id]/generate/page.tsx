@@ -7,6 +7,7 @@ import { ChatPanel } from "@/components/generation/chat-panel"
 import { PreviewPanel } from "@/components/generation/preview-panel"
 import { DeployModal } from "@/components/generation/deploy-modal"
 import { MobileTabs } from "@/components/generation/mobile-tabs"
+import { GenerationErrorBoundary } from "@/components/generation/error-boundary"
 import { useGenerationWrapper as useGeneration } from "@/lib/generation/use-generation-wrapper"
 import { useProject } from "@/lib/hooks/use-projects"
 
@@ -124,7 +125,8 @@ export default function GeneratePage({ params }: GeneratePageProps) {
       />
 
       {/* Desktop: Split layout */}
-      <div className="hidden md:flex flex-1 overflow-hidden">
+      <GenerationErrorBoundary>
+        <div className="hidden md:flex flex-1 overflow-hidden">
         <Group
           orientation="horizontal"
           id="gen-layout"
@@ -168,10 +170,12 @@ export default function GeneratePage({ params }: GeneratePageProps) {
             />
           </Panel>
         </Group>
-      </div>
+        </div>
+      </GenerationErrorBoundary>
 
       {/* Mobile: Tabbed interface */}
-      <div className="flex md:hidden flex-1 overflow-hidden flex-col">
+      <GenerationErrorBoundary>
+        <div className="flex md:hidden flex-1 overflow-hidden flex-col">
         <div className="flex-1 overflow-hidden">
           {mobileTab === "chat" ? (
             <ChatPanel
@@ -207,7 +211,8 @@ export default function GeneratePage({ params }: GeneratePageProps) {
 
         {/* Bottom tabs */}
         <MobileTabs activeTab={mobileTab} onTabChange={setMobileTab} />
-      </div>
+        </div>
+      </GenerationErrorBoundary>
 
       {/* Deploy Modal */}
       <DeployModal
