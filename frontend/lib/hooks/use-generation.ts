@@ -1,11 +1,16 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import useWebSocket, { ReadyState } from "react-use-websocket"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuthStore } from "@/stores/auth"
 import { getAccessToken } from "@/lib/api/tokens"
 import { startGeneration as apiStartGeneration } from "@/lib/api/generation"
 import { queryKeys } from "@/lib/api/query-keys"
-import { GENERATION_STEPS } from "@/lib/data/generation"
+import {
+  GENERATION_STEPS,
+  MAX_RECONNECT_ATTEMPTS,
+  INITIAL_RECONNECT_INTERVAL,
+  MAX_RECONNECT_INTERVAL,
+} from "@/lib/data/generation"
 import type {
   WebSocketMessage,
   GenerationProgressState,
@@ -19,6 +24,7 @@ import type {
  * WebSocket hook for real-time AI code generation progress
  *
  * User Story 1 (T019-T025): WebSocket Generation Flow
+ * User Story 2 (T030-T035): Resilient Reconnection
  *
  * Architecture:
  * Component → useGeneration → useWebSocket (react-use-websocket) → Backend WS
@@ -31,6 +37,12 @@ import type {
  * - T023: Handle generation_error messages
  * - T024: React Query invalidation after completion
  * - T025: Accumulate code snippets for typewriter animation
+ * - T030: Smart shouldReconnect logic (no reconnect on normal closure/unmount)
+ * - T031: Exponential backoff (3s → 6s → 12s → 24s → 48s)
+ * - T032: Max 5 reconnect attempts
+ * - T033: onReconnectStop error handling
+ * - T034: Lifecycle management with didUnmount ref
+ * - T035: Track reconnection state for UI
  *
  * @param projectId - Project UUID to track generation for
  * @returns Hook state and control functions
@@ -53,20 +65,83 @@ export function useGeneration(projectId: string) {
 
   const [state, setState] = useState<GenerationProgressState>(INITIAL_STATE)
 
+  // T034: Track component lifecycle to prevent reconnection after unmount
+  const didUnmount = useRef(false)
+
+  // T035: Track reconnection attempts and state for UI display
+  const [reconnectAttempts, setReconnectAttempts] = useState(0)
+  const [isReconnecting, setIsReconnecting] = useState(false)
+
+  // T034: Set didUnmount flag on component unmount
+  useEffect(() => {
+    return () => {
+      didUnmount.current = true
+    }
+  }, [])
+
   // T020: Construct WebSocket URL with user ID and auth token
   const wsUrl =
     user && token
       ? `${process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000"}/ws/${user.id}?token=${token}`
       : null
 
-  // T020: Establish WebSocket connection with auto-reconnect
+  // T020, T030-T033: Establish WebSocket connection with resilient reconnection
   const { lastJsonMessage, readyState } = useWebSocket<WebSocketMessage>(
     wsUrl,
     {
       share: true, // Multi-tab sync
-      shouldReconnect: () => true, // Auto-reconnect on disconnect
-      reconnectAttempts: 5,
-      reconnectInterval: 3000,
+
+      // T030: Smart reconnection logic
+      // Don't reconnect on normal closure (code 1000) or after component unmount
+      shouldReconnect: (closeEvent) => {
+        // Don't reconnect if component unmounted
+        if (didUnmount.current) return false
+
+        // Don't reconnect on normal closure (e.g., user logout, intentional disconnect)
+        if (closeEvent.code === 1000) return false
+
+        // Always reconnect on abnormal closures (network issues, server restart, etc.)
+        return true
+      },
+
+      // T032: Maximum 5 reconnection attempts
+      reconnectAttempts: MAX_RECONNECT_ATTEMPTS,
+
+      // T031: Exponential backoff with cap
+      // Formula: baseInterval * 2^attemptNumber, capped at MAX_RECONNECT_INTERVAL
+      // Progression: 3s → 6s → 12s → 24s → 48s
+      reconnectInterval: (attemptNumber) => {
+        const interval = Math.min(
+          INITIAL_RECONNECT_INTERVAL * Math.pow(2, attemptNumber),
+          MAX_RECONNECT_INTERVAL
+        )
+
+        // T035: Update reconnection state for UI
+        setReconnectAttempts(attemptNumber + 1)
+        setIsReconnecting(true)
+
+        return interval
+      },
+
+      // T033: Handle reconnection failure after max attempts
+      onReconnectStop: (numAttempts) => {
+        setIsReconnecting(false)
+        setReconnectAttempts(0)
+
+        console.error(`WebSocket reconnection failed after ${numAttempts} attempts`)
+
+        // Set error state so UI can show manual reconnect button
+        setState((prev) => ({
+          ...prev,
+          error: "Connection lost. Please check your internet and refresh the page.",
+        }))
+      },
+
+      // Reset reconnection state on successful connection
+      onOpen: () => {
+        setReconnectAttempts(0)
+        setIsReconnecting(false)
+      },
     },
     // Only connect if user is authenticated
     !!wsUrl
@@ -220,8 +295,12 @@ export function useGeneration(projectId: string) {
     cancelGeneration,
     retryGeneration,
 
-    // WebSocket connection state (optional, for debugging)
+    // WebSocket connection state
     isConnected: readyState === ReadyState.OPEN,
     connectionState: readyState,
+
+    // T035: Reconnection state for UI display
+    reconnectAttempts,
+    isReconnecting,
   }
 }
