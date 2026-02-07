@@ -1,0 +1,87 @@
+{
+  "phase": "dead-code-removal",
+  "timestamp": "2026-02-07T00:00:00.000Z",
+  "priority": "high",
+  "items_targeted": ["#3", "#4", "#6", "#7", "#8", "#9", "#10"],
+  "items_completed": ["#3", "#4", "#6", "#7", "#8", "#9", "#10"],
+  "items_failed": [],
+  "files_deleted": [
+    {
+      "path": "frontend/components/layout/sidebar.tsx",
+      "backup": ".tmp/current/backups/.rollback/frontend-components-layout-sidebar.tsx.backup",
+      "deadCodeItem": "#3 - Unused Sidebar component (71 lines)",
+      "timestamp": "2026-02-07T00:01:00.000Z"
+    },
+    {
+      "path": "frontend/stores/sidebar.ts",
+      "backup": ".tmp/current/backups/.rollback/frontend-stores-sidebar.ts.backup",
+      "deadCodeItem": "#4 - Unused sidebar store (9 lines)",
+      "timestamp": "2026-02-07T00:01:00.000Z"
+    }
+  ],
+  "dependencies_removed": [
+    {
+      "name": "@tanstack/react-query",
+      "version": "^5.90.20",
+      "deadCodeItem": "#6 - Zero imports in codebase",
+      "timestamp": "2026-02-07T00:02:00.000Z"
+    }
+  ],
+  "files_modified": [
+    {
+      "path": "frontend/types/index.ts",
+      "backup": ".tmp/current/backups/.rollback/frontend-types-index.ts.backup",
+      "changes": [
+        "Removed SidebarState interface (item #3/#4 cleanup)",
+        "Removed StartGenerationResponse type (item #7 cleanup)",
+        "Removed StartDeploymentResponse type (item #7 cleanup)",
+        "Removed UpdateEnvVarsResponse type (item #8 cleanup)"
+      ],
+      "timestamp": "2026-02-07T00:03:00.000Z"
+    },
+    {
+      "path": "frontend/lib/api/generation.ts",
+      "backup": ".tmp/current/backups/.rollback/frontend-lib-api-generation.ts.backup",
+      "changes": [
+        "Removed startGeneration function (item #7)",
+        "Removed startDeployment function (item #7)",
+        "Cleaned up unused type imports (ConfigFormValues, DeployConfig, StartGenerationResponse, StartDeploymentResponse)"
+      ],
+      "timestamp": "2026-02-07T00:03:00.000Z"
+    },
+    {
+      "path": "frontend/lib/api/projects.ts",
+      "backup": ".tmp/current/backups/.rollback/frontend-lib-api-projects.ts.backup",
+      "changes": [
+        "Removed updateProjectEnvVars function (item #8)",
+        "Cleaned up unused type imports (UpdateEnvVarsResponse, EnvVariable)"
+      ],
+      "timestamp": "2026-02-07T00:04:00.000Z"
+    },
+    {
+      "path": "frontend/lib/api/templates.ts",
+      "backup": ".tmp/current/backups/.rollback/frontend-lib-api-templates.ts.backup",
+      "changes": [
+        "Removed getTemplateBySlug function (item #9)",
+        "Cleaned up unused type import (TemplateResponse)"
+      ],
+      "timestamp": "2026-02-07T00:04:00.000Z"
+    },
+    {
+      "path": "backend/app/core/db_utils.py",
+      "backup": ".tmp/current/backups/.rollback/backend-app-core-db_utils.py.backup",
+      "changes": [
+        "Removed get_by_id function (item #10)",
+        "Removed paginate function (item #10)",
+        "Cleaned up unused imports (TypeVar, func, Select)"
+      ],
+      "timestamp": "2026-02-07T00:05:00.000Z"
+    }
+  ],
+  "knip_fixes_applied": false,
+  "manual_fixes_count": 7,
+  "validation": {
+    "type_check": "PASSED",
+    "build": "NOT_RUN"
+  }
+}

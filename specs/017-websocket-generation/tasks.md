@@ -200,12 +200,12 @@ Project structure: `frontend/` (web app, frontend only)
 
 ### Implementation for User Story 5
 
-- [ ] T054 [US5] Add cancelGeneration function to frontend/lib/api/generation.ts per REST API contract (POST /api/projects/{id}/cancel-generation)
-- [ ] T055 [US5] Add cancelGeneration action to useGeneration hook return interface
-- [ ] T056 [US5] Implement cancelGeneration handler that calls API and closes WebSocket in useGeneration hook
-- [ ] T057 [US5] Add Cancel button to preview-panel.tsx during generation status
-- [ ] T058 [US5] Show credits refunded notification on successful cancellation in preview-panel.tsx
-- [ ] T059 [US5] Reset generation state to idle after cancellation in useGeneration hook
+- [X] T054 [US5] Add cancelGeneration function to frontend/lib/api/generation.ts per REST API contract (POST /api/projects/{id}/cancel-generation) → Artifacts: [generation.ts](../../../frontend/lib/api/generation.ts#L199-L206)
+- [X] T055 [US5] Add cancelGeneration action to useGeneration hook return interface → Artifacts: [use-generation.ts](../../../frontend/lib/hooks/use-generation.ts#L274-L293), [use-generation-wrapper.ts](../../../frontend/lib/generation/use-generation-wrapper.ts#L205)
+- [X] T056 [US5] Implement cancelGeneration handler that calls API and closes WebSocket in useGeneration hook → Artifacts: [use-generation.ts](../../../frontend/lib/hooks/use-generation.ts#L274-L291)
+- [X] T057 [US5] Add Cancel button to preview-panel.tsx during generation status → Artifacts: [generation-progress.tsx](../../../frontend/components/generation/generation-progress.tsx#L48-L54), [preview-panel.tsx](../../../frontend/components/generation/preview-panel.tsx#L101), [generate/page.tsx](../../../frontend/app/projects/[id]/generate/page.tsx#L163)
+- [X] T058 [US5] Show credits refunded notification on successful cancellation in preview-panel.tsx → Artifacts: [use-generation.ts](../../../frontend/lib/hooks/use-generation.ts#L282)
+- [X] T059 [US5] Reset generation state to idle after cancellation in useGeneration hook → Artifacts: [use-generation.ts](../../../frontend/lib/hooks/use-generation.ts#L279)
 
 **Checkpoint**: User Story 5 complete - users can cancel generation at any time
 
@@ -217,16 +217,16 @@ Project structure: `frontend/` (web app, frontend only)
 
 ### Error Handling & Edge Cases
 
-- [ ] T060 [P] Implement unknown message type handler (console.warn, graceful degradation) in useGeneration hook
-- [ ] T061 [P] Implement out-of-order message protection (check step numbers) in useGeneration hook
-- [ ] T062 [P] Add error boundary wrapper for generation components in frontend/components/generation/error-boundary.tsx
-- [ ] T063 [P] Add toast notification system integration for WebSocket errors using sonner
+- [X] T060 [P] Implement unknown message type handler (console.warn, graceful degradation) in useGeneration hook → Artifacts: [use-generation.ts](../../../frontend/lib/hooks/use-generation.ts#L238-L247), [use-deploy.ts](../../../frontend/lib/hooks/use-deploy.ts#L226-L235)
+- [X] T061 [P] Implement out-of-order message protection (check step numbers) in useGeneration hook → Artifacts: [use-generation.ts](../../../frontend/lib/hooks/use-generation.ts#L166-L171), [use-deploy.ts](../../../frontend/lib/hooks/use-deploy.ts#L153-L158)
+- [X] T062 [P] Add error boundary wrapper for generation components in frontend/components/generation/error-boundary.tsx → Artifacts: [error-boundary.tsx](../../../frontend/components/generation/error-boundary.tsx), [generate/page.tsx](../../../frontend/app/projects/[id]/generate/page.tsx#L8,L128,L174,L177,L215)
+- [X] T063 [P] Add toast notification system integration for WebSocket errors using sonner → Artifacts: [use-generation.ts](../../../frontend/lib/hooks/use-generation.ts#L133,L145-L147,L229), [use-deploy.ts](../../../frontend/lib/hooks/use-deploy.ts#L8,L124,L136-L138,L213)
 
 ### Offline Detection (FR-017)
 
-- [ ] T064 Create useOfflineDetection hook in frontend/lib/hooks/use-offline-detection.ts using navigator.onLine
-- [ ] T065 Add offline banner component in frontend/components/ui/offline-banner.tsx
-- [ ] T066 Integrate offline banner into main layout when offline detected
+- [X] T064 Create useOfflineDetection hook in frontend/lib/hooks/use-offline-detection.ts using navigator.onLine → Artifacts: [use-offline-detection.ts](../../../frontend/lib/hooks/use-offline-detection.ts)
+- [X] T065 Add offline banner component in frontend/components/ui/offline-banner.tsx → Artifacts: [offline-banner.tsx](../../../frontend/components/ui/offline-banner.tsx)
+- [X] T066 Integrate offline banner into main layout when offline detected → Artifacts: [offline-banner-wrapper.tsx](../../../frontend/components/ui/offline-banner-wrapper.tsx), [layout.tsx](../../../frontend/app/layout.tsx#L5,L34)
 - [ ] T067 Disable generation/deploy mutations when offline in useGeneration and useDeploy hooks
 
 ### Performance Optimizations

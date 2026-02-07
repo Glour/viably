@@ -6,6 +6,7 @@ import { getAccessToken } from "@/lib/api/tokens"
 import { startGeneration as apiStartGeneration, cancelGeneration as apiCancelGeneration } from "@/lib/api/generation"
 import { queryKeys } from "@/lib/api/query-keys"
 import { toast } from "sonner"
+import { useOfflineDetection } from "./use-offline-detection"
 import {
   GENERATION_STEPS,
   MAX_RECONNECT_ATTEMPTS,
@@ -52,6 +53,9 @@ export function useGeneration(projectId: string) {
   const queryClient = useQueryClient()
   const user = useAuthStore((s) => s.user)
   const token = getAccessToken()
+
+  // T067: Offline detection
+  const isOffline = useOfflineDetection()
 
   // Initial state
   const INITIAL_STATE: GenerationProgressState = {
@@ -269,7 +273,14 @@ export function useGeneration(projectId: string) {
       name: string
       description?: string
       features?: string[]
-    }) => apiStartGeneration(projectId, params),
+    }) => {
+      // T067: Prevent mutation when offline
+      if (isOffline) {
+        toast.error("Невозможно начать генерацию: нет интернета")
+        throw new Error("Offline")
+      }
+      return apiStartGeneration(projectId, params)
+    },
     onSuccess: () => {
       // Reset state to generating on successful API call
       setState({
@@ -284,6 +295,9 @@ export function useGeneration(projectId: string) {
     },
     onError: (error: Error) => {
       // Handle API errors (e.g., insufficient credits, 401, 404)
+      // Skip error state if offline (already shown toast)
+      if (error.message === "Offline") return
+
       setState((prev) => ({
         ...prev,
         status: "error",
@@ -299,7 +313,14 @@ export function useGeneration(projectId: string) {
 
   // T055-T056, T059: Cancel generation mutation
   const cancelGenerationMutation = useMutation({
-    mutationFn: () => apiCancelGeneration(projectId),
+    mutationFn: () => {
+      // T067: Prevent mutation when offline
+      if (isOffline) {
+        toast.error("Невозможно отменить генерацию: нет интернета")
+        throw new Error("Offline")
+      }
+      return apiCancelGeneration(projectId)
+    },
     onSuccess: (result) => {
       // T059: Reset state to idle
       setState(INITIAL_STATE)
@@ -312,6 +333,8 @@ export function useGeneration(projectId: string) {
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) })
     },
     onError: (error: Error) => {
+      // Skip error toast if offline (already shown)
+      if (error.message === "Offline") return
       toast.error(`Не удалось отменить: ${error.message}`)
     },
   })
@@ -340,5 +363,8 @@ export function useGeneration(projectId: string) {
     // T035: Reconnection state for UI display
     reconnectAttempts,
     isReconnecting,
+
+    // T067: Offline state for UI
+    isOffline,
   }
 }

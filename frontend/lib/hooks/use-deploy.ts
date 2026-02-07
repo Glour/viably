@@ -6,6 +6,7 @@ import { getAccessToken } from "@/lib/api/tokens"
 import { startDeploy as apiStartDeploy } from "@/lib/api/generation"
 import { queryKeys } from "@/lib/api/query-keys"
 import { toast } from "sonner"
+import { useOfflineDetection } from "./use-offline-detection"
 import {
   DEPLOY_STEPS,
   MAX_RECONNECT_ATTEMPTS,
@@ -43,6 +44,9 @@ export function useDeploy(projectId: string) {
   const queryClient = useQueryClient()
   const user = useAuthStore((s) => s.user)
   const token = getAccessToken()
+
+  // T067: Offline detection
+  const isOffline = useOfflineDetection()
 
   // Initial state
   const INITIAL_STATE: DeployProgressState = {
@@ -248,8 +252,14 @@ export function useDeploy(projectId: string) {
 
   // Start deployment mutation
   const startDeployMutation = useMutation({
-    mutationFn: (envVars: Record<string, string>) =>
-      apiStartDeploy(projectId, envVars),
+    mutationFn: (envVars: Record<string, string>) => {
+      // T067: Prevent mutation when offline
+      if (isOffline) {
+        toast.error("Невозможно начать деплой: нет интернета")
+        throw new Error("Offline")
+      }
+      return apiStartDeploy(projectId, envVars)
+    },
     onSuccess: () => {
       // Reset state to deploying on successful API call
       setState({
@@ -263,6 +273,9 @@ export function useDeploy(projectId: string) {
       })
     },
     onError: (error: Error) => {
+      // Skip error state if offline (already shown toast)
+      if (error.message === "Offline") return
+
       // Handle API errors (e.g., 400, 409, 401, 404)
       setState((prev) => ({
         ...prev,
@@ -297,5 +310,8 @@ export function useDeploy(projectId: string) {
     // Reconnection state for UI display
     reconnectAttempts,
     isReconnecting,
+
+    // T067: Offline state for UI
+    isOffline,
   }
 }
