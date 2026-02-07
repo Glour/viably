@@ -37,6 +37,10 @@ export default function GeneratePage({ params }: GeneratePageProps) {
     downloadCode,
     canGenerate,
     isGenerating,
+    // T036-T037: Reconnection state for UI
+    reconnectAttempts,
+    isReconnecting,
+    maxReconnectAttempts,
   } = useGeneration(id)
 
   // Mobile tab state
@@ -155,6 +159,10 @@ export default function GeneratePage({ params }: GeneratePageProps) {
               onDownload={downloadCode}
               onRetry={retryGeneration}
               onModify={resetGeneration}
+              reconnectAttempts={reconnectAttempts}
+              isReconnecting={isReconnecting}
+              maxReconnectAttempts={maxReconnectAttempts}
+              onManualReconnect={() => window.location.reload()}
             />
           </Panel>
         </Group>
@@ -186,6 +194,10 @@ export default function GeneratePage({ params }: GeneratePageProps) {
               onDownload={downloadCode}
               onRetry={retryGeneration}
               onModify={resetGeneration}
+              reconnectAttempts={reconnectAttempts}
+              isReconnecting={isReconnecting}
+              maxReconnectAttempts={maxReconnectAttempts}
+              onManualReconnect={() => window.location.reload()}
             />
           )}
         </div>

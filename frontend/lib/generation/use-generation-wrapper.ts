@@ -183,6 +183,10 @@ export function useGenerationWrapper(projectId: string) {
     downloadCode,
     canGenerate,
     isGenerating,
+    // T035: Reconnection state for UI display (T036-T037)
+    reconnectAttempts: wsGeneration.reconnectAttempts,
+    isReconnecting: wsGeneration.isReconnecting,
+    maxReconnectAttempts: 5, // From MAX_RECONNECT_ATTEMPTS constant
   }
 }
 
