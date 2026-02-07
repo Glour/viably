@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
@@ -9,27 +8,18 @@ import { FadeInUp } from "@/components/motion/fade-in-up"
 import { Shimmer } from "@/components/ui/shimmer"
 import { Button } from "@/components/ui/button"
 import { TemplateDetail } from "@/components/templates/template-detail"
-import { useTemplatesStore } from "@/stores/templates"
-import { useDashboardStore } from "@/stores/dashboard"
+import { useTemplate } from "@/lib/hooks/use-templates"
+import { useCreditBalance } from "@/lib/hooks/use-credits"
 
 export default function TemplateDetailPage() {
   const { slug } = useParams<{ slug: string }>()
-  const { templates, isLoading, loadTemplates, getTemplateBySlug } =
-    useTemplatesStore()
-  const { user, loadDashboard } = useDashboardStore()
-
-  useEffect(() => {
-    if (templates.length === 0) loadTemplates()
-    if (!user) loadDashboard()
-  }, [templates.length, loadTemplates, user, loadDashboard])
-
-  const template = getTemplateBySlug(slug)
-  const userCredits = user?.credits ?? 0
+  const { data: template, isLoading } = useTemplate(slug)
+  const { data: creditBalance } = useCreditBalance()
+  const userCredits = creditBalance?.credits ?? 0
 
   return (
     <MainLayout>
       <div className="space-y-8">
-        {/* Back navigation */}
         <Link
           href="/templates"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -57,16 +47,13 @@ export default function TemplateDetailPage() {
           </div>
         ) : template ? (
           <FadeInUp delay={0}>
-            <TemplateDetail
-              template={template}
-              userCredits={userCredits}
-            />
+            <TemplateDetail template={template} userCredits={userCredits} />
           </FadeInUp>
         ) : (
           <FadeInUp delay={0}>
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <span className="text-6xl mb-4" aria-hidden="true">
-                🔍
+                {"\u{1F50D}"}
               </span>
               <p className="font-heading text-lg font-semibold">
                 Шаблон не найден

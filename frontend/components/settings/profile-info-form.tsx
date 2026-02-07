@@ -33,9 +33,9 @@ export function ProfileInfoForm() {
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: profile?.name ?? "",
+      name: profile?.fullName ?? "",
     },
-    values: profile ? { name: profile.name } : undefined,
+    values: profile ? { name: profile.fullName ?? "" } : undefined,
   })
 
   const handleFileSelect = useCallback((file: File) => {
@@ -76,7 +76,9 @@ export function ProfileInfoForm() {
   )
 
   const onSubmit = async (data: ProfileFormData) => {
-    const success = await updateProfile({ name: data.name, avatarFile })
+    // TODO: avatarFile upload not yet supported by backend
+    void avatarFile
+    const success = await updateProfile({ fullName: data.name })
     if (success) {
       toast.success("Профиль обновлён")
       setAvatarFile(null)
@@ -85,7 +87,7 @@ export function ProfileInfoForm() {
     }
   }
 
-  const avatarSrc = avatarPreview ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name ?? "U")}&size=120&background=random`
+  const avatarSrc = avatarPreview ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.fullName ?? "U")}&size=120&background=random`
 
   return (
     <Card>

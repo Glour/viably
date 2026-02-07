@@ -84,48 +84,12 @@ export interface UserProfile extends Pick<AuthUser, "id" | "email" | "plan" | "c
   deployedCount: number
 }
 
-export interface ProjectSummary {
-  id: string
-  name: string
-  emoji: string
-  status: ProjectStatus
-  updatedAt: string
-}
-
-export interface DailyBonusState {
-  claimedToday: boolean
-  lastClaimedDate: string | null
-  streak: number
-  todayReward: number
-  nextReward: number
-}
-
 export interface TemplateShortcut {
   slug: string
   name: string
   emoji: string
   badge: string
   href: string
-}
-
-export type UserProfileResponse =
-  | { success: true; user: UserProfile }
-  | { success: false; error: string }
-
-export type RecentProjectsResponse =
-  | { success: true; projects: ProjectSummary[] }
-  | { success: false; error: string }
-
-export interface DashboardStoreState {
-  user: UserProfile | null
-  projects: ProjectSummary[]
-  isLoading: boolean
-  loadDashboard: () => Promise<void>
-}
-
-export interface DailyBonusStoreState extends DailyBonusState {
-  claim: () => void
-  checkStreak: () => void
 }
 
 // Projects types
@@ -203,21 +167,14 @@ export type ToggleStatusResponse =
   | { success: false; error: string }
 
 export interface ProjectsStoreState {
-  projects: Project[]
-  currentProject: Project | null
   searchQuery: string
   filter: ProjectFilter
   sort: ProjectSort
   viewMode: ViewMode
-  isLoading: boolean
-  loadProjects: () => Promise<void>
-  loadProject: (id: string) => Promise<void>
   setSearchQuery: (query: string) => void
   setFilter: (filter: ProjectFilter) => void
   setSort: (sort: ProjectSort) => void
   setViewMode: (mode: ViewMode) => void
-  deleteProject: (id: string) => Promise<void>
-  getFilteredProjects: () => Project[]
 }
 
 // Templates Gallery types
@@ -429,30 +386,22 @@ export type UserPlanResponse =
   | { success: false; error: string }
 
 export interface SettingsStoreState {
-  profile: UserProfile | null
+  profile: AuthUser | null
   isLoadingProfile: boolean
   isSavingProfile: boolean
 
-  transactions: CreditTransaction[]
   transactionFilter: TransactionFilter
-  isLoadingTransactions: boolean
-  hasMoreTransactions: boolean
+  setTransactionFilter: (filter: TransactionFilter) => void
 
   currentPlan: UserPlanInfo | null
   availablePlans: SubscriptionPlan[]
   isLoadingPlan: boolean
 
   loadProfile: () => Promise<void>
-  updateProfile: (data: { name: string; avatarFile: File | null }) => Promise<boolean>
+  updateProfile: (data: UpdateProfilePayload) => Promise<boolean>
   changePassword: (data: { currentPassword: string; newPassword: string }) => Promise<boolean>
 
-  loadTransactions: () => Promise<void>
-  loadMoreTransactions: () => Promise<void>
-  setTransactionFilter: (filter: TransactionFilter) => void
-
   loadPlan: () => Promise<void>
-
-  getFilteredTransactions: () => CreditTransaction[]
 }
 
 // === API Response Types (016-data-hooks) ===

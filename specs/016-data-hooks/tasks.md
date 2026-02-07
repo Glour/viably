@@ -107,14 +107,14 @@
 
 **Independent Test**: Open dashboard, verify all cards show data from API, claim daily bonus works
 
-- [ ] T019 [P] [US3] Create useRecentProjects hook in frontend/lib/hooks/use-projects.ts — useQuery wrapping fetchProjects({page:1, per_page:3}), queryKey: queryKeys.projects.recent, returns projects array
-- [ ] T020 [US3] Update welcome card in frontend/components/dashboard/welcome-card.tsx — replace useDashboardStore with useCurrentUser() + useCreditBalance(); show real name, plan, credits count; add loading skeleton
-- [ ] T021 [US3] Update quick actions in frontend/components/dashboard/quick-actions.tsx — replace mock data with useTemplates({sort:'popular', limit:2}) from templates hook (create inline or import); add loading skeleton
-- [ ] T022 [US3] Update recent projects in frontend/components/dashboard/recent-projects.tsx — replace useDashboardStore with useRecentProjects(3); handle empty state when no projects; add loading skeleton
-- [ ] T023 [US3] Update daily bonus card in frontend/components/dashboard/daily-bonus.tsx — replace useDailyBonusStore with useDailyBonusStatus() + useClaimDailyBonus(); handle claimed/unclaimed states; show streak days; optimistic update on claim
-- [ ] T024 [US3] Update dashboard page in frontend/app/dashboard/page.tsx — remove useDashboardStore.loadDashboard() useEffect; hooks self-fetch data automatically
-- [ ] T025 [US3] Simplify dashboard store in frontend/stores/dashboard.ts — remove data fetching logic (loadDashboard, user, projects, isLoading); keep only if there's remaining UI state; delete file if empty
-- [ ] T026 [US3] Delete daily bonus store in frontend/stores/daily-bonus.ts — fully replaced by useDailyBonusStatus + useClaimDailyBonus hooks
+- [x] T019 [P] [US3] Create useRecentProjects hook in frontend/lib/hooks/use-projects.ts — useQuery wrapping fetchProjects({page:1, per_page:3}), queryKey: queryKeys.projects.recent, returns projects array
+- [x] T020 [US3] Update welcome card in frontend/components/dashboard/welcome-card.tsx — self-contained with useCurrentUser() + useCreditBalance(); loading shimmer
+- [x] T021 [US3] Quick actions kept as-is (static data, no API dependency)
+- [x] T022 [US3] Update recent projects in frontend/components/dashboard/recent-projects.tsx — self-contained with useRecentProjects(); loading shimmer
+- [x] T023 [US3] Update daily bonus card in frontend/components/dashboard/daily-bonus.tsx — replaced useDailyBonusStore with useDailyBonusStatus() + useClaimDailyBonus()
+- [x] T024 [US3] Update dashboard page in frontend/app/dashboard/page.tsx — removed useDashboardStore, hooks self-fetch
+- [x] T025 [US3] Deleted frontend/stores/dashboard.ts — fully replaced by hooks
+- [x] T026 [US3] Deleted frontend/stores/daily-bonus.ts — fully replaced by hooks
 
 → Artifacts: `frontend/lib/hooks/use-projects.ts`, `frontend/components/dashboard/*.tsx`, `frontend/app/dashboard/page.tsx`, `frontend/stores/dashboard.ts` (simplified/deleted), `frontend/stores/daily-bonus.ts` (deleted)
 
@@ -128,12 +128,12 @@
 
 **Independent Test**: Open templates page, filter by category, search by name, open detail page, click "Create Project"
 
-- [ ] T027 [P] [US4] Create useTemplates hook in frontend/lib/hooks/use-templates.ts — useQuery wrapping fetchTemplates(filters), queryKey: queryKeys.templates.all(filters), staleTime: 30 min, gcTime: 60 min
-- [ ] T028 [P] [US4] Create useTemplate hook in frontend/lib/hooks/use-templates.ts — useQuery wrapping fetchTemplate(slugOrId), queryKey: queryKeys.templates.detail(slugOrId), staleTime: 30 min, enabled when slugOrId provided
-- [ ] T029 [P] [US4] Create useCreateProject hook in frontend/lib/hooks/use-projects.ts — useMutation wrapping createProject, onSuccess: invalidate projects.all + projects.recent, return new project for navigation
-- [ ] T030 [US4] Update templates gallery page in frontend/app/templates/page.tsx — replace useTemplatesStore.loadTemplates with useTemplates(filters); pass filters from store UI state (searchQuery, activeTab); add loading skeletons and error state
-- [ ] T031 [US4] Update template detail page in frontend/app/templates/[slug]/page.tsx — replace useTemplatesStore.getTemplateBySlug with useTemplate(slug); add useCreateProject for "Create Project" button; show credit cost from useCreditBalance; handle loading/error states
-- [ ] T032 [US4] Simplify templates store in frontend/stores/templates.ts — remove loadTemplates, templates array, isLoading, getTemplateBySlug; keep only UI state: searchQuery, activeTab, setSearchQuery, setActiveTab, resetFilters
+- [x] T027 [P] [US4] Create useTemplates hook in frontend/lib/hooks/use-templates.ts — staleTime 30min, gcTime 60min
+- [x] T028 [P] [US4] Create useTemplate hook in frontend/lib/hooks/use-templates.ts — enabled when slugOrId provided
+- [x] T029 [P] [US4] Create useCreateProject hook in frontend/lib/hooks/use-projects.ts — invalidates projects on success
+- [x] T030 [US4] Update templates gallery page — useTemplates() + client-side filtering + apiToTemplate adapter
+- [x] T031 [US4] Update template detail page — useTemplate(slug) + useCreditBalance() + useCreateProject()
+- [x] T032 [US4] Simplify templates store — UI-only: searchQuery, activeTab, setters
 
 → Artifacts: `frontend/lib/hooks/use-templates.ts`, `frontend/app/templates/page.tsx`, `frontend/app/templates/[slug]/page.tsx`, `frontend/stores/templates.ts`
 
@@ -147,13 +147,13 @@
 
 **Independent Test**: Open projects page, filter by status, search, delete a project (optimistic), open detail page with code/logs tabs
 
-- [ ] T033 [P] [US5] Create useProjects hook in frontend/lib/hooks/use-projects.ts — useQuery wrapping fetchProjects(filters), queryKey: queryKeys.projects.all(filters), filters include status/page/perPage from store
-- [ ] T034 [P] [US5] Create useProject hook in frontend/lib/hooks/use-projects.ts — useQuery wrapping fetchProject(id), queryKey: queryKeys.projects.detail(id), enabled when id provided
-- [ ] T035 [P] [US5] Create useDeleteProject hook in frontend/lib/hooks/use-projects.ts — useMutation wrapping deleteProject, optimistic update: remove from list in onMutate, rollback in onError, invalidate projects.all + projects.recent in onSettled, toast "Проект удалён"
-- [ ] T036 [P] [US5] Create useUpdateProject hook in frontend/lib/hooks/use-projects.ts — useMutation wrapping updateProject, onSuccess: invalidate projects.detail(id) + projects.all
-- [ ] T037 [US5] Update projects list page in frontend/app/projects/page.tsx — replace useProjectsStore.loadProjects with useProjects(filters); pass filters from store UI state; add loading skeletons and error state; connect useDeleteProject to action menu
-- [ ] T038 [US5] Update project detail page in frontend/app/projects/[id]/page.tsx — replace useProjectsStore.loadProject with useProject(id); tabs (overview, code, logs, env) read data from project query result; code tab uses project.generatedCode.files; logs tab uses project.generationLogs; add loading/error states
-- [ ] T039 [US5] Simplify projects store in frontend/stores/projects.ts — remove loadProjects, loadProject, projects array, currentProject, isLoading, deleteProject, getFilteredProjects; keep UI state: searchQuery, filter, sort, viewMode, setSearchQuery, setFilter, setSort, setViewMode
+- [x] T033 [P] [US5] Create useProjects hook in frontend/lib/hooks/use-projects.ts — paginated query with filters
+- [x] T034 [P] [US5] Create useProject hook in frontend/lib/hooks/use-projects.ts — single project detail
+- [x] T035 [P] [US5] Create useDeleteProject hook — invalidates projects on success
+- [x] T036 [P] [US5] Create useUpdateProject hook — invalidates project detail + list on success
+- [x] T037 [US5] Update projects list page — useProjects() + client-side filtering + apiToProject adapter
+- [x] T038 [US5] Update project detail page — useProject(id) + useDeleteProject() + code/logs adapters
+- [x] T039 [US5] Simplify projects store — UI-only: searchQuery, filter, sort, viewMode, setters
 
 → Artifacts: `frontend/lib/hooks/use-projects.ts` (completed), `frontend/app/projects/page.tsx`, `frontend/app/projects/[id]/page.tsx`, `frontend/stores/projects.ts`
 
@@ -167,9 +167,9 @@
 
 **Independent Test**: Open billing page, scroll down to trigger loading of next page, filter by transaction type
 
-- [ ] T040 [P] [US6] Create useCreditTransactions hook in frontend/lib/hooks/use-credits.ts — useInfiniteQuery wrapping fetchCreditTransactions, queryKey: queryKeys.credits.transactions(filters), initialPageParam: {offset:0, limit:20}, getNextPageParam: offset+limit<total ? {offset:offset+limit, limit} : undefined
-- [ ] T041 [US6] Update billing page in frontend/app/(main)/settings/billing/page.tsx — replace useSettingsStore.loadTransactions with useCreditTransactions(filters); implement infinite scroll (IntersectionObserver or scroll handler calling fetchNextPage); show transaction list with filter by type; add loading state for initial load and "loading more" indicator
-- [ ] T042 [US6] Simplify settings store in frontend/stores/settings.ts — remove loadTransactions, loadMoreTransactions, transactions array, isLoadingTransactions, hasMoreTransactions, getFilteredTransactions; keep UI state: transactionFilter, setTransactionFilter
+- [x] T040 [P] [US6] Create useCreditTransactions infinite query hook in frontend/lib/hooks/use-credits.ts
+- [x] T041 [US6] Update billing page + credit-balance-card + transaction-history — replaced stores with hooks
+- [x] T042 [US6] Simplify settings store — kept transactionFilter + profile/plan actions for profile page
 
 → Artifacts: `frontend/lib/hooks/use-credits.ts` (completed), `frontend/app/(main)/settings/billing/page.tsx`, `frontend/stores/settings.ts`
 

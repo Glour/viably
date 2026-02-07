@@ -1,57 +1,18 @@
 import { create } from "zustand"
-import type { TemplatesStoreState, FilterTab } from "@/types"
-import { getTemplates } from "@/lib/api/templates"
+import type { FilterTab } from "@/types"
 
-export const useTemplatesStore = create<TemplatesStoreState>((set, get) => ({
-  templates: [],
+interface TemplatesUIState {
+  searchQuery: string
+  activeTab: FilterTab
+  setSearchQuery: (query: string) => void
+  setActiveTab: (tab: FilterTab) => void
+  resetFilters: () => void
+}
+
+export const useTemplatesStore = create<TemplatesUIState>((set) => ({
   searchQuery: "",
   activeTab: "all" as FilterTab,
-  isLoading: false,
-
-  loadTemplates: async () => {
-    set({ isLoading: true })
-
-    const res = await getTemplates()
-
-    set({
-      templates: res.success ? res.templates : [],
-      isLoading: false,
-    })
-  },
-
-  setSearchQuery: (query: string) => {
-    set({ searchQuery: query })
-  },
-
-  setActiveTab: (tab: FilterTab) => {
-    set({ activeTab: tab })
-  },
-
-  resetFilters: () => {
-    set({ searchQuery: "", activeTab: "all" })
-  },
-
-  getFilteredTemplates: () => {
-    const { templates, searchQuery, activeTab } = get()
-    const query = searchQuery.toLowerCase()
-
-    return templates.filter((t) => {
-      const matchesTab =
-        activeTab === "all" ||
-        (activeTab === "telegram" && t.category === "telegram_bot") ||
-        (activeTab === "popular" && t.isPopular) ||
-        (activeTab === "cheap" && t.creditCost < 5)
-
-      const matchesSearch =
-        !query ||
-        t.name.toLowerCase().includes(query) ||
-        t.description.toLowerCase().includes(query)
-
-      return matchesTab && matchesSearch
-    })
-  },
-
-  getTemplateBySlug: (slug: string) => {
-    return get().templates.find((t) => t.slug === slug)
-  },
+  setSearchQuery: (query: string) => set({ searchQuery: query }),
+  setActiveTab: (tab: FilterTab) => set({ activeTab: tab }),
+  resetFilters: () => set({ searchQuery: "", activeTab: "all" }),
 }))

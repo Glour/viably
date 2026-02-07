@@ -1,10 +1,14 @@
+"use client"
+
 import Link from "next/link"
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Shimmer } from "@/components/ui/shimmer"
 import { formatRelativeTime } from "@/lib/utils/format-relative-time"
-import type { ProjectStatus, ProjectSummary } from "@/types"
+import { useRecentProjects } from "@/lib/hooks/use-projects"
+import type { ProjectStatus } from "@/types"
 
 const STATUS_CONFIG: Record<
   ProjectStatus,
@@ -18,11 +22,11 @@ const STATUS_CONFIG: Record<
   stopped: { label: "Stopped", variant: "destructive" },
 }
 
-interface RecentProjectsProps {
-  projects: ProjectSummary[]
-}
+const DEFAULT_EMOJI = "\u{1F916}" // robot face
 
-export function RecentProjects({ projects }: RecentProjectsProps) {
+export function RecentProjects() {
+  const { data: projects, isLoading } = useRecentProjects()
+
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
@@ -35,23 +39,31 @@ export function RecentProjects({ projects }: RecentProjectsProps) {
         </Link>
       </div>
 
-      {projects.length > 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Shimmer className="rounded-2xl" height="8rem" />
+          <Shimmer className="rounded-2xl" height="8rem" />
+          <Shimmer className="rounded-2xl" height="8rem" />
+        </div>
+      ) : projects && projects.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {projects.map((project) => {
-            const status = STATUS_CONFIG[project.status]
+            const status = STATUS_CONFIG[project.status] ?? STATUS_CONFIG.draft
 
             return (
               <Link key={project.id} href={`/projects/${project.id}`}>
                 <Card className="cursor-pointer">
                   <CardContent className="flex flex-col gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl">{project.emoji}</span>
+                      <span className="text-2xl">{DEFAULT_EMOJI}</span>
                       <span className="font-medium truncate">{project.name}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant={status.variant}>{status.label}</Badge>
                       <span className="text-sm text-muted-foreground">
-                        {formatRelativeTime(project.updatedAt)}
+                        {project.updatedAt
+                          ? formatRelativeTime(project.updatedAt)
+                          : formatRelativeTime(project.createdAt)}
                       </span>
                     </div>
                   </CardContent>

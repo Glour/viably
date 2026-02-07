@@ -4,16 +4,15 @@ import { Gem } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { useSettingsStore } from "@/stores/settings"
-import { useDailyBonusStore } from "@/stores/daily-bonus"
+import { useCreditBalance, useDailyBonusStatus } from "@/lib/hooks/use-credits"
 
 interface CreditBalanceCardProps {
   onBuyClick: () => void
 }
 
 export function CreditBalanceCard({ onBuyClick }: CreditBalanceCardProps) {
-  const { profile } = useSettingsStore()
-  const { todayReward, streak } = useDailyBonusStore()
+  const { data: creditBalance } = useCreditBalance()
+  const { data: bonusStatus } = useDailyBonusStatus()
 
   return (
     <Card>
@@ -23,15 +22,15 @@ export function CreditBalanceCard({ onBuyClick }: CreditBalanceCardProps) {
             <div className="flex items-center gap-3">
               <span className="font-mono text-4xl font-bold bg-[image:var(--gradient-main)] bg-clip-text text-transparent">
                 <Gem className="inline size-8 text-primary mr-1" />
-                {profile?.credits ?? 0}
+                {creditBalance?.credits ?? 0}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="uppercase">
-                {profile?.plan ?? "free"}
+                {creditBalance?.plan ?? "free"}
               </Badge>
               <span className="text-sm text-muted-foreground">
-                +{todayReward} today (streak: {streak} days)
+                +{bonusStatus?.amount ?? 5} today (streak: {bonusStatus?.streakDays ?? 0} days)
               </span>
             </div>
           </div>

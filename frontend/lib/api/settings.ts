@@ -1,8 +1,6 @@
 // Re-exports from dedicated API modules
 export { fetchCurrentUser as getProfile } from "./users"
 export { updateProfile } from "./users"
-export { fetchCreditTransactions as getTransactions } from "./credits"
-
 // Stubs for unimplemented backend endpoints
 
 import type { UserPlanInfo, SubscriptionPlan } from "@/types"
