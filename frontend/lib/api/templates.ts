@@ -1,34 +1,37 @@
-import type {
-  TemplatesResponse,
-  CreateProjectResponse,
-} from "@/types"
-import { TEMPLATES } from "@/lib/data/templates"
+import { api, parseApiError } from "./client"
+import { mapTemplate, mapTemplateDetail } from "./mappers"
+import type { ApiTemplate, ApiTemplateDetail } from "@/types"
 
-export async function getTemplates(): Promise<TemplatesResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 800))
+export async function fetchTemplates(
+  params?: { category?: string; search?: string },
+  signal?: AbortSignal
+): Promise<ApiTemplate[]> {
+  try {
+    const searchParams: Record<string, string> = {}
+    if (params?.category) searchParams.category = params.category
+    if (params?.search) searchParams.search = params.search
 
-  return {
-    success: true,
-    templates: TEMPLATES,
+    const response = await api
+      .get("templates", { searchParams, signal })
+      .json<{ data: { templates: Record<string, unknown>[] } }>()
+
+    return response.data.templates.map(mapTemplate)
+  } catch (error) {
+    return await parseApiError(error)
   }
 }
 
-export async function createProjectFromTemplate(
-  templateSlug: string
-): Promise<CreateProjectResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 1200))
+export async function fetchTemplate(
+  slugOrId: string,
+  signal?: AbortSignal
+): Promise<ApiTemplateDetail> {
+  try {
+    const response = await api
+      .get(`templates/${slugOrId}`, { signal })
+      .json<{ data: Record<string, unknown> }>()
 
-  const template = TEMPLATES.find((t) => t.slug === templateSlug)
-
-  if (!template) {
-    return { success: false, error: "Template not found" }
-  }
-
-  const projectId = `proj_${Date.now()}`
-
-  return {
-    success: true,
-    projectId,
-    redirectUrl: `/projects/${projectId}/generate`,
+    return mapTemplateDetail(response.data)
+  } catch (error) {
+    return await parseApiError(error)
   }
 }

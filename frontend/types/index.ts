@@ -454,3 +454,124 @@ export interface SettingsStoreState {
 
   getFilteredTransactions: () => CreditTransaction[]
 }
+
+// === API Response Types (016-data-hooks) ===
+
+export type BackendProjectStatus = "draft" | "generating" | "ready" | "deploying" | "deployed" | "error"
+
+export interface DailyBonusInfo {
+  amount: number
+  claimedToday: boolean
+  nextAvailableAt: string | null
+  streakDays: number
+}
+
+export interface CreditBalance {
+  credits: number
+  plan: string
+  dailyBonus: DailyBonusInfo | null
+}
+
+export interface DailyBonusClaim {
+  claimed: boolean
+  amount: number
+  newBalance: number
+  nextAvailableAt: string
+}
+
+export interface PaginationMeta {
+  total: number
+  limit: number
+  offset: number
+}
+
+// API version of CreditTransaction (matches backend)
+export interface ApiCreditTransaction {
+  id: string
+  amount: number
+  balanceAfter: number
+  transactionType: string
+  description: string | null
+  projectId: string | null
+  relatedUserId: string | null
+  extraData: Record<string, unknown>
+  createdAt: string
+}
+
+export interface TransactionsPaginated {
+  transactions: ApiCreditTransaction[]
+  meta: PaginationMeta
+}
+
+// API version of Template (matches backend)
+export interface ApiTemplate {
+  id: string
+  name: string
+  slug: string
+  description: string
+  category: string
+  creditCost: number
+  previewImageUrl: string | null
+  features: string[]
+  tags: string[]
+  usageCount: number
+  createdAt: string
+}
+
+export interface ApiTemplateDetail extends ApiTemplate {
+  configSchema: Record<string, unknown> | null
+  exampleConfig: Record<string, unknown> | null
+}
+
+// API version of Project (matches backend)
+export interface ApiProject {
+  id: string
+  userId: string
+  name: string
+  description: string | null
+  templateId: string
+  config: Record<string, unknown>
+  status: ProjectStatus
+  isPublic: boolean
+  createdAt: string
+  updatedAt: string | null
+  generatedCode: {
+    files: Record<string, string>
+    entryPoint: string
+    runtime: string
+  } | null
+  generationLogs: string | null
+  aiModelUsed: string | null
+  errorMessage: string | null
+  deployedUrl: string | null
+  deployPlatform: string | null
+  generatedAt: string | null
+  deployedAt: string | null
+}
+
+export interface ProjectsPaginated {
+  items: ApiProject[]
+  total: number
+  page: number
+  perPage: number
+  pages: number
+}
+
+export interface UpdateProfilePayload {
+  fullName?: string | null
+  avatarUrl?: string | null
+}
+
+export interface CreateProjectPayload {
+  name: string
+  description?: string
+  templateId: string
+  config: Record<string, unknown>
+}
+
+export interface UpdateProjectPayload {
+  name?: string
+  description?: string
+  config?: Record<string, unknown>
+  isPublic?: boolean
+}
