@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/auth"
 import { getAccessToken } from "@/lib/api/tokens"
 import { startDeploy as apiStartDeploy } from "@/lib/api/generation"
 import { queryKeys } from "@/lib/api/query-keys"
+import { toast } from "sonner"
 import {
   DEPLOY_STEPS,
   MAX_RECONNECT_ATTEMPTS,
@@ -119,6 +120,9 @@ export function useDeploy(projectId: string) {
 
         console.error(`WebSocket reconnection failed after ${numAttempts} attempts`)
 
+        // T063: Toast notification for connection failure
+        toast.error("Соединение потеряно. Проверьте интернет и обновите страницу.")
+
         // Set error state so UI can show manual reconnect button
         setState((prev) => ({
           ...prev,
@@ -130,6 +134,11 @@ export function useDeploy(projectId: string) {
       onOpen: () => {
         setReconnectAttempts(0)
         setIsReconnecting(false)
+
+        // T063: Toast notification for successful reconnection
+        if (reconnectAttempts > 0) {
+          toast.success("Соединение восстановлено")
+        }
       },
     },
     // Only connect if user is authenticated
@@ -200,6 +209,9 @@ export function useDeploy(projectId: string) {
       case "deploy_error": {
         // T042: Handle deployment errors
         const { error } = lastJsonMessage.data
+
+        // T063: Toast notification for deploy error
+        toast.error(`Ошибка деплоя: ${error}`)
 
         setState((prev) => ({
           ...prev,

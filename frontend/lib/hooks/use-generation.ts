@@ -131,6 +131,9 @@ export function useGeneration(projectId: string) {
 
         console.error(`WebSocket reconnection failed after ${numAttempts} attempts`)
 
+        // T063: Toast notification for connection failure
+        toast.error("Соединение потеряно. Проверьте интернет и обновите страницу.")
+
         // Set error state so UI can show manual reconnect button
         setState((prev) => ({
           ...prev,
@@ -142,6 +145,11 @@ export function useGeneration(projectId: string) {
       onOpen: () => {
         setReconnectAttempts(0)
         setIsReconnecting(false)
+
+        // T063: Toast notification for successful reconnection
+        if (reconnectAttempts > 0) {
+          toast.success("Соединение восстановлено")
+        }
       },
     },
     // Only connect if user is authenticated
@@ -217,6 +225,9 @@ export function useGeneration(projectId: string) {
       case "generation_error": {
         // T023: Handle generation errors
         const { error } = lastJsonMessage.data
+
+        // T063: Toast notification for generation error
+        toast.error(`Ошибка генерации: ${error}`)
 
         setState((prev) => ({
           ...prev,
