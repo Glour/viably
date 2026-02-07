@@ -2,16 +2,16 @@
 
 import { motion } from "motion/react"
 import { Check, Circle, Loader2, X } from "lucide-react"
-import type { DeploymentStep } from "@/types"
+import type { DeployStep, StepStatus } from "@/types/websocket"
 
 interface DeployProgressProps {
-  steps: DeploymentStep[]
+  steps: DeployStep[]
   progress: number
 }
 
-function StepIcon({ status }: { status: DeploymentStep["status"] }) {
+function StepIcon({ status }: { status: StepStatus }) {
   switch (status) {
-    case "done":
+    case "complete":
       return <Check className="size-4 text-primary" />
     case "running":
       return <Loader2 className="size-4 text-primary animate-spin" />
@@ -22,10 +22,10 @@ function StepIcon({ status }: { status: DeploymentStep["status"] }) {
   }
 }
 
-function getIconContainerClass(status: DeploymentStep["status"]) {
+function getIconContainerClass(status: StepStatus) {
   const base = "flex items-center justify-center size-7 rounded-full"
   switch (status) {
-    case "done":
+    case "complete":
       return `${base} bg-primary/10`
     case "running":
       return `${base} bg-primary/10`
@@ -36,9 +36,9 @@ function getIconContainerClass(status: DeploymentStep["status"]) {
   }
 }
 
-function getStepNameClass(status: DeploymentStep["status"]) {
+function getStepNameClass(status: StepStatus) {
   switch (status) {
-    case "done":
+    case "complete":
       return "text-sm text-foreground"
     case "running":
       return "text-sm text-foreground font-medium"
@@ -61,7 +61,7 @@ export function DeployProgress({ steps, progress }: DeployProgressProps) {
           <div className="space-y-1">
             {steps.map((step, index) => (
               <motion.div
-                key={step.id}
+                key={index}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
@@ -73,12 +73,11 @@ export function DeployProgress({ steps, progress }: DeployProgressProps) {
                 <span className={getStepNameClass(step.status)}>
                   {step.name}
                 </span>
-                {(step.status === "done" || step.status === "error") &&
-                  step.duration !== null && (
-                    <span className="text-xs text-muted-foreground ml-auto">
-                      {(step.duration / 1000).toFixed(1)}s
-                    </span>
-                  )}
+                {step.log && (
+                  <span className="text-xs text-muted-foreground ml-auto truncate max-w-[120px]">
+                    {step.log}
+                  </span>
+                )}
               </motion.div>
             ))}
           </div>

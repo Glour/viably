@@ -210,8 +210,7 @@ export default function GeneratePage({ params }: GeneratePageProps) {
       <DeployModal
         open={deployOpen}
         onOpenChange={setDeployOpen}
-        deployment={deployment}
-        onDeploy={startDeployment}
+        projectId={id}
         onDownload={downloadCode}
       />
     </div>
