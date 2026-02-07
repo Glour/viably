@@ -162,3 +162,26 @@ export async function downloadProjectZip(
   // Clean up
   URL.revokeObjectURL(link.href)
 }
+
+/**
+ * Start deployment of generated project to Railway
+ *
+ * POST /api/projects/{id}/deploy
+ *
+ * @param projectId - Project UUID
+ * @param envVariables - Environment variables for deployment
+ * @returns Deploy ID and status
+ *
+ * @throws {ApiError} on HTTP errors (400, 409 if no code or already deploying)
+ */
+export async function startDeploy(
+  projectId: string,
+  envVariables: Record<string, string>
+): Promise<{ deploy_id: string; status: string }> {
+  return api.post(`projects/${projectId}/deploy`, {
+    json: {
+      platform: "railway",
+      env_variables: envVariables,
+    },
+  }).json()
+}
