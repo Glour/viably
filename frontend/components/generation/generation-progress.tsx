@@ -5,6 +5,7 @@ import { Check, Circle, Loader2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { CodeSnippetAnimation } from "./code-snippet-animation"
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value"
+import { useRafProgress } from "@/lib/hooks/use-raf-progress"
 import type { GenerationStep } from "@/types"
 
 interface GenerationProgressProps {
@@ -65,6 +66,9 @@ export function GenerationProgress({
   // T068: Debounce progress updates (100ms) to smooth visual updates
   const debouncedProgress = useDebouncedValue(progress, 100)
 
+  // T070: Smooth RAF-based progress animation for 60fps counter updates
+  const smoothProgress = useRafProgress(debouncedProgress, 300)
+
   return (
     <div className="flex flex-col h-full p-6">
       <div className="flex items-center justify-between mb-4">
@@ -111,12 +115,12 @@ export function GenerationProgress({
         <div className="h-2 bg-muted rounded-full overflow-hidden">
           <motion.div
             className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full"
-            animate={{ width: `${debouncedProgress}%` }}
+            animate={{ width: `${smoothProgress}%` }}
             transition={{ duration: 0.3, ease: "easeOut" }}
           />
         </div>
         <p className="text-xs text-muted-foreground mt-1 text-right">
-          {Math.round(debouncedProgress)}%
+          {Math.round(smoothProgress)}%
         </p>
       </div>
 
