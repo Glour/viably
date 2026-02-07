@@ -1,122 +1,109 @@
-/**
- * Mock Auth API Functions for MVP Development
- *
- * These are CLIENT-SIDE mock functions that simulate backend auth API behavior.
- * Replace with real API calls when backend is ready.
- */
+import { api, mapUserResponse, unwrapResponse, parseApiError } from "./client"
+import type { AuthUser } from "@/types"
 
-// Types
-export type AuthResponse =
-  | {
-      success: true;
-      user: { id: string; name: string; email: string };
-      redirectTo: string;
-    }
-  | {
-      success: false;
-      error: string;
-      fieldErrors?: Record<string, string>;
-    };
-
-export type ForgotPasswordResponse =
-  | {
-      success: true;
-      message: string;
-    }
-  | {
-      success: false;
-      error: string;
-    };
-
-// Mock API Functions
-
-/**
- * Mock login function
- * @param data - Email and password credentials
- * @returns AuthResponse with user data or error
- */
-export async function mockLogin(data: {
-  email: string;
-  password: string;
-}): Promise<AuthResponse> {
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  // Test error case
-  if (data.email === "error@test.com") {
-    return {
-      success: false,
-      error: "Invalid email or password",
-    };
+interface AuthApiResponse {
+  data: {
+    user: Record<string, unknown>
+    access_token: string
+    refresh_token: string
+    token_type: string
+    expires_in: number
   }
-
-  // Success case
-  return {
-    success: true,
-    user: {
-      id: "mock-uuid",
-      name: "Test User",
-      email: data.email,
-    },
-    redirectTo: "/dashboard",
-  };
 }
 
-/**
- * Mock register function
- * @param data - User registration data
- * @returns AuthResponse with user data or error
- */
-export async function mockRegister(data: {
-  name: string;
-  email: string;
-  password: string;
-}): Promise<AuthResponse> {
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  // Test error case - email already taken
-  if (data.email === "taken@test.com") {
-    return {
-      success: false,
-      error: "An account with this email already exists",
-    };
+interface TokenApiResponse {
+  data: {
+    access_token: string
+    refresh_token: string
+    token_type: string
+    expires_in: number
   }
-
-  // Success case
-  return {
-    success: true,
-    user: {
-      id: "mock-uuid",
-      name: data.name,
-      email: data.email,
-    },
-    redirectTo: "/dashboard",
-  };
 }
 
-/**
- * Mock forgot password function
- * @param data - Email address for password reset
- * @returns ForgotPasswordResponse with success message or error
- */
-export async function mockForgotPassword(data: {
-  email: string;
-}): Promise<ForgotPasswordResponse> {
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+interface UserApiResponse {
+  data: Record<string, unknown>
+}
 
-  // Test error case - email not found
-  if (data.email === "unknown@test.com") {
+export async function loginApi(email: string, password: string) {
+  try {
+    const response = await api
+      .post("auth/login", { json: { email, password } })
+      .json<AuthApiResponse>()
+
+    const { data } = response
     return {
-      success: false,
-      error: "No account found with this email",
-    };
+      user: mapUserResponse(data.user),
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+    }
+  } catch (error) {
+    await parseApiError(error)
   }
+}
 
-  // Success case
-  return {
-    success: true,
-    message: "Reset link sent to " + data.email,
-  };
+export async function registerApi(data: {
+  email: string
+  password: string
+  fullName?: string
+  referrerCode?: string
+}) {
+  try {
+    const response = await api
+      .post("auth/register", {
+        json: {
+          email: data.email,
+          password: data.password,
+          full_name: data.fullName,
+          referrer_code: data.referrerCode,
+        },
+      })
+      .json<AuthApiResponse>()
+
+    const { data: responseData } = response
+    return {
+      user: mapUserResponse(responseData.user),
+      accessToken: responseData.access_token,
+      refreshToken: responseData.refresh_token,
+    }
+  } catch (error) {
+    await parseApiError(error)
+  }
+}
+
+export async function logoutApi(refreshToken?: string | null) {
+  try {
+    await api.post("auth/logout", {
+      json: refreshToken ? { refresh_token: refreshToken } : undefined,
+    })
+  } catch {
+    // Logout errors are non-critical — tokens are cleared locally regardless
+  }
+}
+
+export async function refreshTokenApi(refreshToken: string) {
+  try {
+    const response = await api
+      .post("auth/refresh", { json: { refresh_token: refreshToken } })
+      .json<TokenApiResponse>()
+
+    return {
+      accessToken: response.data.access_token,
+      refreshToken: response.data.refresh_token,
+    }
+  } catch (error) {
+    await parseApiError(error)
+  }
+}
+
+export async function forgotPasswordApi(email: string) {
+  try {
+    await api.post("auth/forgot-password", { json: { email } })
+  } catch {
+    // Don't reveal whether email exists — always show success
+  }
+}
+
+export async function getCurrentUser(): Promise<AuthUser> {
+  const response = await api.get("users/me").json<UserApiResponse>()
+  return mapUserResponse(response.data)
 }

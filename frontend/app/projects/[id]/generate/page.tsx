@@ -76,8 +76,8 @@ export default function GeneratePage({ params }: GeneratePageProps) {
         const parsed = JSON.parse(saved)
         return typeof parsed === "object" && parsed !== null ? parsed : { chat: 40, preview: 60 }
       }
-    } catch (error) {
-      console.error("Failed to parse saved layout:", error)
+    } catch {
+      // Ignore localStorage parse errors
     }
 
     return { chat: 40, preview: 60 }
@@ -86,8 +86,8 @@ export default function GeneratePage({ params }: GeneratePageProps) {
   const handleLayoutChange = React.useCallback((layout: { [id: string]: number }) => {
     try {
       localStorage.setItem("gen-split-ratio", JSON.stringify(layout))
-    } catch (error) {
-      console.error("Failed to save layout:", error)
+    } catch {
+      // Ignore localStorage save errors
     }
   }, [])
 

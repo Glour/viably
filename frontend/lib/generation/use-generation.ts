@@ -5,10 +5,6 @@ import { useGenerationStore } from "@/stores/generation"
 import { getTemplateForProject, downloadGeneratedCode } from "@/lib/api/generation"
 import { MOCK_GENERATED_FILES } from "@/lib/data/generation"
 import type {
-  GenerationSession,
-  DeploymentSession,
-  ConfigFormValues,
-  Template,
   DeployConfig,
 } from "@/types"
 
@@ -55,7 +51,17 @@ function calculateCodeStats(files: typeof MOCK_GENERATED_FILES) {
  * @param projectId - The project ID to manage generation for
  */
 export function useGeneration(projectId: string) {
-  const store = useGenerationStore()
+  // Select individual state slices to avoid infinite re-renders
+  const generation = useGenerationStore((s) => s.generation)
+  const deployment = useGenerationStore((s) => s.deployment)
+  const formValues = useGenerationStore((s) => s.formValues)
+  const freeTextInput = useGenerationStore((s) => s.freeTextInput)
+  const template = useGenerationStore((s) => s.template)
+  const setProjectContext = useGenerationStore((s) => s.setProjectContext)
+  const setFormValues = useGenerationStore((s) => s.setFormValues)
+  const setFreeTextInput = useGenerationStore((s) => s.setFreeTextInput)
+  const resetGeneration = useGenerationStore((s) => s.resetGeneration)
+
   const generationCancelledRef = useRef(false)
   const deploymentCancelledRef = useRef(false)
   const startTimeRef = useRef<number>(0)
@@ -67,7 +73,7 @@ export function useGeneration(projectId: string) {
     async function loadTemplate() {
       const response = await getTemplateForProject(projectId)
       if (mounted && response.success) {
-        store.setProjectContext(projectId, response.template)
+        setProjectContext(projectId, response.template)
       }
     }
 
@@ -76,7 +82,7 @@ export function useGeneration(projectId: string) {
     return () => {
       mounted = false
     }
-  }, [projectId, store])
+  }, [projectId, setProjectContext])
 
   /**
    * Start code generation simulation
@@ -86,6 +92,7 @@ export function useGeneration(projectId: string) {
    * Updates progress and step status in real-time.
    */
   const startGeneration = useCallback(async () => {
+    const store = useGenerationStore.getState()
     // Reset state
     store.startGeneration()
     generationCancelledRef.current = false
@@ -104,7 +111,7 @@ export function useGeneration(projectId: string) {
         const stepStartTime = Date.now()
 
         // Mark step as running
-        store._updateStep(i, "running", null)
+        useGenerationStore.getState()._updateStep(i, "running", null)
 
         // Random delay 2-5 seconds
         const delay = Math.random() * 3000 + 2000
@@ -117,24 +124,24 @@ export function useGeneration(projectId: string) {
         // 10% chance of error
         if (Math.random() < 0.1) {
           const elapsed = Date.now() - stepStartTime
-          store._updateStep(i, "error", elapsed)
-          store._failGeneration(`Generation failed at step: ${steps[i].name}`)
+          useGenerationStore.getState()._updateStep(i, "error", elapsed)
+          useGenerationStore.getState()._failGeneration(`Generation failed at step: ${steps[i].name}`)
           return
         }
 
         // Mark step as done
         const elapsed = Date.now() - stepStartTime
-        store._updateStep(i, "done", elapsed)
+        useGenerationStore.getState()._updateStep(i, "done", elapsed)
 
         // Update progress
         const progress = ((i + 1) / totalSteps) * 100
-        store._setProgress(progress)
+        useGenerationStore.getState()._setProgress(progress)
       }
 
       // Generation complete
       if (!generationCancelledRef.current) {
         const { totalFiles, totalLines } = calculateCodeStats(MOCK_GENERATED_FILES)
-        store._completeGeneration({
+        useGenerationStore.getState()._completeGeneration({
           files: MOCK_GENERATED_FILES,
           totalFiles,
           totalLines,
@@ -142,12 +149,12 @@ export function useGeneration(projectId: string) {
       }
     } catch (error) {
       if (!generationCancelledRef.current) {
-        store._failGeneration(
+        useGenerationStore.getState()._failGeneration(
           error instanceof Error ? error.message : "Unknown error occurred"
         )
       }
     }
-  }, [store])
+  }, [])
 
   /**
    * Retry generation after an error
@@ -174,6 +181,7 @@ export function useGeneration(projectId: string) {
    */
   const startDeployment = useCallback(
     async (config: DeployConfig) => {
+      const store = useGenerationStore.getState()
       // Reset state
       store.startDeployment(config)
       deploymentCancelledRef.current = false
@@ -191,7 +199,7 @@ export function useGeneration(projectId: string) {
           const stepStartTime = Date.now()
 
           // Mark step as running
-          store._updateDeployStep(i, "running", null)
+          useGenerationStore.getState()._updateDeployStep(i, "running", null)
 
           // Random delay 1-3 seconds
           const delay = Math.random() * 2000 + 1000
@@ -204,23 +212,23 @@ export function useGeneration(projectId: string) {
           // 5% chance of error
           if (Math.random() < 0.05) {
             const elapsed = Date.now() - stepStartTime
-            store._updateDeployStep(i, "error", elapsed)
-            store._failDeployment(`Deployment failed at step: ${steps[i].name}`)
+            useGenerationStore.getState()._updateDeployStep(i, "error", elapsed)
+            useGenerationStore.getState()._failDeployment(`Deployment failed at step: ${steps[i].name}`)
             return
           }
 
           // Mark step as done
           const elapsed = Date.now() - stepStartTime
-          store._updateDeployStep(i, "done", elapsed)
+          useGenerationStore.getState()._updateDeployStep(i, "done", elapsed)
 
           // Update progress
           const progress = ((i + 1) / totalSteps) * 100
-          store._setProgress(progress)
+          useGenerationStore.getState()._setDeployProgress(progress)
         }
 
         // Deployment complete
         if (!deploymentCancelledRef.current) {
-          store._completeDeployment({
+          useGenerationStore.getState()._completeDeployment({
             username: "my_awesome_bot",
             url: "https://t.me/my_awesome_bot",
             status: "running",
@@ -228,13 +236,13 @@ export function useGeneration(projectId: string) {
         }
       } catch (error) {
         if (!deploymentCancelledRef.current) {
-          store._failDeployment(
+          useGenerationStore.getState()._failDeployment(
             error instanceof Error ? error.message : "Unknown error occurred"
           )
         }
       }
     },
-    [store]
+    []
   )
 
   /**
@@ -243,12 +251,13 @@ export function useGeneration(projectId: string) {
    * Uses the API layer to create and download a ZIP file.
    */
   const downloadCode = useCallback(async () => {
-    if (!store.generation.code) {
+    const code = useGenerationStore.getState().generation.code
+    if (!code) {
       throw new Error("No code to download")
     }
 
-    await downloadGeneratedCode(store.generation.code.files)
-  }, [store.generation.code])
+    await downloadGeneratedCode(code.files)
+  }, [])
 
   /**
    * Computed: Can generation start?
@@ -258,20 +267,20 @@ export function useGeneration(projectId: string) {
    * - AND (form has all required fields filled OR free text is non-empty)
    */
   const canGenerate = useCallback((): boolean => {
-    if (!store.template) {
+    if (!template) {
       return false
     }
 
     // If free text input is provided, allow generation
-    if (store.freeTextInput.trim() !== "") {
+    if (freeTextInput.trim() !== "") {
       return true
     }
 
     // Otherwise, check if all required form fields are filled
-    const requiredFields = store.template.configFields.filter((f) => f.required)
+    const requiredFields = template.configFields.filter((f) => f.required)
 
     for (const field of requiredFields) {
-      const value = store.formValues[field.name]
+      const value = formValues[field.name]
 
       // Check if field is empty
       if (value === undefined || value === null || value === "") {
@@ -285,7 +294,7 @@ export function useGeneration(projectId: string) {
     }
 
     return true
-  }, [store.template, store.formValues, store.freeTextInput])
+  }, [template, formValues, freeTextInput])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -297,25 +306,25 @@ export function useGeneration(projectId: string) {
 
   return {
     // State (from store)
-    generation: store.generation,
-    deployment: store.deployment,
-    formValues: store.formValues,
-    freeTextInput: store.freeTextInput,
-    template: store.template,
+    generation,
+    deployment,
+    formValues,
+    freeTextInput,
+    template,
 
     // Actions
-    setFormValues: store.setFormValues,
-    setFreeTextInput: store.setFreeTextInput,
+    setFormValues,
+    setFreeTextInput,
     startGeneration,
     retryGeneration,
-    resetGeneration: store.resetGeneration,
+    resetGeneration,
     startDeployment,
     downloadCode,
 
     // Computed
     canGenerate: canGenerate(),
-    isGenerating: store.generation.status === "generating",
-    isComplete: store.generation.status === "complete",
-    isError: store.generation.status === "error",
+    isGenerating: generation.status === "generating",
+    isComplete: generation.status === "complete",
+    isError: generation.status === "error",
   }
 }

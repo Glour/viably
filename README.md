@@ -32,6 +32,7 @@
 # Находит unused imports, commented code
 
 # 4. Code reuse
+/health-reuse
 # Находит дублированный код и консолидирует
 
 # 5. Dependencies

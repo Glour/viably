@@ -41,5 +41,4 @@ function ProjectTabs({ children }: ProjectTabsProps) {
   )
 }
 
-export { ProjectTabs, TABS }
-export type { TabValue }
+export { ProjectTabs }

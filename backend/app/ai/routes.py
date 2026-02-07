@@ -4,7 +4,7 @@ import logging
 
 from fastapi import APIRouter, Depends
 
-from app.ai.client import anthropic_client
+from app.ai.client import get_anthropic_client
 from app.ai.schemas import AiServiceStatus, AiStatusResponse
 from app.auth.deps import get_current_admin_user
 from app.auth.models import User
@@ -26,12 +26,13 @@ async def get_ai_status(
     """
     # Check if client is initialized
     try:
-        if anthropic_client.client and settings.ANTHROPIC_API_KEY:
+        client = get_anthropic_client()
+        if client.client and settings.ANTHROPIC_API_KEY:
             status = AiServiceStatus.OPERATIONAL
         else:
             status = AiServiceStatus.DOWN
     except Exception as e:
-        logger.warning(f"AI client check failed: {e}")
+        logger.warning("AI client check failed: %s", e)
         status = AiServiceStatus.DOWN
 
     return AiStatusResponse(

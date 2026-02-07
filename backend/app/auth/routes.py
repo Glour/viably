@@ -125,25 +125,32 @@ async def login(
     }
 
 
-@router.post("/refresh", response_model=dict)
+@router.post(
+    "/refresh",
+    response_model=dict,
+    dependencies=[Depends(RateLimiter(times=10, minutes=1))],
+)
 async def refresh(
     token_data: TokenRefresh,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    """Refresh access token.
+    """Refresh access token with token rotation.
 
-    Uses refresh token to get new access token without re-authentication.
+    Issues new access and refresh tokens. The old refresh token is blacklisted.
 
     Raises:
         401: Invalid or expired refresh token
     """
-    new_access_token = await refresh_access_token(
+    new_access_token, new_refresh_token = await refresh_access_token(
         refresh_token=token_data.refresh_token,
         db=db,
     )
 
     return {
-        "data": TokenResponse(access_token=new_access_token).model_dump()
+        "data": TokenResponse(
+            access_token=new_access_token,
+            refresh_token=new_refresh_token,
+        ).model_dump()
     }
 
 
@@ -154,22 +161,27 @@ security = HTTPBearer()
 async def logout(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     current_user: User = Depends(get_current_user),
+    token_data: TokenRefresh | None = None,
 ) -> Response:
     """Logout current session.
 
-    Invalidates the current access token by adding it to the blacklist.
-    The token will be stored in Redis until its natural expiration.
+    Invalidates the access token and optionally the refresh token.
+    Tokens are stored in Redis blacklist until their natural expiration.
 
     Raises:
         401: Not authenticated
     """
-    token = credentials.credentials
+    # Blacklist the access token
+    access_token = credentials.credentials
+    access_ttl = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    await blacklist_token(access_token, access_ttl)
 
-    # Blacklist the token with TTL matching token expiration
-    ttl_seconds = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
-    await blacklist_token(token, ttl_seconds)
+    # Blacklist the refresh token if provided
+    if token_data and token_data.refresh_token:
+        refresh_ttl = settings.REFRESH_TOKEN_EXPIRE_DAYS * 86400
+        await blacklist_token(token_data.refresh_token, refresh_ttl)
 
     # Log logout for audit trail
-    logger.info("User %s logged out, token blacklisted", current_user.id)
+    logger.info("User %s logged out, tokens blacklisted", current_user.id)
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)

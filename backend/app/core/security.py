@@ -1,5 +1,7 @@
 """Security utility functions for SSRF prevention and URL validation."""
 
+from urllib.parse import urlparse
+
 # Allowed domains for deployment URLs (SSRF prevention)
 ALLOWED_DEPLOYMENT_DOMAINS = [
     "railway.app",
@@ -32,5 +34,12 @@ def validate_deployment_url(url: str) -> bool:
     if not url:
         return False
 
-    # Check if URL contains any allowed domain
-    return any(domain in url for domain in ALLOWED_DEPLOYMENT_DOMAINS)
+    parsed = urlparse(url)
+    if parsed.scheme not in ("https", "http") or not parsed.hostname:
+        return False
+
+    hostname = parsed.hostname
+    return any(
+        hostname == domain or hostname.endswith("." + domain)
+        for domain in ALLOWED_DEPLOYMENT_DOMAINS
+    )

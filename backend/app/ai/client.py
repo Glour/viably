@@ -79,5 +79,17 @@ class AnthropicClient:
         return result
 
 
-# Singleton instance for use across the application
-anthropic_client = AnthropicClient()
+# Lazy singleton instance for use across the application
+_anthropic_client: Optional[AnthropicClient] = None
+
+
+def get_anthropic_client() -> AnthropicClient:
+    """Get or create the AnthropicClient singleton.
+
+    Uses lazy initialization to avoid import-time side effects
+    when ANTHROPIC_API_KEY is not configured.
+    """
+    global _anthropic_client
+    if _anthropic_client is None:
+        _anthropic_client = AnthropicClient()
+    return _anthropic_client

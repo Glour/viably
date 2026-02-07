@@ -6,23 +6,79 @@ export interface NavItem {
   icon: LucideIcon
 }
 
-export interface SidebarState {
-  isOpen: boolean
-  toggle: () => void
-  open: () => void
-  close: () => void
-}
-
 // Dashboard types
 
 export type ProjectStatus = "draft" | "generating" | "generated" | "deployed" | "failed" | "stopped"
 
-export interface UserProfile {
+// Auth types (015-api-client-auth)
+
+export type PlanType = "free" | "starter" | "pro" | "business"
+
+export interface AuthUser {
   id: string
-  name: string
   email: string
-  plan: "free" | "starter" | "pro" | "business"
+  fullName: string | null
+  avatarUrl: string | null
+  plan: PlanType
   credits: number
+  referralCode: string
+  isVerified: boolean
+  createdAt: string
+  lastLoginAt: string | null
+}
+
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export interface RegisterRequest {
+  email: string
+  password: string
+  full_name?: string
+  referrer_code?: string
+}
+
+export interface AuthResponse {
+  user: AuthUser
+  accessToken: string
+  refreshToken: string
+  tokenType: string
+  expiresIn: number
+}
+
+export interface TokenResponse {
+  accessToken: string
+  refreshToken: string
+  tokenType: string
+  expiresIn: number
+}
+
+export class ApiError extends Error {
+  status: number
+  fieldErrors?: Record<string, string>
+
+  constructor(message: string, status: number, fieldErrors?: Record<string, string>) {
+    super(message)
+    this.name = "ApiError"
+    this.status = status
+    this.fieldErrors = fieldErrors
+  }
+}
+
+export interface AuthStoreState {
+  user: AuthUser | null
+  isLoading: boolean
+  isAuthenticated: boolean
+  login: (email: string, password: string) => Promise<void>
+  register: (data: { email: string; password: string; fullName?: string; referrerCode?: string }) => Promise<void>
+  logout: () => Promise<void>
+  checkAuth: () => Promise<void>
+  setUser: (user: AuthUser | null) => void
+}
+
+export interface UserProfile extends Pick<AuthUser, "id" | "email" | "plan" | "credits"> {
+  name: string
   projectsCount: number
   projectsLimit: number
   deployedCount: number
@@ -140,10 +196,6 @@ export type DeleteProjectResponse =
 
 export type DuplicateProjectResponse =
   | { success: true; projectId: string }
-  | { success: false; error: string }
-
-export type UpdateEnvVarsResponse =
-  | { success: true }
   | { success: false; error: string }
 
 export type ToggleStatusResponse =
@@ -291,14 +343,6 @@ export interface DeploymentSession {
 
 export type ConfigFormValues = Record<string, string | string[] | number>
 
-export type StartGenerationResponse =
-  | { success: true }
-  | { success: false; error: string }
-
-export type StartDeploymentResponse =
-  | { success: true }
-  | { success: false; error: string }
-
 export interface GenerationStoreState {
   projectId: string | null
   template: Template | null
@@ -306,6 +350,7 @@ export interface GenerationStoreState {
   deployment: DeploymentSession
   formValues: ConfigFormValues
   freeTextInput: string
+  deployConfig: DeployConfig | null
   setProjectContext: (projectId: string, template: Template) => void
   setFormValues: (values: ConfigFormValues) => void
   setFreeTextInput: (text: string) => void
@@ -319,13 +364,12 @@ export interface GenerationStoreState {
   _completeGeneration: (code: GeneratedCode) => void
   _failGeneration: (error: string) => void
   _updateDeployStep: (stepIndex: number, status: DeploymentStepStatus, duration: number | null) => void
+  _setDeployProgress: (progress: number) => void
   _completeDeployment: (botInfo: DeployedBotInfo) => void
   _failDeployment: (error: string) => void
 }
 
 // Settings types
-
-export type SettingsSection = "profile" | "billing" | "plan" | "theme"
 
 export type TransactionType = "earned" | "spent" | "purchased"
 export type TransactionFilter = "all" | "earned" | "spent" | "purchased"
@@ -367,8 +411,6 @@ export interface UserPlanInfo {
   }
   renewalDate: string | null
 }
-
-export type ThemeMode = "light" | "dark" | "system"
 
 export type UpdateProfileResponse =
   | { success: true; user: UserProfile }

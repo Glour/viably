@@ -1,6 +1,5 @@
 import type {
   TemplatesResponse,
-  TemplateResponse,
   CreateProjectResponse,
 } from "@/types"
 import { TEMPLATES } from "@/lib/data/templates"
@@ -12,20 +11,6 @@ export async function getTemplates(): Promise<TemplatesResponse> {
     success: true,
     templates: TEMPLATES,
   }
-}
-
-export async function getTemplateBySlug(
-  slug: string
-): Promise<TemplateResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 500))
-
-  const template = TEMPLATES.find((t) => t.slug === slug)
-
-  if (!template) {
-    return { success: false, error: "Template not found" }
-  }
-
-  return { success: true, template }
 }
 
 export async function createProjectFromTemplate(

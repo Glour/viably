@@ -11,7 +11,7 @@ import {
   forgotPasswordSchema,
   type ForgotPasswordFormData,
 } from "@/lib/validations/auth"
-import { mockForgotPassword } from "@/lib/api/auth"
+import { forgotPasswordApi } from "@/lib/api/auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -39,21 +39,13 @@ export default function ForgotPasswordPage() {
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
     try {
-      const response = await mockForgotPassword({
-        email: data.email,
-      })
-
-      if (response.success) {
-        setIsSuccess(true)
-        setSubmittedEmail(data.email)
-      } else {
-        toast.error(response.error)
-        // Trigger shake animation
-        setIsShaking(true)
-        setTimeout(() => setIsShaking(false), 300)
-      }
+      await forgotPasswordApi(data.email)
+      // Always show success to prevent email enumeration
+      setIsSuccess(true)
+      setSubmittedEmail(data.email)
     } catch (error) {
       toast.error("An unexpected error occurred. Please try again.")
+      // Trigger shake animation
       setIsShaking(true)
       setTimeout(() => setIsShaking(false), 300)
     }

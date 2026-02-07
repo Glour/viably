@@ -1,6 +1,11 @@
 """Application configuration."""
 
+import logging
+
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
+
+logger = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
@@ -39,6 +44,19 @@ class Settings(BaseSettings):
     DEPLOYMENT_TIMEOUT_SECONDS: int = 300  # 5 minutes
     DEPLOYMENT_POLL_INTERVAL_SECONDS: int = 10
     HEALTH_CHECK_TIMEOUT_SECONDS: float = 10.0  # Health check HTTP request timeout
+
+    @model_validator(mode="after")
+    def warn_localhost_cors_in_production(self):
+        """Warn when CORS_ORIGINS contains only localhost values in production mode."""
+        if not self.DEBUG:
+            origins = [o.strip() for o in self.CORS_ORIGINS.split(",")]
+            if all("localhost" in o or "127.0.0.1" in o for o in origins):
+                logger.warning(
+                    "CORS_ORIGINS contains only localhost values in production mode. "
+                    "This will block legitimate frontend requests. "
+                    "Set CORS_ORIGINS environment variable to include production domains."
+                )
+        return self
 
     class Config:
         env_file = ".env"
