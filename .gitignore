@@ -55,6 +55,9 @@ htmlcov/
 .pytest_cache/
 coverage/
 .nyc_output/
+/frontend/test-results/
+/frontend/playwright-report/
+/frontend/blob-report/
 
 # Database
 *.db
