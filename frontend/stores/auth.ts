@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import type { AuthStoreState } from "@/types"
-import { api, mapUserResponse, parseApiError } from "@/lib/api/client"
+import { api, mapUserResponse, parseApiError, clearAllCaches } from "@/lib/api/client"
 import { setTokens, getAccessToken, clearTokens } from "@/lib/api/tokens"
 
 const initialState = {
@@ -58,8 +58,30 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
     } catch {
       // Even if server call fails, clear locally
     } finally {
+      // Complete cleanup sequence on logout:
+
+      // 1. Clear all React Query caches (server data)
+      clearAllCaches()
+
+      // 2. Reset all Zustand stores (client state)
+      // Import stores dynamically to avoid circular dependencies
+      const { useProjectsStore } = await import("./projects")
+      const { useTemplatesStore } = await import("./templates")
+      const { useGenerationStore } = await import("./generation")
+      const { useSettingsStore } = await import("./settings")
+
+      useProjectsStore.getState().reset()
+      useTemplatesStore.getState().reset()
+      useGenerationStore.getState().reset()
+      useSettingsStore.getState().reset()
+
+      // 3. Clear authentication tokens from localStorage
       clearTokens()
+
+      // 4. Reset auth store last (this store)
       set({ user: null, isAuthenticated: false })
+
+      // 5. Redirect to login page
       if (typeof window !== "undefined") {
         window.location.href = "/login"
       }
