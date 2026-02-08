@@ -95,9 +95,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] Extend `.github/workflows/ci.yml`: add deployment status badges, add Slack/email notification on CI failure (via GitHub Actions built-in notifications), document branch protection rules for main (require CI pass before merge)
-- [ ] T017 [US2] Create `specs/019-infrastructure-devops/docs/branch-protection.md`: guide for configuring GitHub branch protection rules (require status checks, require PR reviews, auto-delete head branches)
-- [ ] T018 [US2] Create `specs/019-infrastructure-devops/docs/deployment-flow.md`: document full deployment flow (push → CI → Railway auto-deploy for backend, Vercel auto-deploy for frontend, preview deploys for PRs, rollback procedures)
+- [x] T016 [US2] Extend `.github/workflows/ci.yml`: add deployment status badges, add Slack/email notification on CI failure (via GitHub Actions built-in notifications), document branch protection rules for main (require CI pass before merge)
+- [x] T017 [US2] Create `specs/019-infrastructure-devops/docs/branch-protection.md`: guide for configuring GitHub branch protection rules (require status checks, require PR reviews, auto-delete head branches)
+- [x] T018 [US2] Create `specs/019-infrastructure-devops/docs/deployment-flow.md`: document full deployment flow (push → CI → Railway auto-deploy for backend, Vercel auto-deploy for frontend, preview deploys for PRs, rollback procedures)
 
 **Checkpoint**: CI/CD pipeline fully documented. Push to main results in automated, gated deployment.
 
@@ -111,16 +111,16 @@
 
 ### Implementation for User Story 3
 
-- [ ] T019 [P] [US3] Install sentry-sdk[fastapi] in `backend/pyproject.toml`, initialize Sentry in `backend/app/main.py` lifespan (sentry_sdk.init with dsn from settings, environment, traces_sample_rate=0.1, profiles_sample_rate=0.1, enable_tracing=True)
-- [ ] T020 [P] [US3] Install @sentry/nextjs in `frontend/package.json`, create `frontend/sentry.client.config.ts` (Sentry.init with dsn from env, environment, replaysSessionSampleRate, replaysOnErrorSampleRate, tracesSampleRate), create `frontend/sentry.server.config.ts`, create `frontend/sentry.edge.config.ts`
-- [ ] T021 [US3] Create `frontend/app/instrumentation.ts` with Sentry server-side instrumentation (import sentry.server.config on nodejs runtime, import sentry.edge.config on edge runtime)
-- [ ] T022 [US3] Wrap Next.js config with withSentryConfig in `frontend/next.config.ts` (add @sentry/nextjs withSentryConfig wrapper, configure source map upload with SENTRY_AUTH_TOKEN, set silenceSourceMapWarning)
-- [ ] T023 [P] [US3] Create global error boundary `frontend/app/error.tsx` (client component, capture error with Sentry.captureException, show user-friendly error UI with retry button)
-- [ ] T024 [P] [US3] Create root error boundary `frontend/app/global-error.tsx` (catches errors in root layout, imports sentry.client.config, shows minimal recovery UI)
-- [ ] T025 [US3] Install structlog in `backend/pyproject.toml`, create `backend/app/core/logging_config.py` (configure structlog with JSON processor for production, console renderer for development, bind request_id from contextvars, integrate with stdlib logging)
-- [ ] T026 [US3] Update `backend/app/main.py`: call logging_config.setup_logging() in lifespan startup, update request ID middleware to use structlog context binding (structlog.contextvars.bind_contextvars), replace logger = logging.getLogger with structlog.get_logger throughout
-- [ ] T027 [US3] Create `specs/019-infrastructure-devops/docs/uptimerobot-setup.md`: setup guide (create account, add HTTPS monitor for viably.dev at 5-min interval, add HTTP keyword monitor for api.viably.dev/health expecting "healthy", configure email alerts, optional Telegram webhook)
-- [ ] T028 [US3] Create `specs/019-infrastructure-devops/docs/sentry-setup.md`: setup guide (create org, create Next.js project, create Python project, get DSNs, create auth token for source maps, configure alert rules: email on new error, email on error frequency >10/hr)
+- [x] T019 [P] [US3] Install sentry-sdk[fastapi] in `backend/pyproject.toml`, initialize Sentry in `backend/app/main.py` lifespan (sentry_sdk.init with dsn from settings, environment, traces_sample_rate=0.1, profiles_sample_rate=0.1, enable_tracing=True)
+- [x] T020 [P] [US3] Install @sentry/nextjs in `frontend/package.json`, create `frontend/sentry.client.config.ts` (Sentry.init with dsn from env, environment, replaysSessionSampleRate, replaysOnErrorSampleRate, tracesSampleRate), create `frontend/sentry.server.config.ts`, create `frontend/sentry.edge.config.ts`
+- [x] T021 [US3] Create `frontend/app/instrumentation.ts` with Sentry server-side instrumentation (import sentry.server.config on nodejs runtime, import sentry.edge.config on edge runtime)
+- [x] T022 [US3] Wrap Next.js config with withSentryConfig in `frontend/next.config.ts` (add @sentry/nextjs withSentryConfig wrapper, configure source map upload with SENTRY_AUTH_TOKEN, set silenceSourceMapWarning)
+- [x] T023 [P] [US3] Create global error boundary `frontend/app/error.tsx` (client component, capture error with Sentry.captureException, show user-friendly error UI with retry button)
+- [x] T024 [P] [US3] Create root error boundary `frontend/app/global-error.tsx` (catches errors in root layout, imports sentry.client.config, shows minimal recovery UI)
+- [x] T025 [US3] Install structlog in `backend/pyproject.toml`, create `backend/app/core/logging_config.py` (configure structlog with JSON processor for production, console renderer for development, bind request_id from contextvars, integrate with stdlib logging)
+- [x] T026 [US3] Update `backend/app/main.py`: call logging_config.setup_logging() in lifespan startup, update request ID middleware to use structlog context binding (structlog.contextvars.bind_contextvars), replace logger = logging.getLogger with structlog.get_logger throughout
+- [x] T027 [US3] Create `specs/019-infrastructure-devops/docs/uptimerobot-setup.md`: setup guide (create account, add HTTPS monitor for viably.dev at 5-min interval, add HTTP keyword monitor for api.viably.dev/health expecting "healthy", configure email alerts, optional Telegram webhook)
+- [x] T028 [US3] Create `specs/019-infrastructure-devops/docs/sentry-setup.md`: setup guide (create org, create Next.js project, create Python project, get DSNs, create auth token for source maps, configure alert rules: email on new error, email on error frequency >10/hr)
 
 **Checkpoint**: Sentry captures errors from both frontend and backend. structlog produces JSON logs. UptimeRobot monitoring documented and ready to activate.
 
