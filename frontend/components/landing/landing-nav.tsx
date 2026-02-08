@@ -8,9 +8,11 @@ import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/hooks/use-reduced-motion"
 
 const NAV_LINKS = [
-  { label: "Features", href: "#features" },
-  { label: "Pricing", href: "#pricing" },
-  { label: "Docs", href: "#docs" },
+  { label: "Demo", href: "#demo", isAnchor: true },
+  { label: "Features", href: "#features", isAnchor: true },
+  { label: "Pricing", href: "#pricing", isAnchor: true },
+  { label: "Docs", href: "/docs", isAnchor: false },
+  { label: "Blog", href: "/blog", isAnchor: false },
 ] as const
 
 const SCROLL_THRESHOLD = 100
@@ -53,8 +55,11 @@ export function LandingNav() {
   }, [mobileMenuOpen])
 
   const handleAnchorClick = useCallback(
-    (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-      if (!href.startsWith("#")) return
+    (e: React.MouseEvent<HTMLAnchorElement>, href: string, isAnchor: boolean) => {
+      if (!isAnchor) {
+        setMobileMenuOpen(false)
+        return
+      }
       e.preventDefault()
       setMobileMenuOpen(false)
       const target = document.querySelector(href)
@@ -94,16 +99,26 @@ export function LandingNav() {
 
         {/* Desktop nav links (hidden below md) */}
         <div className="hidden md:flex items-center gap-1">
-          {NAV_LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              onClick={(e) => handleAnchorClick(e, link.href)}
-              className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {link.label}
-            </a>
-          ))}
+          {NAV_LINKS.map((link) =>
+            link.isAnchor ? (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={(e) => handleAnchorClick(e, link.href, link.isAnchor)}
+                className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {link.label}
+              </a>
+            ) : (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {link.label}
+              </Link>
+            )
+          )}
         </div>
 
         {/* Desktop CTA buttons (hidden below md) */}
@@ -172,21 +187,32 @@ function MobileMenuContent({
   onAnchorClick,
   onClose,
 }: {
-  onAnchorClick: (e: React.MouseEvent<HTMLAnchorElement>, href: string) => void
+  onAnchorClick: (e: React.MouseEvent<HTMLAnchorElement>, href: string, isAnchor: boolean) => void
   onClose: () => void
 }) {
   return (
     <div className="bg-background/95 backdrop-blur-xl border-t border-border/50 px-6 py-4 space-y-1">
-      {NAV_LINKS.map((link) => (
-        <a
-          key={link.href}
-          href={link.href}
-          onClick={(e) => onAnchorClick(e, link.href)}
-          className="flex items-center px-3 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-        >
-          {link.label}
-        </a>
-      ))}
+      {NAV_LINKS.map((link) =>
+        link.isAnchor ? (
+          <a
+            key={link.href}
+            href={link.href}
+            onClick={(e) => onAnchorClick(e, link.href, link.isAnchor)}
+            className="flex items-center px-3 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          >
+            {link.label}
+          </a>
+        ) : (
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={onClose}
+            className="flex items-center px-3 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          >
+            {link.label}
+          </Link>
+        )
+      )}
       <div className="h-px bg-border/50 my-3" />
       <Link
         href="/login"

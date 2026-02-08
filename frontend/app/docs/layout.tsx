@@ -223,6 +223,13 @@ function DocsHeader() {
             Search...
           </Button>
 
+          <Link
+            href="/blog"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden md:inline-block"
+          >
+            Blog
+          </Link>
+
           <ThemeToggle />
 
           <Link

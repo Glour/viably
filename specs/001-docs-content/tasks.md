@@ -221,10 +221,14 @@ This is a **web application** with:
 
 - [ ] T053 [US6] Record demo video (2 minutes) showing registration → template selection → configuration → generation → deploy [EXECUTOR: visual-effects-creator] [SEQUENTIAL]
 - [ ] T054 [US6] Upload demo video to YouTube channel with title, description, and tags [EXECUTOR: visual-effects-creator] [SEQUENTIAL]
-- [ ] T055 [US6] Create LiteYouTube component in /home/alex/PycharmProjects/viably/frontend/src/components/video/LiteYouTube.tsx with lazy loading [EXECUTOR: fullstack-nextjs-specialist] [SEQUENTIAL]
-- [ ] T056 [US6] Add NEXT_PUBLIC_YOUTUBE_VIDEO_ID to /home/alex/PycharmProjects/viably/frontend/.env [EXECUTOR: MAIN] [SEQUENTIAL]
-- [ ] T057 [US6] Embed demo video on landing page in /home/alex/PycharmProjects/viably/frontend/src/app/page.tsx [EXECUTOR: fullstack-nextjs-specialist] [PARALLEL-GROUP-10]
-- [ ] T058 [US6] Embed demo video on Quick Start page in /home/alex/PycharmProjects/viably/frontend/content/docs/quickstart.mdx [EXECUTOR: fullstack-nextjs-specialist] [PARALLEL-GROUP-10]
+- [X] T055 [US6] Create LiteYouTube component in /home/alex/PycharmProjects/viably/frontend/src/components/video/LiteYouTube.tsx with lazy loading [EXECUTOR: fullstack-nextjs-specialist] [SEQUENTIAL]
+→ Artifacts: [lite-youtube.tsx](../../frontend/components/video/lite-youtube.tsx) - Lightweight YouTube embed with lazy loading, thumbnail preview, and play button
+- [X] T056 [US6] Add NEXT_PUBLIC_YOUTUBE_VIDEO_ID to /home/alex/PycharmProjects/viably/frontend/.env [EXECUTOR: MAIN] [SEQUENTIAL]
+→ Artifacts: [.env.local](../../frontend/.env.local), [.env.example](../../frontend/.env.example) - Added NEXT_PUBLIC_YOUTUBE_VIDEO_ID configuration
+- [X] T057 [US6] Embed demo video on landing page in /home/alex/PycharmProjects/viably/frontend/src/app/page.tsx [EXECUTOR: fullstack-nextjs-specialist] [PARALLEL-GROUP-10]
+→ Artifacts: [demo-video.tsx](../../frontend/components/landing/demo-video.tsx), [page.tsx](../../frontend/app/page.tsx), [landing-nav.tsx](../../frontend/components/landing/landing-nav.tsx), [hero.tsx](../../frontend/components/landing/hero.tsx) - Created DemoVideo section, added to landing page, linked from navigation
+- [X] T058 [US6] Embed demo video on Quick Start page in /home/alex/PycharmProjects/viably/frontend/content/docs/quickstart.mdx [EXECUTOR: fullstack-nextjs-specialist] [PARALLEL-GROUP-10]
+→ Artifacts: [quickstart.mdx](../../frontend/content/docs/quickstart.mdx), [mdx-components.tsx](../../frontend/components/mdx/mdx-components.tsx) - Embedded video in Quick Start guide, added LiteYouTube to MDX components
 
 **Checkpoint**: Demo video is embedded on landing page and Quick Start page, loads quickly with lazy loading
 

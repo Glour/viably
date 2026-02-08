@@ -1,13 +1,17 @@
 """FastAPI routes for emails module."""
 
 from uuid import UUID
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi_limiter.depends import RateLimiter
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.deps import get_current_user
 from app.auth.models import User
+from app.celery_tasks.email_tasks import send_template_email_task
+from app.core.config import settings
 from app.core.database import get_db
 from app.emails.schemas import EmailLogResponse, EmailRetryResponse
 from app.emails.service import EmailService
@@ -106,3 +110,136 @@ async def get_email_log(
         )
 
     return {"data": EmailLogResponse.model_validate(log).model_dump()}
+
+
+# Test email sending schema
+class TestEmailRequest(BaseModel):
+    """Request schema for test email endpoint."""
+
+    template_name: str = Field(
+        ...,
+        description="Template name (welcome, generation-complete, deploy-success, low-credits)",
+    )
+    recipient: str = Field(
+        ..., description="Recipient email address (for testing)"
+    )
+    template_props: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Optional template props override (uses defaults if not provided)",
+    )
+
+
+class TestEmailResponse(BaseModel):
+    """Response schema for test email endpoint."""
+
+    message: str
+    template: str
+    recipient: str
+    task_id: str
+    available_templates: list[str]
+
+
+@router.post(
+    "/test-send",
+    response_model=dict,
+    dependencies=[Depends(RateLimiter(times=5, minutes=1))],
+)
+async def test_send_email(
+    data: TestEmailRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Test email template rendering and sending.
+
+    Allows testing all email templates with custom or default props.
+    Only available to authenticated users for testing purposes.
+
+    Available templates:
+    - welcome: Welcome email for new users
+    - generation-complete: Sent when AI generation completes
+    - deploy-success: Sent when deployment succeeds
+    - low-credits: Warning when credits are low
+
+    Raises:
+        400: Invalid template name or missing required props
+        401: Unauthorized
+        403: User inactive
+    """
+    service = EmailService(db)
+    available_templates = service.renderer.get_available_templates()
+
+    # Validate template exists
+    if data.template_name not in available_templates:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid template. Available: {', '.join(available_templates)}",
+        )
+
+    # Default props for each template
+    base_url = settings.CORS_ORIGINS.split(',')[0]
+    default_props = {
+        "welcome": {
+            "userName": current_user.full_name or current_user.email.split("@")[0],
+            "userEmail": current_user.email,
+            "credits": current_user.credits,
+            "dashboardUrl": f"{base_url}/dashboard",
+        },
+        "generation-complete": {
+            "userName": current_user.full_name or current_user.email.split("@")[0],
+            "projectName": "Test Project",
+            "templateUsed": "Discord Bot Starter",
+            "generatedAt": "2024-02-08T10:00:00Z",
+            "projectUrl": f"{base_url}/projects/test-123",
+            "creditsUsed": 10,
+            "creditsRemaining": current_user.credits,
+        },
+        "deploy-success": {
+            "userName": current_user.full_name or current_user.email.split("@")[0],
+            "projectName": "Test Bot",
+            "deploymentUrl": "https://test-bot.railway.app",
+            "platform": "Railway",
+            "deployedAt": "2024-02-08T10:00:00Z",
+            "projectUrl": f"{base_url}/projects/test-123",
+        },
+        "low-credits": {
+            "userName": current_user.full_name or current_user.email.split("@")[0],
+            "currentCredits": 15,
+            "threshold": 20,
+            "dashboardUrl": f"{base_url}/dashboard",
+            "buyCreditsUrl": f"{base_url}/credits/buy",
+        },
+    }
+
+    # Merge user-provided props with defaults
+    template_props = {
+        **default_props.get(data.template_name, {}),
+        **data.template_props,
+    }
+
+    # Subject lines for each template
+    subjects = {
+        "welcome": "Welcome to Viably - Your Account is Ready! 🎉",
+        "generation-complete": f"Your project is ready! 🎉",
+        "deploy-success": f"Your bot is live! 🚀",
+        "low-credits": "Low Credits Warning - Refill to Continue Creating",
+    }
+
+    # Queue email for sending
+    task = send_template_email_task.delay(
+        template_name=data.template_name,
+        email_type=f"test_{data.template_name}",
+        recipient=data.recipient,
+        subject=subjects.get(data.template_name, "Test Email from Viably"),
+        template_props=template_props,
+        user_id=str(current_user.id),
+    )
+
+    response = TestEmailResponse(
+        message="Test email queued successfully",
+        template=data.template_name,
+        recipient=data.recipient,
+        task_id=task.id,
+        available_templates=available_templates,
+    )
+
+    return {"data": response.model_dump()}

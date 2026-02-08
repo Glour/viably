@@ -1,0 +1,889 @@
+---
+title: "Frequently Asked Questions"
+description: "Common questions about Viably platform, credits, templates, and deployment."
+date: "2026-02-08"
+author: "Viably Team"
+---
+
+# Frequently Asked Questions
+
+Got questions? We've got answers. This comprehensive FAQ covers everything from getting started to advanced deployment scenarios. Can't find what you're looking for? Reach out to our support team at [support@viably.dev](mailto:support@viably.dev).
+
+---
+
+## Getting Started
+
+### What is Viably?
+
+Viably is an AI-powered platform that generates production-ready bots and API services from templates. You customize a template with your requirements, and our AI generates complete, deployable code in under 60 seconds. Think of it as a technical co-founder that handles infrastructure, security, and best practices while you focus on your bot's personality and features.
+
+### How do I create my first bot?
+
+Creating your first bot takes less than 10 minutes:
+
+1. **Sign up** at viably.dev and claim your 100 free credits
+2. **Choose a template** from our gallery (Discord, Telegram, Slack, WhatsApp, or Custom)
+3. **Customize** your bot's personality, commands, and behavior in the editor
+4. **Generate** with AI (costs 10 credits, takes 30-60 seconds)
+5. **Deploy** to Railway with one click, or download and self-host
+
+Check out our [Quick Start Guide](/docs/quickstart) for detailed step-by-step instructions with screenshots.
+
+### Do I need coding skills to use Viably?
+
+No coding is required for basic bot creation. Our visual editor lets you configure your bot's personality, commands, and responses through simple forms. However, coding skills unlock advanced features:
+
+- **No Code**: Perfect for simple bots with predefined commands
+- **Basic Coding**: Customize responses, add API integrations, modify bot logic
+- **Advanced Coding**: Build custom workflows, multi-platform bots, complex integrations
+
+Our generated code is clean, well-commented Python or JavaScript, making it great for learning if you're new to programming.
+
+### Which platforms are supported?
+
+Viably currently supports five major platforms:
+
+- **Discord**: Gaming communities, social servers, moderation bots
+- **Telegram**: Personal assistants, notifications, customer support
+- **Slack**: Workplace automation, team productivity, integrations
+- **WhatsApp**: Business messaging, customer engagement, support
+- **Custom**: API-based bots, multi-platform, webhooks, any custom integration
+
+Each template is optimized for its platform's unique features and limitations. See our [Template Guide](/docs/templates/guide) for a detailed comparison.
+
+### How long does it take to generate a bot?
+
+Bot generation takes **30-60 seconds** on average. During this time, our AI:
+
+1. Analyzes your configuration and requirements
+2. Generates optimized, platform-specific code
+3. Creates configuration files and environment setup
+4. Prepares deployment scripts
+5. Validates everything works together
+
+You'll see real-time progress updates via WebSocket as each step completes.
+
+### Can I test my bot before deploying?
+
+Yes! After generation, you can:
+
+- **Preview the code** in our built-in code viewer
+- **Download as .zip** and run locally with test accounts
+- **Deploy to Railway** free tier for live testing (within $5/month credit)
+
+We recommend testing with a small group of users before launching publicly. Most platforms offer test environments (Discord test servers, Telegram test bots, etc.).
+
+---
+
+## Credits & Billing
+
+### How do credits work?
+
+Credits are Viably's currency for bot generation. Each generation consumes credits based on complexity:
+
+- **Bot Generation**: 10 credits (standard for all templates)
+- **Regeneration**: 10 credits per regeneration
+- **Credit Bundles**: $10 for 100 credits ($0.10 per generation)
+
+Credits never expire and can be used anytime.
+
+### How many credits do I get for free?
+
+New users receive **100 free credits** upon signup, enough for 10 bot generations. Plus, you get **10 bonus credits** every day just for logging in. That's 300+ free credits per month if you log in daily!
+
+**Free Credit Breakdown**:
+- Signup bonus: 100 credits (one-time)
+- Daily login bonus: 10 credits (every day)
+- Monthly potential: 400 credits with daily logins (40 bot generations)
+
+### How much does bot generation cost?
+
+Bot generation costs a flat **10 credits** per generation, regardless of template complexity. All templates (Discord, Telegram, Slack, WhatsApp, Custom) cost the same.
+
+**Typical Usage Costs**:
+- Testing and learning: 5-10 generations (50-100 credits)
+- Production bot: 1-3 generations to get it right (10-30 credits)
+- Monthly iterations: 1-2 regenerations per month (10-20 credits)
+
+With daily free credits (10/day), most users never need to purchase credits.
+
+### Can I buy more credits?
+
+Yes, if you run out of free credits or need credits immediately, you can purchase credit bundles:
+
+- **Starter**: 100 credits for $10 ($0.10 per generation)
+- **Pro**: 500 credits for $40 ($0.08 per generation, 20% savings)
+- **Business**: 2000 credits for $120 ($0.06 per generation, 40% savings)
+
+Credits are shared across your account and never expire. Purchase credits from your account settings.
+
+### Do credits expire?
+
+No, purchased credits never expire. Free credits (signup bonus and daily bonuses) also never expire. Use them at your own pace.
+
+### What happens if I run out of credits?
+
+If your credit balance reaches zero:
+
+- You can still access your dashboard and view existing bots
+- You cannot generate new bots or regenerate existing ones
+- Daily login bonus continues to accumulate (10 credits/day)
+- You can purchase additional credits anytime
+
+Most users accumulate enough free credits through daily logins to never run out.
+
+### Are there subscription plans?
+
+Currently, Viably uses a pay-per-use credit system rather than monthly subscriptions. This means you only pay for what you use, with no recurring fees.
+
+However, we're exploring subscription tiers for power users:
+- **Free**: 10 credits/day, 100 signup bonus
+- **Starter** (planned): 100 credits/month + daily bonuses
+- **Pro** (planned): Unlimited generations + priority support
+
+Join our [Discord community](https://discord.gg/viably) to vote on pricing models.
+
+---
+
+## Templates
+
+### What templates are available?
+
+Viably offers five production-ready templates:
+
+1. **Discord Bot**: Slash commands, embeds, roles, moderation (beginner-friendly)
+2. **Telegram Bot**: Commands, inline keyboards, channels, file sharing (beginner-friendly)
+3. **Slack Bot**: Slash commands, workflows, modals, enterprise features (intermediate)
+4. **WhatsApp Bot**: Message templates, media, business API (intermediate)
+5. **Custom Bot**: API endpoints, webhooks, multi-platform (advanced)
+
+Each template includes best practices, error handling, rate limiting, logging, and one-click deployment configuration. See our [Template Gallery](/templates) for live demos.
+
+### Can I customize templates?
+
+Absolutely! Templates are starting points, not limitations. You can customize:
+
+**Configuration Level** (no coding):
+- Bot personality (friendly, professional, technical, playful)
+- Commands and trigger keywords
+- Response patterns and fallbacks
+- Language and tone
+
+**Code Level** (advanced):
+- Add API integrations (weather, news, databases)
+- Implement custom workflows and state machines
+- Connect to external services (Stripe, Shopify, etc.)
+- Modify response logic and AI prompts
+
+Generated code is yours to modify freely. You can even combine multiple templates or build something completely custom.
+
+### Can I switch templates after generation?
+
+Yes, but you'll need to regenerate your bot (another 10 credits). Here's the process:
+
+1. Export your current bot's configuration
+2. Choose a new template
+3. Import your configuration (commands, personality, etc.)
+4. Adjust platform-specific features (e.g., Discord embeds → Telegram keyboards)
+5. Regenerate with the new template (10 credits)
+6. Test thoroughly before switching users
+
+**What Transfers**: Bot personality, command logic, API integrations, response patterns
+**What Needs Rewriting**: Platform-specific UI (embeds, keyboards, modals, buttons)
+
+See our [Migration Guide](/docs/templates/guide#migration-guide) for detailed steps.
+
+### What's the difference between templates?
+
+Templates differ by platform, complexity, and use case:
+
+**Discord vs Telegram**:
+- Discord: Richer UI (embeds, colors, images), gaming focus, voice channels
+- Telegram: Faster, simpler, inline keyboards, better for notifications
+
+**Slack vs WhatsApp**:
+- Slack: Workplace automation, enterprise features, OAuth flows
+- WhatsApp: Consumer-facing, message templates, Meta Business approval required
+
+**Custom vs Platform Templates**:
+- Custom: Platform-agnostic, full control, requires more setup
+- Platform Templates: Optimized for specific platform, faster to deploy
+
+See our [Template Comparison Table](/docs/templates/guide#template-comparison-table) for side-by-side feature comparison.
+
+### Can I use multiple templates for one project?
+
+Yes, through two approaches:
+
+**Approach 1: Shared Backend**
+- Use Custom template to create a shared API
+- Deploy separate platform-specific bots (Discord, Telegram, etc.)
+- All bots call the same backend for logic
+
+**Approach 2: Adapter Pattern**
+- Generate Custom template with platform adapters
+- Route messages based on source platform
+- Share AI logic, customize responses per platform
+
+Most users start with one platform and expand later. Multi-platform adds complexity but maximizes reach.
+
+### How often are templates updated?
+
+Templates are updated quarterly (every 3 months) to:
+
+- Support new platform features (Discord API updates, Slack modals v2)
+- Fix security vulnerabilities
+- Improve performance and best practices
+- Add community-requested features
+
+**Your Bots**: Template updates don't affect already-generated bots. You can:
+- Continue using your current bot (no changes needed)
+- Regenerate to get latest updates (10 credits)
+- Manually merge changes if you've heavily customized
+
+We notify users of major template updates via email and Discord announcements.
+
+---
+
+## Generation & Deployment
+
+### How long does generation take?
+
+Most bots generate in **30-60 seconds**. Complex bots with many integrations may take up to 2 minutes. You'll see real-time progress:
+
+```
+[1/5] Analyzing configuration... ✓
+[2/5] Generating bot logic... ✓
+[3/5] Creating API handlers... ✓
+[4/5] Setting up deployment... ✓
+[5/5] Running final validation... ✓
+
+Generation complete! Your bot is ready to deploy.
+```
+
+### What exactly is generated?
+
+Each generation produces a complete, production-ready project:
+
+- **Source Code**: Python or JavaScript bot implementation with all features
+- **Configuration**: `.env.example`, `config.json`, API setup instructions
+- **Deployment**: Dockerfile, Railway config, deployment scripts
+- **Documentation**: README with setup, customization, and troubleshooting guides
+- **Tests**: Basic test suite for core functionality (optional)
+
+Everything is packaged as a downloadable .zip file or deployable directly to Railway.
+
+### Can I edit generated code?
+
+Yes, all generated code is yours to modify freely. The code is:
+
+- **Clean and Readable**: Follows PEP 8 (Python) or Airbnb (JavaScript) style guides
+- **Well-Commented**: Explains complex logic and configuration options
+- **Modular**: Organized into clear functions and files for easy modification
+- **Production-Ready**: Includes error handling, logging, and security best practices
+
+After downloading, edit with your favorite IDE (VS Code, PyCharm, etc.) and deploy anywhere.
+
+### Where are bots deployed?
+
+Viably supports multiple deployment options:
+
+**One-Click Deployment (Railway)**:
+- Click "Deploy to Railway" button after generation
+- Automatic setup: project creation, environment variables, SSL, monitoring
+- Free tier: $5/month credit (enough for most small bots)
+- Best for: MVPs, testing, small-to-medium bots
+
+**Self-Hosting**:
+- Download code and deploy anywhere: AWS, Google Cloud, DigitalOcean, your own server
+- Full control over infrastructure, costs, and scaling
+- Best for: High-volume bots, cost optimization, compliance requirements
+
+See our [Deployment Guide](/docs/deployment) for detailed instructions for each platform.
+
+### How do I deploy to my own server?
+
+To self-host your bot:
+
+1. **Download** your generated bot as .zip after generation
+2. **Extract** to your server or local machine
+3. **Install Dependencies**:
+   ```bash
+   # Python bots
+   pip install -r requirements.txt
+
+   # JavaScript bots
+   npm install
+   ```
+4. **Configure Environment**:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your API keys
+   ```
+5. **Run Locally** (for testing):
+   ```bash
+   # Python
+   python main.py
+
+   # JavaScript
+   npm start
+   ```
+6. **Deploy to Production**:
+   ```bash
+   # Using Docker
+   docker build -t my-bot .
+   docker run -d -p 8000:8000 --env-file .env my-bot
+
+   # Using systemd (Linux)
+   sudo systemctl start my-bot
+   ```
+
+See platform-specific deployment guides for AWS, GCP, DigitalOcean, and more.
+
+### Is my bot scalable?
+
+Yes, generated bots are designed for scalability:
+
+**Built-In Features**:
+- Async/await for non-blocking I/O (handles thousands of concurrent users)
+- Connection pooling for database queries
+- Rate limiting to prevent abuse
+- Stateless design for horizontal scaling
+
+**Scaling Strategies**:
+- **Vertical Scaling**: Increase server resources (RAM, CPU) for single instance
+- **Horizontal Scaling**: Deploy multiple instances behind load balancer
+- **Database Scaling**: Use PostgreSQL with read replicas or Redis for caching
+
+**Typical Performance**:
+- Small bot (< 1000 users): Single Railway instance ($5-10/month)
+- Medium bot (1K-10K users): 2-3 instances with load balancer ($20-50/month)
+- Large bot (10K-100K users): Auto-scaling cluster with Redis cache ($100-500/month)
+
+Our generated code is production-tested for bots with 100K+ daily active users.
+
+### Can I update my bot after deployment?
+
+Yes, you can update deployed bots anytime:
+
+**For Configuration Changes**:
+1. Modify settings in Viably editor
+2. Regenerate (10 credits)
+3. Redeploy to Railway (automatic) or manually upload to your server
+
+**For Code Changes**:
+1. Download current bot code
+2. Edit locally with your IDE
+3. Test thoroughly
+4. Deploy updated code (Railway auto-deploys on git push, or manually via Docker)
+
+**Zero-Downtime Updates**:
+- Railway supports rolling deployments (new version starts before old one stops)
+- For self-hosting, use blue-green deployment or Docker Compose with health checks
+
+### What if generation fails?
+
+Generation failures are rare (< 0.1% of generations), but if they happen:
+
+1. **Automatic Retry**: Our system retries failed generations automatically
+2. **Credit Refund**: If generation fails, your 10 credits are refunded immediately
+3. **Error Details**: You'll see a clear error message explaining what went wrong
+4. **Support**: Contact support@viably.dev with your generation ID for help
+
+**Common Causes**:
+- Invalid configuration (e.g., missing required fields)
+- Network timeout (temporary API issue)
+- Platform API changes (we update templates within 24 hours)
+
+---
+
+## Technical
+
+### What technology stack is used?
+
+Generated bots use modern, production-tested technologies:
+
+**Backend**:
+- **Python 3.11+**: FastAPI, SQLAlchemy (async), Pydantic v2
+- **JavaScript/TypeScript**: Node.js 18+, Express or Fastify
+
+**Databases**:
+- **PostgreSQL 16**: Primary database (async via asyncpg)
+- **Redis**: Caching and session management
+- **SQLite**: Testing and local development
+
+**AI/ML**:
+- **Anthropic Claude**: Default AI model (Claude 3.5 Sonnet)
+- **OpenAI GPT-4**: Optional alternative
+- **Custom Models**: Bring your own model via API
+
+**Deployment**:
+- **Docker**: Containerized for consistent deployment
+- **Railway**: One-click deployment platform
+- **Celery + Redis**: Background job processing
+
+**Frontend** (for dashboard):
+- **Next.js 16+**: React 19, TypeScript 5.x, Tailwind CSS v4
+
+See our [Tech Stack Documentation](/docs/tech-stack) for detailed version information.
+
+### Can I access the source code?
+
+Yes, all generated code is **yours to keep**. After generation, you can:
+
+- View code in our browser-based editor
+- Download complete project as .zip
+- Clone from Railway's git repository (if deployed there)
+- Modify, redistribute, or sell commercially
+
+**License**: Generated code is MIT-licensed by default. You can change the license to anything you want (GPL, proprietary, etc.).
+
+### How do I update my bot?
+
+There are two types of updates:
+
+**Template Updates** (Viably releases new template version):
+1. Log into Viably dashboard
+2. Navigate to your bot project
+3. Click "Regenerate with Latest Template" (10 credits)
+4. Review changes before deploying
+
+**Your Custom Updates** (you modify the code):
+1. Edit code locally with your IDE
+2. Test changes thoroughly
+3. Commit to git: `git commit -m "Add new feature"`
+4. Deploy:
+   - Railway: `git push` (auto-deploys)
+   - Docker: `docker build && docker push`
+   - Manual: `scp` files to server and restart service
+
+We recommend using git version control for all custom modifications.
+
+### What databases are supported?
+
+Out of the box, generated bots support:
+
+**PostgreSQL** (recommended):
+- Async support via asyncpg
+- Handles millions of records
+- Full-text search, JSON columns, advanced queries
+- Hosted options: Railway, Supabase, AWS RDS
+
+**SQLite** (local development):
+- Zero-config, file-based database
+- Perfect for testing
+- Async support via aiosqlite
+
+**Redis** (caching and sessions):
+- Sub-millisecond response times
+- Session management
+- Rate limiting
+- Background job queues
+
+**Adding Other Databases**:
+You can integrate any database by installing its driver and modifying the generated connection code. Popular options:
+- MongoDB (pymongo, motor for async)
+- MySQL (aiomysql)
+- DynamoDB (boto3)
+
+### Can I use my own AI model?
+
+Yes, generated bots support custom AI models:
+
+**Default**: Anthropic Claude 3.5 Sonnet (best quality)
+
+**Built-In Alternatives**:
+- OpenAI GPT-4 / GPT-4 Turbo
+- OpenAI GPT-3.5 Turbo (cheaper)
+
+**Custom Models**:
+Edit the AI client configuration in generated code:
+```python
+# Replace default AI client
+from your_ai_provider import YourAIClient
+
+ai_client = YourAIClient(api_key=os.getenv("YOUR_API_KEY"))
+
+async def generate_response(message):
+    response = await ai_client.complete(prompt=message)
+    return response.text
+```
+
+Popular custom models:
+- Google Gemini
+- Cohere
+- Hugging Face models (self-hosted)
+- Fine-tuned GPT-3.5 or Claude
+
+### Is the platform open source?
+
+**Generated Code**: Yes, all code generated for your bots is open source (MIT license) and fully yours.
+
+**Viably Platform**: The Viably platform itself (our AI generation engine, dashboard, API) is not open source. However, we plan to open-source core components based on community feedback.
+
+**Contributing**: We welcome contributions to our templates! Submit template improvements, bug fixes, or new features via [GitHub](https://github.com/viably/templates).
+
+---
+
+## Support & Community
+
+### How do I get help?
+
+We offer multiple support channels:
+
+**Documentation**:
+- [Quick Start Guide](/docs/quickstart) - Step-by-step walkthrough
+- [Template Guides](/docs/templates) - Platform-specific documentation
+- [API Reference](/docs/api) - Complete API documentation
+
+**Community Support**:
+- [Discord Server](https://discord.gg/viably) - Active community, fastest response
+- [GitHub Discussions](https://github.com/viably/platform/discussions) - Technical Q&A
+- [Reddit](https://reddit.com/r/viably) - Share projects and get feedback
+
+**Direct Support**:
+- **Email**: support@viably.dev (response within 24 hours)
+- **Twitter**: [@viablydev](https://twitter.com/viablydev) - Quick questions
+- **Live Chat**: Available in dashboard for Pro users (planned)
+
+### Is there a community?
+
+Yes! Our community is active across multiple platforms:
+
+**Discord** (most active):
+- #general - General discussion
+- #showcase - Share your bots
+- #help - Technical support
+- #feedback - Feature requests
+- #announcements - Product updates
+
+**GitHub**:
+- Template contributions
+- Bug reports
+- Feature discussions
+
+**Reddit** (r/viably):
+- Project showcases
+- Use case discussions
+- Best practices
+
+**Twitter/X**:
+- Product announcements
+- Tips and tricks
+- Community highlights
+
+Join our [Discord](https://discord.gg/viably) to connect with 1000+ bot builders.
+
+### Can I request features?
+
+Absolutely! We prioritize feature requests based on community votes:
+
+**How to Request**:
+1. Join our [Discord](https://discord.gg/viably) and post in #feature-requests
+2. Open a GitHub Discussion under "Ideas"
+3. Email support@viably.dev with detailed use case
+
+**What Happens Next**:
+- Community votes on requests (👍 reactions)
+- We review monthly and add top requests to roadmap
+- You'll be notified when your request is prioritized
+
+**Recent Community Requests Shipped**:
+- WhatsApp Bot template (requested by 50+ users)
+- Daily credit bonuses (top-voted, shipped in 2 weeks)
+- One-click Railway deployment (requested by 30+ users)
+
+### Do you offer professional services?
+
+Yes, for teams and enterprises, we offer:
+
+**Custom Template Development**:
+- Build templates for niche platforms (MS Teams, Facebook Messenger, etc.)
+- Enterprise features (SSO, audit logs, compliance)
+- Pricing: $2,000-$10,000 per custom template
+
+**Bot Development Services**:
+- We build your bot end-to-end based on specifications
+- Includes design, development, testing, deployment, and monitoring
+- Pricing: $5,000-$50,000 depending on complexity
+
+**Training & Consulting**:
+- Team training on bot development best practices
+- Architecture review and optimization
+- Pricing: $200/hour or custom packages
+
+Contact enterprise@viably.dev for a quote.
+
+### What's your SLA for support?
+
+**Free Users**:
+- Email: Response within 48 hours
+- Discord/Community: Community-driven (usually < 4 hours)
+
+**Paid Users** (purchased credits):
+- Email: Response within 24 hours
+- Critical issues: Response within 4 hours
+
+**Enterprise** (custom contracts):
+- Email: Response within 4 hours
+- Critical issues: Response within 1 hour
+- Dedicated Slack channel with engineering team
+
+**Uptime SLA**:
+- Platform: 99.5% uptime (< 3.6 hours downtime/month)
+- API: 99.9% uptime (< 43 minutes downtime/month)
+- Status: status.viably.dev
+
+---
+
+## Security & Privacy
+
+### Is my data secure?
+
+Yes, we take security seriously:
+
+**Infrastructure Security**:
+- Hosted on SOC 2 compliant infrastructure (Railway, AWS)
+- End-to-end encryption for data in transit (TLS 1.3)
+- Encrypted databases with automatic backups
+- Regular security audits and penetration testing
+
+**Code Security**:
+- Generated code includes input validation and SQL injection prevention
+- Rate limiting to prevent abuse
+- No hardcoded secrets (environment variables only)
+
+**Access Control**:
+- Your bots and data are private by default
+- Two-factor authentication (2FA) available
+- API keys are scoped and revocable
+
+See our [Security Policy](/security) for details.
+
+### Who owns the generated code?
+
+**You do.** All generated code is your intellectual property. You can:
+
+- Modify it freely
+- Sell it to clients
+- Open-source it under any license
+- Use it commercially without restrictions
+- Redistribute it
+
+Viably retains no rights to your generated code.
+
+### Can I delete my account and data?
+
+Yes, you can delete your account anytime from Settings > Account > Delete Account. This will:
+
+- Permanently delete your account, bots, and configuration
+- Remove your email and personal information from our systems
+- Preserve deployed bots (on Railway or your servers) unless you manually delete them
+
+**Important**: Account deletion is irreversible. Download your bot code before deleting.
+
+---
+
+## Troubleshooting
+
+### My bot isn't responding. What should I check?
+
+Common issues and solutions:
+
+**1. Check Deployment Status**:
+- Railway: Go to Railway dashboard, verify service is "Running"
+- Self-hosted: SSH to server, check process: `ps aux | grep bot`
+
+**2. Verify API Keys**:
+- Discord: Check bot token in .env matches Discord Developer Portal
+- Telegram: Verify bot token with BotFather
+- API keys must be active and have correct permissions
+
+**3. Check Logs**:
+- Railway: View logs in Railway dashboard
+- Self-hosted: `tail -f /var/log/my-bot.log`
+- Look for error messages: "Unauthorized", "Rate limited", "Connection refused"
+
+**4. Test Connectivity**:
+- Verify webhook URL is accessible: `curl https://your-bot.railway.app/webhook`
+- Check firewall rules allow incoming traffic on port 8000
+
+**5. Platform-Specific**:
+- Discord: Bot must be invited to server with correct permissions
+- Telegram: Webhook must be set correctly (`setWebhook` command)
+- Slack: Request URL must be verified in Slack App settings
+
+Still stuck? Join our [Discord](https://discord.gg/viably) #help channel with logs and error messages.
+
+### Generation is taking too long. Is something wrong?
+
+Normal generation takes 30-60 seconds. If it exceeds 2 minutes:
+
+1. **Check Network**: Slow internet may delay upload of configuration
+2. **Try Again**: Click "Cancel" and retry generation
+3. **Clear Cache**: Log out and log back in
+4. **Contact Support**: If issue persists, email support@viably.dev with generation ID
+
+Our AI infrastructure handles thousands of concurrent generations, so delays are rare.
+
+### I can't deploy to Railway. What's wrong?
+
+Common Railway deployment issues:
+
+**Error: "Unauthorized"**:
+- Sign in to Railway via GitHub
+- Authorize Viably to deploy on your behalf in Railway settings
+
+**Error: "Plan limit exceeded"**:
+- Railway free tier has limits (2 active projects)
+- Delete unused projects or upgrade to Railway Pro
+
+**Error: "Build failed"**:
+- Check Railway logs for specific error
+- Often caused by missing environment variables
+- Verify .env.example includes all required keys
+
+**Error: "Health check failed"**:
+- Your bot isn't responding on the expected port (usually 8000)
+- Check `PORT` environment variable in Railway settings
+
+For Railway-specific issues, see [Railway Troubleshooting Guide](/docs/deployment/railway#troubleshooting).
+
+### My credits aren't showing up after purchase.
+
+If your credits don't appear immediately after purchase:
+
+1. **Refresh Page**: Hard refresh (Ctrl+Shift+R or Cmd+Shift+R)
+2. **Check Email**: Verify payment confirmation email was received
+3. **Wait 5 Minutes**: Stripe payments can take 1-5 minutes to process
+4. **Check Payment Status**: Go to Settings > Billing > Payment History
+5. **Contact Support**: If credits still missing after 10 minutes, email support@viably.dev with transaction ID
+
+Payments are processed securely via Stripe. We do not store credit card information.
+
+---
+
+## Billing & Payments
+
+### What payment methods do you accept?
+
+We accept all major payment methods via Stripe:
+
+- Credit cards (Visa, Mastercard, Amex, Discover)
+- Debit cards
+- Apple Pay
+- Google Pay
+- ACH bank transfers (US only, for $100+ purchases)
+
+Cryptocurrency payments (Bitcoin, Ethereum) coming soon.
+
+### Can I get a refund?
+
+We offer refunds under the following conditions:
+
+**Eligible for Refund**:
+- Generation failed and credits were not refunded automatically (within 48 hours)
+- Purchased wrong credit bundle (within 7 days, credits unused)
+- Platform downtime prevented usage (proportional refund)
+
+**Not Eligible for Refund**:
+- Credits already used for successful generations
+- Changed mind after using credits
+- Purchased credits more than 30 days ago
+
+To request a refund, email support@viably.dev with order details.
+
+### Do you offer discounts for students or nonprofits?
+
+Yes! We support students, educators, and nonprofits:
+
+**Students & Educators**:
+- 50% off all credit purchases
+- Verify with student/educator email (.edu domain or GitHub Student Pack)
+
+**Nonprofits**:
+- 30% off all credit purchases
+- Verify with nonprofit documentation (501c3 status, charity registration)
+
+**Open Source Projects**:
+- Free Pro plan (unlimited generations) for qualifying open-source projects
+- Must have 100+ GitHub stars and active maintenance
+
+Apply for discounts at viably.dev/discounts with proof of eligibility.
+
+### How do I get an invoice?
+
+Invoices are emailed automatically after each purchase. You can also:
+
+1. Go to Settings > Billing > Payment History
+2. Click on any payment
+3. Click "Download Invoice" (PDF)
+
+Invoices include:
+- Itemized charges (credit purchases)
+- Payment method
+- Tax information (if applicable)
+- Company details (customizable in Settings > Company Info)
+
+For custom invoices or billing questions, email billing@viably.dev.
+
+---
+
+## Legal & Compliance
+
+### What are your Terms of Service?
+
+Our Terms of Service cover:
+- Acceptable use (no spam, illegal content, or abuse)
+- Intellectual property (you own generated code, we own the platform)
+- Liability limitations
+- Service availability (99.5% uptime SLA)
+
+Read the full Terms at [viably.dev/terms](/terms).
+
+### Are you GDPR compliant?
+
+Yes, Viably is GDPR compliant for European users:
+
+- **Data Minimization**: We collect only essential information
+- **Right to Access**: Request your data anytime via support@viably.dev
+- **Right to Deletion**: Delete account from Settings > Account
+- **Data Portability**: Export all data as JSON
+- **Privacy by Design**: Minimal data collection, encrypted storage
+
+See our [Privacy Policy](/privacy) for details.
+
+### Can I use Viably for commercial projects?
+
+Yes! You can use Viably-generated bots for:
+
+- **Client Work**: Build bots for paying clients
+- **SaaS Products**: Offer bots as a service
+- **Internal Tools**: Automate your business workflows
+- **Reselling**: Sell pre-built bots or customization services
+
+**Only Restriction**: You cannot resell Viably credits or platform access itself (e.g., white-label Viably).
+
+---
+
+## Still Have Questions?
+
+We're here to help! Choose your preferred support channel:
+
+**Fastest Response** (< 4 hours):
+- Discord: [discord.gg/viably](https://discord.gg/viably)
+
+**Detailed Questions** (< 24 hours):
+- Email: [support@viably.dev](mailto:support@viably.dev)
+
+**Public Discussion**:
+- GitHub: [github.com/viably/platform/discussions](https://github.com/viably/platform/discussions)
+- Reddit: [reddit.com/r/viably](https://reddit.com/r/viably)
+
+**Follow for Updates**:
+- Twitter: [@viablydev](https://twitter.com/viablydev)
+- Blog: [viably.dev/blog](https://viably.dev/blog)
+
+---
+
+**Ready to start building?** Head to our [Quick Start Guide](/docs/quickstart) and create your first bot in under 10 minutes!

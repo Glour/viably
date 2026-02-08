@@ -139,6 +139,54 @@ class AIGenerationService:
                 },
             )
 
+            # Send generation complete email asynchronously
+            try:
+                from app.celery_tasks.email_tasks import send_template_email_task
+                from app.auth.models import User
+                from app.core.config import settings
+
+                # Get user for email
+                user_result = await self.db.execute(
+                    select(User).where(User.id == project.user_id)
+                )
+                user = user_result.scalar_one_or_none()
+
+                if user:
+                    base_url = settings.CORS_ORIGINS.split(',')[0]
+                    send_template_email_task.delay(
+                        template_name="generation-complete",
+                        email_type="generation_complete",
+                        recipient=user.email,
+                        subject=f"Your project '{project.name}' is ready! 🎉",
+                        template_props={
+                            "userName": user.full_name or user.email.split("@")[0],
+                            "projectName": project.name,
+                            "templateUsed": template.name,
+                            "generatedAt": datetime.now(timezone.utc).isoformat(),
+                            "projectUrl": f"{base_url}/projects/{project.id}",
+                            "creditsUsed": settings.GENERATION_COST,
+                            "creditsRemaining": user.credits,
+                        },
+                        user_id=str(user.id),
+                    )
+                    logger.info(
+                        "Generation complete email queued",
+                        extra={
+                            "project_id": str(project_id),
+                            "user_id": str(user.id),
+                        },
+                    )
+            except Exception as email_error:
+                # Don't fail generation if email fails
+                logger.error(
+                    "Failed to queue generation complete email",
+                    extra={
+                        "project_id": str(project_id),
+                        "error": str(email_error),
+                    },
+                    exc_info=True,
+                )
+
             return {
                 "success": True,
                 "files_count": len(files),

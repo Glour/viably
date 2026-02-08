@@ -25,6 +25,7 @@ from app.auth.service import (
     refresh_access_token,
     register_user,
 )
+from app.celery_tasks.email_tasks import send_template_email_task
 from app.core.config import settings
 from app.core.database import get_db
 
@@ -71,6 +72,39 @@ async def register(
 
     access_token = create_access_token(user.id)
     refresh_token = create_refresh_token(user.id)
+
+    # Send welcome email asynchronously via Celery
+    try:
+        send_template_email_task.delay(
+            template_name="welcome",
+            email_type="welcome",
+            recipient=user.email,
+            subject="Welcome to Viably - Your Account is Ready! 🎉",
+            template_props={
+                "userName": user.full_name or user.email.split("@")[0],
+                "userEmail": user.email,
+                "credits": user.credits,
+                "dashboardUrl": f"{settings.CORS_ORIGINS.split(',')[0]}/dashboard",
+            },
+            user_id=str(user.id),
+        )
+        logger.info(
+            "Welcome email queued",
+            extra={
+                "user_id": str(user.id),
+                "email": user.email,
+            },
+        )
+    except Exception as e:
+        # Don't fail registration if email fails
+        logger.error(
+            "Failed to queue welcome email",
+            extra={
+                "user_id": str(user.id),
+                "error": str(e),
+            },
+            exc_info=True,
+        )
 
     return {
         "data": AuthResponse(

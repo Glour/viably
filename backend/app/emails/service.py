@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.emails.models import EmailLog
+from app.emails.template_renderer import EmailTemplateRenderer
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +34,51 @@ class EmailService:
             db: Database session.
         """
         self.db = db
+        self.renderer = EmailTemplateRenderer()
         if RESEND_AVAILABLE and settings.RESEND_API_KEY:
             resend.api_key = settings.RESEND_API_KEY
+
+    async def send_template_email(
+        self,
+        template_name: str,
+        email_type: str,
+        recipient: str,
+        subject: str,
+        template_props: dict[str, Any],
+        user_id: UUID,
+    ) -> UUID:
+        """Render and send email using React Email template.
+
+        Args:
+            template_name: Name of React Email template (e.g., 'welcome').
+            email_type: Type of email for logging (welcome, generation_complete, etc.).
+            recipient: Recipient email address.
+            subject: Email subject line.
+            template_props: Props to pass to React Email template.
+            user_id: User UUID.
+
+        Returns:
+            UUID of created email log entry.
+
+        Raises:
+            RuntimeError: If template rendering fails.
+            Exception: If email sending fails.
+        """
+        # Render template to HTML
+        html_content = await self.renderer.render_template(
+            template_name=template_name,
+            props=template_props,
+        )
+
+        # Send email using rendered HTML
+        return await self.send_email(
+            email_type=email_type,
+            recipient=recipient,
+            subject=subject,
+            html_content=html_content,
+            template_variables=template_props,
+            user_id=user_id,
+        )
 
     async def send_email(
         self,

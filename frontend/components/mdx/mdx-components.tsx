@@ -2,6 +2,7 @@ import type { MDXComponents } from 'mdx/types'
 import { Heading } from './Heading'
 import { CodeBlock, InlineCode } from './CodeBlock'
 import { Image, ImageGrid } from './Image'
+import { LiteYouTube } from '@/components/video/lite-youtube'
 
 /**
  * MDX components provider
@@ -60,5 +61,6 @@ export function getMDXComponents(): MDXComponents {
     CodeBlock,
     InlineCode,
     Heading,
+    LiteYouTube,
   }
 }

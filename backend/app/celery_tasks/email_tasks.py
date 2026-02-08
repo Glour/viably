@@ -52,9 +52,117 @@ celery_app.conf.update(
     result_expires=3600,  # Results expire after 1 hour
 )
 
+# Celery Beat Schedule for Periodic Tasks
+# Run with: celery -A app.celery_tasks.email_tasks beat --loglevel=info
+from celery.schedules import crontab
+
+celery_app.conf.beat_schedule = {
+    # Check for low credits daily at 10 AM UTC
+    'check-low-credits-daily': {
+        'task': 'check_low_credits',
+        'schedule': crontab(hour=10, minute=0),
+        'options': {'expires': 3600},  # Task expires after 1 hour if not executed
+    },
+    # Retry failed emails every hour
+    'retry-failed-emails-hourly': {
+        'task': 'retry_failed_emails',
+        'schedule': crontab(minute=0),  # Every hour at :00
+        'options': {'expires': 1800},  # Task expires after 30 minutes
+    },
+}
+
 # =============================================================================
 # Celery Tasks
 # =============================================================================
+
+
+@celery_app.task(
+    name="send_template_email_async",
+    bind=True,
+    max_retries=3,
+    default_retry_delay=60,
+)
+def send_template_email_task(
+    self,
+    template_name: str,
+    email_type: str,
+    recipient: str,
+    subject: str,
+    template_props: dict[str, Any],
+    user_id: str,  # UUID as string for Celery serialization
+) -> dict:
+    """Celery task to render and send email using React Email template.
+
+    Args:
+        template_name: React Email template name (e.g., 'welcome').
+        email_type: Type of email (welcome, generation_complete, etc.).
+        recipient: Recipient email address.
+        subject: Email subject line.
+        template_props: Props for React Email template.
+        user_id: User UUID as string.
+
+    Returns:
+        dict with send result.
+
+    Raises:
+        Exception: If email rendering or sending fails after all retries.
+    """
+    logger.info(
+        "Starting async template email send",
+        extra={
+            "template": template_name,
+            "email_type": email_type,
+            "recipient": recipient,
+            "user_id": user_id,
+            "task_id": self.request.id,
+            "retry_count": self.request.retries,
+        },
+    )
+
+    try:
+        result = asyncio.run(
+            _send_template_email_async(
+                template_name=template_name,
+                email_type=email_type,
+                recipient=recipient,
+                subject=subject,
+                template_props=template_props,
+                user_id=user_id,
+            )
+        )
+
+        logger.info(
+            "Template email sent successfully",
+            extra={
+                "template": template_name,
+                "email_type": email_type,
+                "recipient": recipient,
+                "user_id": user_id,
+                "task_id": self.request.id,
+                "email_log_id": str(result["email_log_id"]),
+            },
+        )
+
+        return {"status": "sent", "recipient": recipient}
+
+    except Exception as e:
+        logger.error(
+            "Template email sending failed",
+            extra={
+                "template": template_name,
+                "email_type": email_type,
+                "recipient": recipient,
+                "user_id": user_id,
+                "task_id": self.request.id,
+                "retry_count": self.request.retries,
+                "max_retries": self.max_retries,
+                "error": str(e),
+                "error_type": type(e).__name__,
+            },
+            exc_info=True,
+        )
+
+        raise self.retry(exc=e, countdown=60 * (2**self.request.retries))
 
 
 @celery_app.task(
@@ -158,6 +266,53 @@ def send_email_task(
         raise self.retry(exc=e, countdown=60 * (2**self.request.retries))
 
 
+@celery_app.task(name="check_low_credits")
+def check_low_credits_task() -> dict:
+    """Periodic task to check users with low credits and send warnings.
+
+    This task runs daily (configured in Celery Beat) to identify users
+    with credits below the threshold (20) and send them a warning email.
+
+    Returns:
+        dict with check result:
+            - users_checked: number of users checked
+            - warnings_sent: number of warnings sent
+
+    Configuration:
+        Add to Celery Beat schedule:
+        ```python
+        celery_app.conf.beat_schedule = {
+            'check-low-credits-daily': {
+                'task': 'check_low_credits',
+                'schedule': crontab(hour=10, minute=0),  # 10 AM UTC daily
+            },
+        }
+        ```
+    """
+    logger.info("Starting low credits check task")
+
+    try:
+        result = asyncio.run(_check_low_credits_async())
+
+        logger.info(
+            "Low credits check completed",
+            extra={
+                "users_checked": result["users_checked"],
+                "warnings_sent": result["warnings_sent"],
+            },
+        )
+
+        return result
+
+    except Exception as e:
+        logger.error(
+            "Low credits check task failed",
+            extra={"error": str(e), "error_type": type(e).__name__},
+            exc_info=True,
+        )
+        raise
+
+
 @celery_app.task(name="retry_failed_emails")
 def retry_failed_emails_task() -> dict:
     """Periodic task to retry failed emails.
@@ -209,6 +364,49 @@ def retry_failed_emails_task() -> dict:
 # =============================================================================
 # Async Implementation
 # =============================================================================
+
+
+async def _send_template_email_async(
+    template_name: str,
+    email_type: str,
+    recipient: str,
+    subject: str,
+    template_props: dict[str, Any],
+    user_id: str,
+) -> dict:
+    """Async implementation of template email sending.
+
+    Args:
+        template_name: React Email template name.
+        email_type: Type of email.
+        recipient: Recipient email address.
+        subject: Email subject line.
+        template_props: Template props.
+        user_id: User UUID as string.
+
+    Returns:
+        dict with email_log_id.
+
+    Raises:
+        Any exception from EmailService.send_template_email().
+    """
+    from app.core.database import async_session_maker
+    from app.emails.service import EmailService
+
+    async with async_session_maker() as db:
+        service = EmailService(db)
+        email_log_id = await service.send_template_email(
+            template_name=template_name,
+            email_type=email_type,
+            recipient=recipient,
+            subject=subject,
+            template_props=template_props,
+            user_id=UUID(user_id),
+        )
+
+        await db.commit()
+
+        return {"email_log_id": email_log_id}
 
 
 async def _send_email_async(
@@ -339,3 +537,118 @@ async def _retry_failed_emails_async() -> dict:
                 )
 
         return {"retried": retry_count, "failed": failed_count}
+
+
+async def _check_low_credits_async() -> dict:
+    """Async implementation of low credits check.
+
+    Checks all active users for low credit balances and sends warning emails.
+    Warning threshold: 20 credits.
+
+    Returns:
+        dict with check statistics:
+            - users_checked: total active users checked
+            - warnings_sent: number of warning emails sent
+    """
+    from sqlalchemy import select
+
+    from app.auth.models import User
+    from app.core.config import settings
+    from app.core.database import async_session_maker
+
+    LOW_CREDITS_THRESHOLD = 20
+
+    async with async_session_maker() as db:
+        # Get all active users with low credits
+        result = await db.execute(
+            select(User)
+            .where(
+                User.is_active == True,  # noqa: E712
+                User.credits < LOW_CREDITS_THRESHOLD,
+                User.credits > 0,  # Don't warn users with 0 credits (already notified)
+            )
+        )
+        low_credit_users = result.scalars().all()
+
+        logger.info(
+            "Found users with low credits",
+            extra={
+                "count": len(low_credit_users),
+                "threshold": LOW_CREDITS_THRESHOLD,
+            },
+        )
+
+        warnings_sent = 0
+
+        for user in low_credit_users:
+            try:
+                # Check if we already sent a warning recently
+                # Query email logs to see if we sent low_credits email in last 7 days
+                from datetime import timedelta
+
+                cutoff_date = datetime.now(timezone.utc) - timedelta(days=7)
+
+                recent_warning_result = await db.execute(
+                    select(EmailLog)
+                    .where(
+                        EmailLog.user_id == user.id,
+                        EmailLog.email_type == "low_credits",
+                        EmailLog.created_at > cutoff_date,
+                        EmailLog.status == "sent",
+                    )
+                    .limit(1)
+                )
+                recent_warning = recent_warning_result.scalar_one_or_none()
+
+                if recent_warning:
+                    logger.debug(
+                        "Skipping user - warning sent recently",
+                        extra={
+                            "user_id": str(user.id),
+                            "last_warning": str(recent_warning.created_at),
+                        },
+                    )
+                    continue
+
+                # Send warning email
+                base_url = settings.CORS_ORIGINS.split(',')[0]
+                send_template_email_task.delay(
+                    template_name="low-credits",
+                    email_type="low_credits",
+                    recipient=user.email,
+                    subject="Low Credits Warning - Refill to Continue Creating",
+                    template_props={
+                        "userName": user.full_name or user.email.split("@")[0],
+                        "currentCredits": user.credits,
+                        "threshold": LOW_CREDITS_THRESHOLD,
+                        "dashboardUrl": f"{base_url}/dashboard",
+                        "buyCreditsUrl": f"{base_url}/credits/buy",
+                    },
+                    user_id=str(user.id),
+                )
+
+                warnings_sent += 1
+
+                logger.info(
+                    "Low credits warning queued",
+                    extra={
+                        "user_id": str(user.id),
+                        "credits": user.credits,
+                    },
+                )
+
+            except Exception as e:
+                logger.error(
+                    "Failed to send low credits warning",
+                    extra={
+                        "user_id": str(user.id),
+                        "error": str(e),
+                        "error_type": type(e).__name__,
+                    },
+                    exc_info=True,
+                )
+
+        return {
+            "users_checked": len(low_credit_users),
+            "warnings_sent": warnings_sent,
+        }
