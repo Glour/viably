@@ -73,11 +73,16 @@
 
 ### Implementation for User Story 1
 
-- [ ] T006 [P] [US1] Create auth flow E2E test in `frontend/e2e/auth.spec.ts` — test suite covers: (1) navigate to /register, fill name+email+password, submit, verify redirect to /dashboard; (2) verify navbar shows user name; (3) click logout, verify redirect to /login; (4) login with same credentials, verify redirect to /dashboard. Use `setupAuthMocks()` from fixtures. Mock `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`, `/api/auth/me` endpoints.
-- [ ] T007 [P] [US1] Create template-to-generation E2E test in `frontend/e2e/generation.spec.ts` — test suite covers: (1) login via `loginAsTestUser()`; (2) navigate to /templates, verify template cards visible; (3) click "FAQ Bot" template; (4) click "Создать проект", verify redirect to /projects/{id}/generate; (5) fill config form (botName field); (6) click "Генерировать"; (7) verify progress bar appears with step messages (mock WS sends progress sequence via `setupGenerationWS()`); (8) verify generated code is displayed in code viewer. Mock all relevant API endpoints + WebSocket.
-- [ ] T008 [P] [US1] Create deploy flow E2E test in `frontend/e2e/deploy.spec.ts` — test suite covers: (1) login + navigate to project with generated code (mock project API with `status: "generated"`); (2) click "Deploy" button; (3) enter bot token in dialog; (4) click "Задеплоить"; (5) verify success state with deployment info (bot URL, username). Use `setupDeployMocks()`.
-- [ ] T009 [P] [US1] Create credits flow E2E test in `frontend/e2e/credits.spec.ts` — test suite covers: (1) login, verify credit balance displayed in navbar badge (100 credits); (2) trigger generation, verify balance decreases after completion; (3) navigate to dashboard, click daily bonus button, verify balance increases by 10; (4) verify bonus button becomes disabled after claim. Use `setupCreditsMocks()` with dynamic balance responses.
-- [ ] T010 [P] [US1] Create responsive E2E test in `frontend/e2e/responsive.spec.ts` — test suite uses `page.setViewportSize({ width: 375, height: 812 })`: (1) verify hamburger menu button visible, desktop nav hidden; (2) click hamburger, verify mobile nav opens with correct items; (3) navigate to /templates, verify single-column grid layout; (4) navigate to /projects/{id}/generate, verify tabbed interface (not split panels); (5) verify no horizontal scroll on landing, dashboard, templates pages.
+- [x] T006 [P] [US1] Create auth flow E2E test in `frontend/e2e/auth.spec.ts`
+  → Artifacts: [auth.spec.ts](../../frontend/e2e/auth.spec.ts)
+- [x] T007 [P] [US1] Create template-to-generation E2E test in `frontend/e2e/generation.spec.ts`
+  → Artifacts: [generation.spec.ts](../../frontend/e2e/generation.spec.ts)
+- [x] T008 [P] [US1] Create deploy flow E2E test in `frontend/e2e/deploy.spec.ts`
+  → Artifacts: [deploy.spec.ts](../../frontend/e2e/deploy.spec.ts)
+- [x] T009 [P] [US1] Create credits flow E2E test in `frontend/e2e/credits.spec.ts`
+  → Artifacts: [credits.spec.ts](../../frontend/e2e/credits.spec.ts)
+- [x] T010 [P] [US1] Create responsive E2E test in `frontend/e2e/responsive.spec.ts`
+  → Artifacts: [responsive.spec.ts](../../frontend/e2e/responsive.spec.ts)
 
 **Checkpoint**: `npx playwright test` runs all 5 spec files. All tests pass with mocked API. Run 3 times to verify consistency.
 
@@ -91,14 +96,22 @@
 
 ### Implementation for User Story 4
 
-- [ ] T011 [US4] Update root layout metadata in `frontend/app/layout.tsx` — change `title` to use template pattern: `{ template: '%s | Viably', default: 'Viably — AI-Powered Telegram Bot Builder' }`, add `keywords: ['telegram bot', 'no-code', 'AI', 'bot builder', 'viably']`, update `description` to "Создавай Telegram-ботов за 60 секунд. Без кода. Без знаний. Просто опиши идею."
-- [ ] T012 [US4] Update landing page metadata in `frontend/app/page.tsx` — add `openGraph` tags (title, description, url: 'https://viably.dev', siteName: 'Viably', type: 'website'), add `twitter` card tags (card: 'summary_large_image', title, description)
-- [ ] T013 [P] [US4] Add static metadata exports to auth pages: `frontend/app/(auth)/login/page.tsx` (title: "Вход"), `frontend/app/(auth)/register/page.tsx` (title: "Регистрация"), `frontend/app/(auth)/forgot-password/page.tsx` (title: "Восстановление пароля"). Each page exports `const metadata: Metadata = { title: "..." }`
-- [ ] T014 [P] [US4] Add static metadata exports to main app pages: `frontend/app/dashboard/page.tsx` (title: "Дашборд"), `frontend/app/projects/page.tsx` (title: "Проекты"), `frontend/app/projects/[id]/page.tsx` (title: "Проект"), `frontend/app/projects/[id]/generate/page.tsx` (title: "Генерация")
-- [ ] T015 [P] [US4] Add static metadata exports to settings pages: `frontend/app/(main)/settings/profile/page.tsx` (title: "Профиль"), `frontend/app/(main)/settings/theme/page.tsx` (title: "Оформление"), `frontend/app/(main)/settings/billing/page.tsx` (title: "Кредиты"), `frontend/app/(main)/settings/plan/page.tsx` (title: "Тариф")
-- [ ] T016 [US4] Add metadata to templates pages: static `export const metadata` in `frontend/app/templates/page.tsx` (title: "Шаблоны ботов"), and `generateMetadata` function in `frontend/app/templates/[slug]/page.tsx` that reads slug param and returns `{ title: templateName }` (use mock/hardcoded template names for now since no backend)
-- [ ] T017 [P] [US4] Create `frontend/app/robots.ts` — export default function returning `MetadataRoute.Robots` with rules: `{ userAgent: '*', allow: '/', disallow: ['/api/', '/dashboard/', '/projects/', '/settings/'] }`, sitemap: `https://viably.dev/sitemap.xml`
-- [ ] T018 [P] [US4] Create `frontend/app/sitemap.ts` — export default function returning `MetadataRoute.Sitemap` with entries for public pages: `/` (priority 1, yearly), `/login` (priority 0.5, monthly), `/register` (priority 0.5, monthly), `/templates` (priority 0.8, weekly)
+- [x] T011 [US4] Update root layout metadata in `frontend/app/layout.tsx`
+  → Artifacts: [layout.tsx](../../frontend/app/layout.tsx)
+- [x] T012 [US4] Update landing page metadata in `frontend/app/page.tsx`
+  → Artifacts: [page.tsx](../../frontend/app/page.tsx)
+- [x] T013 [P] [US4] Add metadata to auth pages via layout files
+  → Artifacts: [login/layout.tsx](../../frontend/app/(auth)/login/layout.tsx), [register/layout.tsx](../../frontend/app/(auth)/register/layout.tsx), [forgot-password/layout.tsx](../../frontend/app/(auth)/forgot-password/layout.tsx)
+- [x] T014 [P] [US4] Add metadata to main app pages via layout files
+  → Artifacts: [dashboard/page.tsx](../../frontend/app/dashboard/page.tsx), [projects/layout.tsx](../../frontend/app/projects/layout.tsx), [projects/[id]/layout.tsx](../../frontend/app/projects/[id]/layout.tsx), [projects/[id]/generate/layout.tsx](../../frontend/app/projects/[id]/generate/layout.tsx)
+- [x] T015 [P] [US4] Add metadata to settings pages
+  → Artifacts: [profile/page.tsx](../../frontend/app/(main)/settings/profile/page.tsx), [theme/page.tsx](../../frontend/app/(main)/settings/theme/page.tsx), [billing/layout.tsx](../../frontend/app/(main)/settings/billing/layout.tsx), [plan/page.tsx](../../frontend/app/(main)/settings/plan/page.tsx)
+- [x] T016 [US4] Add metadata to templates pages via layout files
+  → Artifacts: [templates/layout.tsx](../../frontend/app/templates/layout.tsx), [templates/[slug]/layout.tsx](../../frontend/app/templates/[slug]/layout.tsx)
+- [x] T017 [P] [US4] Create `frontend/app/robots.ts`
+  → Artifacts: [robots.ts](../../frontend/app/robots.ts)
+- [x] T018 [P] [US4] Create `frontend/app/sitemap.ts`
+  → Artifacts: [sitemap.ts](../../frontend/app/sitemap.ts)
 
 **Checkpoint**: View source of each page — title follows `{PageName} | Viably` pattern. Access `/robots.txt` — valid response. Access `/sitemap.xml` — lists public pages. `npm run type-check` passes.
 
@@ -112,8 +125,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T019 [US3] Integrate @next/bundle-analyzer into `frontend/next.config.ts` — wrap existing nextConfig with `withBundleAnalyzer({ enabled: process.env.ANALYZE === 'true' })`, verify `ANALYZE=true npm run build` generates visual report
-- [ ] T020 [US3] Disable GlowOrbs on mobile in `frontend/components/ui/glow-orbs.tsx` — add `useMediaQuery('(min-width: 768px)')` check (use existing `useMediaQuery` hook or create one in `frontend/hooks/`), return `null` when viewport is below 768px. This prevents component mount entirely on mobile (avoids useMotionValue, useSpring, addEventListener overhead)
+- [x] T019 [US3] Integrate @next/bundle-analyzer into `frontend/next.config.ts`
+  → Artifacts: [next.config.ts](../../frontend/next.config.ts)
+- [x] T020 [US3] Disable GlowOrbs on mobile in `frontend/components/ui/glow-orbs.tsx`
+  → Artifacts: [glow-orbs.tsx](../../frontend/components/ui/glow-orbs.tsx), [use-media-query.ts](../../frontend/hooks/use-media-query.ts)
 - [ ] T021 [US3] Run Lighthouse audit on primary pages (landing, dashboard, templates, generation) at mobile viewport. Document scores in `specs/018-testing-polish/lighthouse-results.md`. If any page scores below 90, identify top issues and create follow-up fix tasks.
 
 **Checkpoint**: Bundle analyzer works. GlowOrbs not rendered on mobile. Lighthouse scores documented.
