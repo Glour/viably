@@ -12,8 +12,9 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.auth.models import User
-from app.auth.service import create_access_token, generate_referral_code, hash_password
+from app.auth.service import create_access_token, hash_password
 from app.core.database import Base, get_db
+from app.core.utils import generate_referral_code
 from app.credits.models import CreditTransaction, DailyBonus
 from app.deploy.models import Deployment
 from app.deploy.schemas import DeploymentPlatform, DeploymentStatus
