@@ -1,4 +1,5 @@
 services:
+  # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
     container_name: viably-postgres
@@ -15,7 +16,10 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - viably-network
 
+  # Redis (for Celery)
   redis:
     image: redis:7-alpine
     container_name: viably-redis
@@ -28,7 +32,10 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - viably-network
 
+  # Backend API (FastAPI)
   backend:
     build:
       context: ./backend
@@ -38,12 +45,22 @@ services:
       - "8000:8000"
     env_file:
       - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/viably
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - viably-network
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
+  # Celery Worker (AI Generation)
   worker:
     build:
       context: ./backend
@@ -51,12 +68,49 @@ services:
     container_name: viably-worker
     env_file:
       - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/viably
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - viably-network
+    volumes:
+      - ./backend:/app
+
+  # Frontend (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: dev
+    container_name: viably-frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./frontend/.env.local
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_WS_URL=ws://localhost:8000
+      - NEXT_PUBLIC_ENVIRONMENT=development
+      - WATCHPACK_POLLING=true
+    depends_on:
+      - backend
+    networks:
+      - viably-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
 
 volumes:
   postgres_data:
   redis_data:
+
+networks:
+  viably-network:
+    driver: bridge
