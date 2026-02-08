@@ -1,0 +1,855 @@
+---
+title: "Telegram Bot Template Guide"
+description: "Create Telegram bots with inline keyboards, commands, and message handling. Perfect for personal assistants and notifications."
+date: "2024-02-08"
+author: "Viably Team"
+---
+
+# Telegram Bot Template Guide
+
+Build powerful Telegram bots in minutes with Viably's Telegram template. Whether you're creating a customer support bot, notification service, or personal assistant, this guide will walk you through everything you need to know.
+
+## Why Build on Telegram?
+
+Telegram offers one of the most developer-friendly bot APIs in the messaging world. Here's why it's an excellent choice for your bot project:
+
+**Massive User Base**: Over 800 million active users worldwide, with strong presence in Europe, Asia, and Latin America.
+
+**Rich Bot API**: Unlike many platforms, Telegram's Bot API supports inline keyboards, file uploads, custom commands, and even payments—all without requiring special approvals.
+
+**No Hosting Required (Initially)**: Start with long polling to test your bot without setting up webhooks or servers. Perfect for prototyping.
+
+**Privacy-Focused**: Telegram users appreciate privacy, making it ideal for sensitive applications like healthcare, finance, or personal productivity.
+
+**Group Chat Power**: Telegram bots can moderate groups, create polls, handle admin tasks, and respond to mentions—turning them into powerful community management tools.
+
+## Common Use Cases
+
+Telegram bots excel at:
+
+- **Customer Support**: 24/7 automated responses, FAQ handling, ticket creation
+- **Notification Services**: Order updates, breaking news, personal reminders
+- **Personal Assistants**: Task management, habit tracking, daily summaries
+- **E-commerce**: Product browsing, order placement, payment processing
+- **Community Moderation**: Spam filtering, welcome messages, user verification
+- **Data Collection**: Surveys, feedback forms, poll distribution
+
+## Prerequisites
+
+Before you start building, you'll need:
+
+### 1. Telegram Account
+Download Telegram on your phone or desktop and create an account. This takes less than 2 minutes.
+
+### 2. Bot Token from BotFather
+Every Telegram bot requires a unique token. Here's how to get yours:
+
+1. Open Telegram and search for **@BotFather**
+2. Start a conversation and send `/newbot`
+3. Follow the prompts:
+   - Choose a display name (e.g., "My Awesome Bot")
+   - Choose a username ending in "bot" (e.g., "my_awesome_bot")
+4. BotFather will reply with your bot token:
+   ```
+   Use this token to access the HTTP API:
+   1234567890:ABCdefGHIjklMNOpqrsTUVwxyz123456789
+   ```
+5. **Save this token securely**—it's like a password for your bot
+
+> **Security Note**: Never share your bot token publicly. Anyone with your token can control your bot.
+
+### 3. Viably Account with Credits
+Sign up at [viably.dev](https://viably.dev) and claim your free credits. You'll need 10 credits to generate your Telegram bot.
+
+---
+
+## Getting Started with the Telegram Template
+
+### Step 1: Select the Template
+
+1. Log in to your Viably dashboard
+2. Navigate to **Templates** in the sidebar
+3. Find the **Telegram Bot** card
+4. Click **Use Template**
+
+![Telegram template card](/docs/templates/telegram-template-card.png)
+
+### Step 2: Understand the Template Structure
+
+The Telegram template comes pre-configured with:
+
+**Core Commands**:
+- `/start` - Welcome message and bot introduction
+- `/help` - Command list and usage instructions
+- `/about` - Information about the bot
+
+**Message Handling**:
+- Text message processing
+- Photo and file uploads
+- Location sharing
+- Contact sharing
+
+**Inline Keyboards**:
+- Interactive button menus
+- Callback query handling
+- Dynamic keyboard generation
+
+**Advanced Features**:
+- Webhook support for production
+- Long polling for development
+- Error handling and logging
+- Rate limiting protection
+
+---
+
+## Customizing Your Telegram Bot
+
+Now let's make this bot yours. The customization interface has three panels:
+
+### Left Panel: Configuration
+
+Set your bot's basic parameters:
+
+```json
+{
+  "name": "SupportBot",
+  "platform": "telegram",
+  "personality": "friendly and helpful",
+  "language": "en",
+  "responseTime": "fast",
+  "features": {
+    "inlineKeyboards": true,
+    "fileUploads": true,
+    "groupSupport": true,
+    "webhooks": true
+  }
+}
+```
+
+**Configuration Options**:
+
+- **name**: Your bot's display name (can include emojis, e.g., "🤖 Support Bot")
+- **personality**: How your bot communicates (friendly, professional, quirky, technical)
+- **language**: Primary language for responses
+- **responseTime**: "fast" for quick replies, "thoughtful" for detailed responses
+- **features**: Enable/disable specific Telegram capabilities
+
+### Center Panel: Bot Logic
+
+Define your bot's behavior using the Monaco Editor. Here's a comprehensive example:
+
+```python
+# Telegram Bot Configuration
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters
+
+# Command Handlers
+async def start_command(update: Update, context):
+    """Welcome new users with an inline keyboard"""
+    keyboard = [
+        [
+            InlineKeyboardButton("📚 Learn More", callback_data="learn"),
+            InlineKeyboardButton("💬 Get Help", callback_data="help")
+        ],
+        [
+            InlineKeyboardButton("🔔 Notifications", callback_data="notify")
+        ]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await update.message.reply_text(
+        "👋 Welcome to {bot_name}!\n\n"
+        "I'm here to help you with:\n"
+        "• Quick answers to your questions\n"
+        "• 24/7 customer support\n"
+        "• Order tracking and updates\n\n"
+        "What can I do for you today?",
+        reply_markup=reply_markup
+    )
+
+async def help_command(update: Update, context):
+    """Display available commands"""
+    help_text = """
+    📖 *Available Commands*
+
+    /start - Restart the bot
+    /help - Show this help message
+    /about - Learn about this bot
+    /settings - Configure your preferences
+    /status - Check bot status
+
+    You can also just chat with me naturally!
+    """
+    await update.message.reply_text(help_text, parse_mode='Markdown')
+
+# Message Handlers
+async def handle_text(update: Update, context):
+    """Process text messages"""
+    user_message = update.message.text.lower()
+
+    # Pattern matching for common queries
+    if "hello" in user_message or "hi" in user_message:
+        await update.message.reply_text(
+            "Hello! How can I assist you today? 😊"
+        )
+    elif "price" in user_message or "cost" in user_message:
+        await update.message.reply_text(
+            "Let me help you with pricing information..."
+        )
+    else:
+        # Default AI-powered response
+        response = await generate_ai_response(user_message)
+        await update.message.reply_text(response)
+
+async def handle_photo(update: Update, context):
+    """Handle photo uploads"""
+    photo = update.message.photo[-1]  # Get highest resolution
+    file = await photo.get_file()
+
+    await update.message.reply_text(
+        "📸 I received your photo! Analyzing it now..."
+    )
+
+    # Process photo with AI vision or save to database
+    # ...
+
+# Callback Query Handler (for inline keyboards)
+async def button_callback(update: Update, context):
+    """Handle button clicks"""
+    query = update.callback_query
+    await query.answer()  # Acknowledge the callback
+
+    if query.data == "learn":
+        await query.edit_message_text(
+            "📚 *Learn More About Our Service*\n\n"
+            "We provide 24/7 automated support...",
+            parse_mode='Markdown'
+        )
+    elif query.data == "help":
+        await query.edit_message_text(
+            "💬 *Get Help*\n\n"
+            "Just ask me anything and I'll do my best to help!",
+            parse_mode='Markdown'
+        )
+    elif query.data == "notify":
+        await query.edit_message_text(
+            "🔔 Notifications enabled! You'll receive updates here.",
+            parse_mode='Markdown'
+        )
+
+# Bot Configuration
+def setup_bot():
+    """Configure bot with all handlers"""
+    app = Application.builder().token(BOT_TOKEN).build()
+
+    # Command handlers
+    app.add_handler(CommandHandler("start", start_command))
+    app.add_handler(CommandHandler("help", help_command))
+
+    # Message handlers
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
+    app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
+
+    # Callback query handler
+    app.add_handler(CallbackQueryHandler(button_callback))
+
+    return app
+```
+
+### Right Panel: Live Preview
+
+Test your bot as you customize:
+
+1. Type messages in the preview chat
+2. Click inline keyboard buttons
+3. Test file uploads
+4. Observe responses in real-time
+
+The preview simulates how your bot will behave on Telegram, letting you iterate quickly without deploying.
+
+---
+
+## Telegram Bot Features Explained
+
+### 1. Commands
+
+Commands are the foundation of Telegram bots. They start with `/` and provide structured interactions.
+
+**Best Practices**:
+- Keep command names short and memorable
+- Use `/start` for initial setup
+- Use `/help` to list all commands
+- Create custom commands for your specific use case
+
+**Example Custom Commands**:
+```python
+/track [order_id] - Track your order
+/subscribe - Get daily updates
+/feedback [message] - Send feedback
+/cancel - Cancel current operation
+```
+
+### 2. Inline Keyboards
+
+Inline keyboards provide clickable buttons directly in messages. They're perfect for:
+- Menu navigation
+- Yes/No confirmations
+- Category selection
+- Quick actions
+
+**Creating Multi-Row Keyboards**:
+```python
+keyboard = [
+    [InlineKeyboardButton("Option 1", callback_data="opt1"),
+     InlineKeyboardButton("Option 2", callback_data="opt2")],
+    [InlineKeyboardButton("Option 3", callback_data="opt3")],
+    [InlineKeyboardButton("« Back", callback_data="back")]
+]
+```
+
+**Callback Data Limits**: Keep callback data under 64 bytes. For complex data, store it server-side and use a short ID.
+
+### 3. Message Types
+
+Telegram supports rich media beyond text:
+
+**Photos**:
+```python
+async def handle_photo(update: Update, context):
+    photo = update.message.photo[-1]
+    file = await photo.get_file()
+    await file.download_to_drive('user_photo.jpg')
+```
+
+**Documents**:
+```python
+async def handle_document(update: Update, context):
+    document = update.message.document
+    file_name = document.file_name
+    await update.message.reply_text(f"Received: {file_name}")
+```
+
+**Location**:
+```python
+async def handle_location(update: Update, context):
+    location = update.message.location
+    lat, lon = location.latitude, location.longitude
+    await update.message.reply_text(f"📍 Got it: {lat}, {lon}")
+```
+
+### 4. Webhooks vs Long Polling
+
+**Long Polling** (Development):
+- Bot repeatedly asks Telegram for new messages
+- Easy to set up, no server configuration needed
+- Higher latency, uses more resources
+- Perfect for testing and prototyping
+
+**Webhooks** (Production):
+- Telegram sends updates directly to your server
+- Instant message delivery
+- More efficient and scalable
+- Requires HTTPS endpoint
+
+Viably's template supports both. Use long polling during development, then switch to webhooks for production deployment.
+
+### 5. Group Chat Features
+
+Telegram bots can join group chats and:
+
+**Privacy Mode OFF** (see all messages):
+```python
+async def handle_group_message(update: Update, context):
+    # Bot sees every message in the group
+    if "banned_word" in update.message.text:
+        await update.message.delete()
+```
+
+**Privacy Mode ON** (only see commands and mentions):
+- More privacy-friendly
+- Lower server load
+- Enable in BotFather with `/setprivacy`
+
+**Admin Capabilities**:
+```python
+async def kick_user(update: Update, context):
+    chat_id = update.effective_chat.id
+    user_id = context.args[0]
+    await context.bot.ban_chat_member(chat_id, user_id)
+```
+
+---
+
+## Deploying Your Telegram Bot
+
+### Step 1: Generate Production Code
+
+1. Click **Generate** in the top right
+2. Viably AI will create production-ready code in 30-60 seconds
+3. Review the generated files:
+   - `bot.py` - Main bot logic
+   - `config.py` - Configuration management
+   - `.env.example` - Environment variables template
+   - `requirements.txt` - Python dependencies
+   - `README.md` - Setup instructions
+
+### Step 2: Configure Environment Variables
+
+Before deployment, set your bot token and other secrets:
+
+```bash
+# .env file
+TELEGRAM_BOT_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz123456789
+DATABASE_URL=postgresql://user:password@host:5432/dbname
+WEBHOOK_URL=https://your-bot.railway.app/webhook
+ADMIN_USER_IDS=123456789,987654321
+```
+
+### Step 3: Deploy to Railway
+
+1. Click **Deploy to Railway**
+2. Railway automatically:
+   - Creates a new project
+   - Deploys your bot code
+   - Sets environment variables
+   - Starts the bot process
+
+3. Your bot goes live in 1-2 minutes
+
+**Alternative Deployment Options**:
+- **Heroku**: Use the included `Procfile`
+- **AWS Lambda**: Serverless deployment for low-traffic bots
+- **DigitalOcean**: Simple VM hosting
+- **Self-Hosted**: Run on your own server with `python bot.py`
+
+### Step 4: Set Webhook (Production Only)
+
+If using webhooks, configure Telegram to send updates to your server:
+
+```bash
+curl -X POST "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://your-bot.railway.app/webhook"}'
+```
+
+Or use the bot API directly in your code:
+```python
+await application.bot.set_webhook(url="https://your-bot.railway.app/webhook")
+```
+
+### Step 5: Test Your Live Bot
+
+1. Open Telegram on your phone or desktop
+2. Search for your bot by username (e.g., `@my_awesome_bot`)
+3. Send `/start` to begin the conversation
+4. Test all commands and features
+
+---
+
+## Real-World Use Cases
+
+### 1. Customer Support Bot
+
+**Scenario**: E-commerce store needs 24/7 support for order tracking and FAQs.
+
+**Implementation**:
+```python
+async def track_order(update: Update, context):
+    if len(context.args) == 0:
+        await update.message.reply_text(
+            "Please provide an order ID: /track ORDER123"
+        )
+        return
+
+    order_id = context.args[0]
+    order_status = await fetch_order_status(order_id)
+
+    await update.message.reply_text(
+        f"📦 *Order {order_id}*\n\n"
+        f"Status: {order_status['status']}\n"
+        f"Location: {order_status['location']}\n"
+        f"ETA: {order_status['eta']}",
+        parse_mode='Markdown'
+    )
+```
+
+**Features**:
+- Order tracking with `/track`
+- FAQ automation
+- Ticket creation for complex issues
+- Business hours fallback to human support
+
+### 2. Notification Bot
+
+**Scenario**: News site wants to send breaking news to subscribers.
+
+**Implementation**:
+```python
+async def subscribe(update: Update, context):
+    user_id = update.effective_user.id
+    await database.add_subscriber(user_id)
+
+    keyboard = [
+        [InlineKeyboardButton("🌍 World", callback_data="cat_world"),
+         InlineKeyboardButton("💼 Business", callback_data="cat_business")],
+        [InlineKeyboardButton("⚽ Sports", callback_data="cat_sports"),
+         InlineKeyboardButton("🔬 Science", callback_data="cat_science")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await update.message.reply_text(
+        "🔔 Select your news categories:",
+        reply_markup=reply_markup
+    )
+
+async def send_notification(user_ids, article):
+    """Send breaking news to subscribers"""
+    for user_id in user_ids:
+        await bot.send_message(
+            chat_id=user_id,
+            text=f"🚨 *Breaking News*\n\n{article['title']}\n\n{article['summary']}",
+            parse_mode='Markdown'
+        )
+```
+
+**Features**:
+- Category-based subscriptions
+- Breaking news alerts
+- Daily news digest
+- Unsubscribe option
+
+### 3. Personal Assistant Bot
+
+**Scenario**: Individual wants a bot to track habits and send reminders.
+
+**Implementation**:
+```python
+async def add_reminder(update: Update, context):
+    # /remind 14:30 Take medication
+    time = context.args[0]
+    message = ' '.join(context.args[1:])
+
+    await schedule_reminder(update.effective_user.id, time, message)
+
+    await update.message.reply_text(
+        f"✅ Reminder set for {time}:\n\"{message}\""
+    )
+
+async def daily_summary(user_id):
+    """Send end-of-day summary"""
+    summary = await get_user_summary(user_id)
+
+    await bot.send_message(
+        chat_id=user_id,
+        text=f"📊 *Your Day Summary*\n\n"
+             f"✓ Tasks completed: {summary['tasks']}\n"
+             f"💧 Water intake: {summary['water']}L\n"
+             f"🏃 Steps: {summary['steps']}\n\n"
+             f"Great work today! 🎉",
+        parse_mode='Markdown'
+    )
+```
+
+**Features**:
+- Habit tracking
+- Scheduled reminders
+- Daily summaries
+- Motivational messages
+
+### 4. Poll and Survey Bot
+
+**Scenario**: Company wants to collect employee feedback.
+
+**Implementation**:
+```python
+async def create_poll(update: Update, context):
+    await update.message.reply_poll(
+        question="How satisfied are you with our product?",
+        options=["Very Satisfied", "Satisfied", "Neutral", "Dissatisfied", "Very Dissatisfied"],
+        is_anonymous=True,
+        allows_multiple_answers=False
+    )
+
+async def handle_poll_answer(update: Update, context):
+    """Process poll responses"""
+    answer = update.poll_answer
+    user_id = answer.user.id
+    option_ids = answer.option_ids
+
+    await save_poll_response(user_id, option_ids)
+```
+
+**Features**:
+- Anonymous polls
+- Multi-question surveys
+- Response analytics
+- Scheduled surveys
+
+---
+
+## Troubleshooting Common Issues
+
+### Bot Not Responding
+
+**Symptom**: Bot doesn't reply to messages.
+
+**Solutions**:
+1. Check bot token is correct in environment variables
+2. Verify bot is running (check Railway logs)
+3. Ensure webhook URL is correct (if using webhooks)
+4. Test with BotFather: send `/mybots` → select your bot → check status
+
+### Rate Limiting
+
+**Symptom**: Error: "Too many requests: retry after X"
+
+**Solutions**:
+```python
+from telegram.ext import ApplicationBuilder
+from telegram.request import HTTPXRequest
+
+# Configure rate limiting
+request = HTTPXRequest(connection_pool_size=8)
+app = ApplicationBuilder().token(BOT_TOKEN).request(request).build()
+```
+
+**Best Practices**:
+- Don't send more than 30 messages/second
+- Use `rate_limiter` middleware
+- Implement exponential backoff for retries
+
+### Message Formatting Issues
+
+**Symptom**: Message displays raw Markdown or HTML.
+
+**Solutions**:
+```python
+# Correct Markdown
+await update.message.reply_text(
+    "*Bold* _Italic_ `Code`",
+    parse_mode='Markdown'
+)
+
+# Correct HTML
+await update.message.reply_text(
+    "<b>Bold</b> <i>Italic</i> <code>Code</code>",
+    parse_mode='HTML'
+)
+
+# Escape special characters
+from telegram.helpers import escape_markdown
+text = escape_markdown("User input with * special _ chars", version=2)
+```
+
+### Webhook Not Working
+
+**Symptom**: Webhook set but bot doesn't receive updates.
+
+**Solutions**:
+1. Ensure your server uses HTTPS (Telegram requires it)
+2. Check webhook info: `/getWebhookInfo`
+3. Verify Railway deployment is running
+4. Test webhook manually:
+   ```bash
+   curl -X POST https://your-bot.railway.app/webhook \
+     -H "Content-Type: application/json" \
+     -d '{"update_id": 1, "message": {"text": "test"}}'
+   ```
+
+### File Upload Errors
+
+**Symptom**: Bot can't download files sent by users.
+
+**Solutions**:
+```python
+async def handle_document(update: Update, context):
+    document = update.message.document
+
+    # Check file size (Telegram limit: 20MB for bots)
+    if document.file_size > 20 * 1024 * 1024:
+        await update.message.reply_text("File too large. Max 20MB.")
+        return
+
+    # Download file
+    try:
+        file = await document.get_file()
+        await file.download_to_drive(f"downloads/{document.file_name}")
+    except Exception as e:
+        await update.message.reply_text(f"Error downloading: {str(e)}")
+```
+
+### Group Chat Permissions
+
+**Symptom**: Bot can't delete messages or kick users in groups.
+
+**Solutions**:
+1. Make bot a group admin
+2. Grant specific permissions (delete messages, ban users, etc.)
+3. Check bot privacy settings with BotFather: `/setprivacy`
+
+---
+
+## Advanced Customization
+
+### Conversation States
+
+Implement multi-step conversations:
+
+```python
+from telegram.ext import ConversationHandler
+
+# Define states
+CHOOSING_CATEGORY, ENTERING_FEEDBACK = range(2)
+
+async def start_feedback(update: Update, context):
+    keyboard = [
+        [InlineKeyboardButton("Bug Report", callback_data="bug")],
+        [InlineKeyboardButton("Feature Request", callback_data="feature")]
+    ]
+    await update.message.reply_text(
+        "What type of feedback?",
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+    return CHOOSING_CATEGORY
+
+async def category_chosen(update: Update, context):
+    context.user_data['category'] = update.callback_query.data
+    await update.callback_query.message.reply_text(
+        "Please describe your feedback:"
+    )
+    return ENTERING_FEEDBACK
+
+async def feedback_received(update: Update, context):
+    feedback = update.message.text
+    category = context.user_data['category']
+
+    await save_feedback(category, feedback)
+    await update.message.reply_text("Thanks for your feedback! ✅")
+    return ConversationHandler.END
+
+# Add to bot
+feedback_handler = ConversationHandler(
+    entry_points=[CommandHandler('feedback', start_feedback)],
+    states={
+        CHOOSING_CATEGORY: [CallbackQueryHandler(category_chosen)],
+        ENTERING_FEEDBACK: [MessageHandler(filters.TEXT, feedback_received)]
+    },
+    fallbacks=[]
+)
+app.add_handler(feedback_handler)
+```
+
+### Inline Mode
+
+Let users invoke your bot in any chat:
+
+```python
+from telegram import InlineQueryResultArticle, InputTextMessageContent
+
+async def inline_query(update: Update, context):
+    query = update.inline_query.query
+
+    if not query:
+        return
+
+    results = [
+        InlineQueryResultArticle(
+            id="1",
+            title="Search Result 1",
+            input_message_content=InputTextMessageContent(
+                f"You searched for: {query}"
+            )
+        )
+    ]
+
+    await update.inline_query.answer(results)
+
+app.add_handler(InlineQueryHandler(inline_query))
+```
+
+### Database Integration
+
+Persist user data across sessions:
+
+```python
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+
+# Setup
+engine = create_async_engine(DATABASE_URL)
+async_session = sessionmaker(engine, class_=AsyncSession)
+
+async def save_user_preference(user_id, preference):
+    async with async_session() as session:
+        user = await session.get(User, user_id)
+        if not user:
+            user = User(id=user_id)
+            session.add(user)
+        user.preference = preference
+        await session.commit()
+```
+
+---
+
+## Next Steps
+
+Congratulations! You now have a comprehensive understanding of building Telegram bots with Viably.
+
+### Deepen Your Knowledge
+
+- **Telegram Bot API Docs**: [core.telegram.org/bots/api](https://core.telegram.org/bots/api)
+- **python-telegram-bot Library**: [python-telegram-bot.org](https://python-telegram-bot.org)
+- **Advanced Features**: Explore payments, games, and WebApps
+
+### Expand Your Bot
+
+- Add AI-powered responses with OpenAI or Claude
+- Integrate with external APIs (weather, news, CRM)
+- Implement analytics to track user behavior
+- Add multi-language support with i18n
+
+### Join the Community
+
+- **Viably Discord**: Share your bots and get help
+- **Telegram Bot Developers**: Join `@BotDevelopers` group
+- **GitHub**: Explore open-source Telegram bot projects
+
+---
+
+## Quick Reference
+
+### Essential Commands
+```bash
+/start - Initialize bot conversation
+/help - Display available commands
+/settings - Configure user preferences
+/cancel - Cancel current operation
+```
+
+### Inline Keyboard Pattern
+```python
+keyboard = [[InlineKeyboardButton("Text", callback_data="data")]]
+reply_markup = InlineKeyboardMarkup(keyboard)
+await update.message.reply_text("Choose:", reply_markup=reply_markup)
+```
+
+### Webhook Setup
+```bash
+curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" \
+  -d "url=https://yourapp.com/webhook"
+```
+
+### Error Handling
+```python
+async def error_handler(update: Update, context):
+    logger.error(f"Exception: {context.error}")
+    await update.message.reply_text("Sorry, an error occurred.")
+
+app.add_error_handler(error_handler)
+```
+
+---
+
+**Ready to build your Telegram bot?** Head back to the [Templates Gallery](/templates) and select the Telegram Bot template to get started. Your bot can be live in under 10 minutes.
+
+Happy building! 🤖

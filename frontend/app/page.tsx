@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { LandingNav } from "@/components/landing/landing-nav"
 import { Hero } from "@/components/landing/hero"
+import { DemoVideo } from "@/components/landing/demo-video"
 import { HowItWorks } from "@/components/landing/how-it-works"
 import { TemplatesPreview } from "@/components/landing/templates-preview"
 import { Pricing } from "@/components/landing/pricing"
@@ -29,6 +30,7 @@ export default function LandingPage() {
       <LandingNav />
       <main className="min-h-screen">
         <Hero />
+        <DemoVideo />
         <HowItWorks />
         <TemplatesPreview />
         <Pricing />

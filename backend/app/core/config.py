@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     GENERATION_MAX_TOKENS: int = 8192
     GENERATION_MODEL: str = "claude-sonnet-4-20250514"
 
+    # Email (Resend)
+    RESEND_API_KEY: str = ""
+
     # Deployment (Railway)
     RAILWAY_API_TOKEN: str = ""
     DEPLOYMENT_TIMEOUT_SECONDS: int = 300  # 5 minutes

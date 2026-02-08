@@ -88,12 +88,19 @@ export function Hero() {
             >
               &#9670; &#1053;&#1072;&#1095;&#1072;&#1090;&#1100; &#1073;&#1077;&#1089;&#1087;&#1083;&#1072;&#1090;&#1085;&#1086;
             </Link>
-            <Link
-              href="#"
+            <a
+              href="#demo"
+              onClick={(e) => {
+                e.preventDefault()
+                const target = document.querySelector("#demo")
+                if (target) {
+                  target.scrollIntoView({ behavior: reduced ? "auto" : "smooth" })
+                }
+              }}
               className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-border bg-transparent px-8 text-base font-semibold text-foreground transition-colors hover:bg-accent"
             >
               &#9655; &#1057;&#1084;&#1086;&#1090;&#1088;&#1077;&#1090;&#1100; &#1076;&#1077;&#1084;&#1086;
-            </Link>
+            </a>
           </motion.div>
 
           {/* Social proof */}

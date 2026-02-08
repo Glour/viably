@@ -34,6 +34,8 @@ dependencies = [
     # Observability
     "sentry-sdk[fastapi]>=2.0.0",
     "structlog>=24.1.0",
+    # Email
+    "resend>=0.7.0",
 ]
 
 [tool.poetry]

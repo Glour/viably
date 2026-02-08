@@ -1,0 +1,97 @@
+{
+  "phase": "dead-code-removal",
+  "priority": "medium",
+  "timestamp": "2026-02-07T00:00:00.000Z",
+  "knip_fixes_applied": false,
+  "manual_fixes_count": 10,
+  "items_attempted": 10,
+  "items_succeeded": 9,
+  "items_failed": 1,
+  "files_modified": [
+    {
+      "path": "backend/app/core/exceptions.py",
+      "backup": ".tmp/current/backups/.rollback/backend-app-core-exceptions.py.backup",
+      "deadCodeItem": "#12 - Remove unused exception helpers insufficient_credits(), unauthorized(), bad_request()",
+      "changeType": "removed-functions",
+      "timestamp": "2026-02-07T00:01:00.000Z"
+    },
+    {
+      "path": "backend/app/core/constants.py",
+      "backup": ".tmp/current/backups/.rollback/backend-app-core-constants.py.backup",
+      "deadCodeItem": "#13 - Remove unused get_daily_bonus_display() and DAILY_BONUS_DISPLAY dict",
+      "changeType": "removed-function-and-constant",
+      "timestamp": "2026-02-07T00:02:00.000Z"
+    },
+    {
+      "path": "backend/app/core/utils.py",
+      "backup": ".tmp/current/backups/.rollback/backend-app-core-utils.py.backup",
+      "deadCodeItem": "#14 - Remove unused get_next_day_start() and get_day_start() functions",
+      "changeType": "removed-functions",
+      "timestamp": "2026-02-07T00:03:00.000Z"
+    },
+    {
+      "path": "backend/app/auth/service.py",
+      "backup": ".tmp/current/backups/.rollback/backend-app-auth-service.py.backup",
+      "deadCodeItem": "#15 - Remove unused import generate_referral_code",
+      "changeType": "removed-import",
+      "timestamp": "2026-02-07T00:04:00.000Z"
+    },
+    {
+      "path": "backend/app/credits/schemas.py",
+      "backup": ".tmp/current/backups/.rollback/backend-app-credits-schemas.py.backup",
+      "deadCodeItem": "#16 - Remove unused CreditDeduct, CreditAdd, CreditOperationResponse schemas",
+      "changeType": "removed-classes",
+      "timestamp": "2026-02-07T00:05:00.000Z"
+    },
+    {
+      "path": "backend/app/credits/__init__.py",
+      "backup": ".tmp/current/backups/.rollback/backend-app-credits-__init__.py.backup",
+      "deadCodeItem": "#16 - Remove CreditAdd, CreditDeduct re-exports from __init__.py",
+      "changeType": "removed-re-exports",
+      "timestamp": "2026-02-07T00:05:30.000Z"
+    },
+    {
+      "path": "frontend/lib/animations.ts",
+      "backup": ".tmp/current/backups/.rollback/frontend-lib-animations.ts.backup",
+      "deadCodeItem": "#17 - Remove 6 unused animation variants",
+      "changeType": "removed-exports",
+      "timestamp": "2026-02-07T00:06:00.000Z"
+    },
+    {
+      "path": "frontend/lib/validations/settings.ts",
+      "backup": ".tmp/current/backups/.rollback/frontend-lib-validations-settings.ts.backup",
+      "deadCodeItem": "#18 - Remove unused customCreditsSchema and CustomCreditsFormData",
+      "changeType": "removed-schema-and-type",
+      "timestamp": "2026-02-07T00:07:00.000Z"
+    },
+    {
+      "path": "frontend/types/index.ts",
+      "backup": ".tmp/current/backups/.rollback/frontend-types-index.ts.backup",
+      "deadCodeItem": "#19 - Remove unused types SettingsSection, ThemeMode (DailyBonusState restored - false positive)",
+      "changeType": "removed-types",
+      "timestamp": "2026-02-07T00:08:00.000Z"
+    },
+    {
+      "path": "frontend/components/projects/project-tabs.tsx",
+      "backup": ".tmp/current/backups/.rollback/frontend-components-projects-project-tabs.tsx.backup",
+      "deadCodeItem": "#20 - Remove TABS and TabValue from exports",
+      "changeType": "removed-exports",
+      "timestamp": "2026-02-07T00:09:00.000Z"
+    }
+  ],
+  "files_deleted": [
+    {
+      "path": "backend/app/core/schemas.py",
+      "backup": ".tmp/current/backups/.rollback/backend-app-core-schemas.py.backup",
+      "deadCodeItem": "#11 - Delete entire unused file (PaginationMeta and PaginatedResponse never imported)",
+      "timestamp": "2026-02-07T00:00:30.000Z"
+    }
+  ],
+  "false_positives": [
+    {
+      "deadCodeItem": "#19 - DailyBonusState type",
+      "reason": "DailyBonusStoreState extends DailyBonusState, so removing it breaks type-check. This was a false positive in the dead code report.",
+      "action": "Restored after type-check failure"
+    }
+  ]
+}

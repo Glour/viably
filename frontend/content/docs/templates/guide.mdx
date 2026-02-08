@@ -1,0 +1,1071 @@
+---
+title: "Template Guide: Choosing the Right Bot Template"
+description: "Learn how to choose, customize, and deploy the perfect bot template for your needs. Compare all available templates."
+date: "2024-02-08"
+author: "Viably Team"
+---
+
+# Template Guide: Choosing the Right Bot Template
+
+Building a bot from scratch can be daunting. Should you use Discord or Telegram? What commands do users expect? How do you handle errors gracefully? These questions slow down development and lead to reinventing the wheel.
+
+That's why Viably offers production-ready templates for every major messaging platform. These templates include best practices, common commands, error handling, and platform-specific optimizations. You get a head start without sacrificing customization.
+
+This guide helps you choose the right template, understand what each offers, and customize it for your specific use case.
+
+---
+
+## What Are Bot Templates?
+
+Bot templates are pre-configured starting points for building AI-powered bots on specific platforms. Each template includes:
+
+- **Platform Integration**: Pre-built API connections for Discord, Telegram, Slack, WhatsApp, or custom platforms
+- **Common Commands**: Frequently-used commands like `/help`, `/start`, and `/about`
+- **Response Patterns**: Natural language handling and fallback responses
+- **Error Handling**: Graceful failures with user-friendly error messages
+- **Best Practices**: Security, rate limiting, logging, and monitoring built-in
+- **Deployment Configuration**: One-click deploy setup for Railway and other platforms
+
+Think of templates as professional blueprints. You don't need to design the foundation, plumbing, and electrical wiring. You start with a solid base and customize from there.
+
+### Why Use Templates?
+
+**Speed**: Go from idea to deployed bot in under 10 minutes, not days.
+
+**Quality**: Templates embody years of bot development experience and platform-specific quirks.
+
+**Flexibility**: Every template is fully customizable. Change anything you want.
+
+**Learning**: Study template code to learn bot development best practices.
+
+---
+
+## Available Templates Overview
+
+Viably currently offers five battle-tested templates:
+
+1. **Discord Bot**: Gaming communities, social servers, moderation
+2. **Telegram Bot**: Personal assistants, notifications, customer support
+3. **Slack Bot**: Workplace productivity, team automation, integrations
+4. **WhatsApp Bot**: Business messaging, customer engagement, support
+5. **Custom Bot**: API-based bots, multi-platform, advanced use cases
+
+Each template is optimized for its platform's unique features, limitations, and user expectations.
+
+---
+
+## Template Comparison Table
+
+Choosing the right template starts with understanding the differences. Here's a side-by-side comparison:
+
+| Template | Difficulty | Best For | Key Features | Setup Time | Credit Cost |
+|----------|-----------|----------|--------------|------------|-------------|
+| **Discord** | Beginner | Gaming communities, fan clubs, social servers | Slash commands, embeds, roles, voice | 10 min | 10 credits |
+| **Telegram** | Beginner | Notifications, personal bots, support | Commands, inline keyboards, channels | 10 min | 10 credits |
+| **Slack** | Intermediate | Workplace automation, team tools | Slash commands, workflows, modals | 20 min | 10 credits |
+| **WhatsApp** | Intermediate | Business support, customer service | Message templates, media, buttons | 30 min | 10 credits |
+| **Custom** | Advanced | Multi-platform, API integrations, webhooks | Full control, any platform, custom logic | 60 min | 10 credits |
+
+### Key Differences
+
+**Difficulty**:
+- **Beginner**: Minimal setup, simple API, clear documentation
+- **Intermediate**: Requires platform account setup, API approval, or webhook configuration
+- **Advanced**: Assumes technical knowledge, requires custom infrastructure
+
+**Setup Time**: Includes platform account creation, bot registration, and initial deployment. Actual coding time is just 2-5 minutes with Viably's AI generation.
+
+**Credit Cost**: All templates cost 10 credits per generation, regardless of complexity.
+
+---
+
+## Choosing the Right Template
+
+Not sure which template fits your needs? Answer these questions:
+
+### 1. Where Are Your Users?
+
+The best bot is one your users will actually use. Choose the platform where your audience already spends time:
+
+- **Discord**: Gamers, online communities, creator fan clubs
+- **Telegram**: Privacy-conscious users, crypto communities, international audiences
+- **Slack**: Remote teams, corporate environments, developer communities
+- **WhatsApp**: General consumers, small businesses, customer support
+- **Custom**: Multiple platforms or niche messaging apps
+
+### 2. What's Your Use Case?
+
+Different templates excel at different tasks:
+
+**Community Management** → **Discord**
+- Moderation tools, role management, community events
+- Announcement channels, voice chat integration
+- Example: Gaming clan bot, fan server assistant
+
+**Customer Support** → **WhatsApp** or **Telegram**
+- One-on-one conversations, support tickets
+- Quick replies, template messages, media sharing
+- Example: E-commerce support bot, appointment booking
+
+**Team Productivity** → **Slack**
+- Workflow automation, reminders, task management
+- Integration with tools like Jira, GitHub, Google Drive
+- Example: Standup bot, PTO tracker, incident responder
+
+**Notifications & Alerts** → **Telegram**
+- Fast delivery, silent mode, channel broadcasting
+- Inline keyboards for quick actions
+- Example: Server monitoring alerts, news digest, price tracker
+
+**Multi-Platform or API** → **Custom**
+- Serve multiple platforms from one codebase
+- Custom API integrations, webhooks, data processing
+- Example: Multi-platform chatbot, API middleware, data pipeline
+
+### 3. What's Your Technical Comfort Level?
+
+Be honest about your experience:
+
+**New to Bot Development** → Start with **Discord** or **Telegram**
+- Clear documentation, active communities, forgiving APIs
+- Test locally before deploying
+- Lots of tutorials and examples available
+
+**Some Development Experience** → Try **Slack** or **WhatsApp**
+- Requires API application approval (can take 1-2 days)
+- More complex authentication flows
+- Better enterprise support and SLAs
+
+**Experienced Developer** → Go **Custom**
+- Full flexibility, no platform limitations
+- Requires understanding of webhooks, APIs, authentication
+- Best for unique requirements or multi-platform needs
+
+### 4. What Are Your Budget Constraints?
+
+Platform costs vary significantly:
+
+**Free Tier Available**:
+- Discord: Unlimited bots, free hosting possible
+- Telegram: Free API, no rate limits for personal bots
+
+**Requires Paid Account**:
+- Slack: Free tier limited to 10 integrations, paid tier needed for production
+- WhatsApp: WhatsApp Business API costs $0.005-$0.09 per conversation
+
+**Deployment Costs** (separate from Viably credits):
+- Railway: Free tier includes $5/month credit, then pay-as-you-go
+- Self-hosted: Your own server costs
+
+---
+
+## Platform-Specific Considerations
+
+### Discord Bot Template
+
+**When to Choose**:
+- Building for gaming communities or social servers
+- Need rich embeds, reactions, and interactive messages
+- Want voice channel integration
+
+**Unique Features**:
+- Slash commands with autocomplete
+- Rich embeds with images, fields, and colors
+- Role management and permissions
+- Voice channel joins and audio streaming
+- Integration with Discord's Activity API (games)
+
+**Limitations**:
+- Requires bot invite link and server admin permissions
+- Rate limits on message editing and deletion
+- No end-to-end encryption
+
+**Example Use Cases**:
+- Moderation bot with auto-ban, warnings, mute
+- Game stats tracker (Minecraft, Fortnite, etc.)
+- Music player with queue management
+- Poll and voting system
+- Server announcement scheduler
+
+**Code Example** (Generated by Viably):
+
+```python
+# Discord bot with slash commands
+@bot.tree.command(name="hello", description="Greet the bot")
+async def hello(interaction: discord.Interaction):
+    embed = discord.Embed(
+        title="Hello!",
+        description=f"Hi {interaction.user.mention}, I'm your friendly bot!",
+        color=0x00ff00
+    )
+    await interaction.response.send_message(embed=embed)
+```
+
+### Telegram Bot Template
+
+**When to Choose**:
+- Building personal assistants or notification bots
+- Need fast, reliable message delivery
+- Want inline keyboards and custom keyboards
+
+**Unique Features**:
+- Inline keyboards (buttons below messages)
+- Custom keyboards (replace default keyboard)
+- Channels for broadcasting to unlimited subscribers
+- File sharing up to 2GB per file
+- Bot API supports webhooks and long polling
+
+**Limitations**:
+- Less rich formatting than Discord embeds
+- No voice/video chat support
+- Limited to text, images, files, and locations
+
+**Example Use Cases**:
+- Personal reminder bot with inline keyboard actions
+- News aggregator with channel broadcasting
+- File converter (PDF to Word, image resize, etc.)
+- Crypto price tracker with alerts
+- Anonymous feedback collector
+
+**Code Example** (Generated by Viably):
+
+```python
+# Telegram bot with inline keyboard
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+
+async def start(update, context):
+    keyboard = [
+        [InlineKeyboardButton("Option 1", callback_data='1')],
+        [InlineKeyboardButton("Option 2", callback_data='2')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text('Choose an option:', reply_markup=reply_markup)
+```
+
+### Slack Bot Template
+
+**When to Choose**:
+- Building workplace productivity tools
+- Need integration with enterprise software
+- Want to automate team workflows
+
+**Unique Features**:
+- Slash commands with response URL
+- Interactive messages with buttons and dropdowns
+- Modal dialogs for complex forms
+- Workflow Builder integration (no code automation)
+- Enterprise-grade security and compliance
+
+**Limitations**:
+- Requires workspace installation approval
+- Free tier limited to 10 apps and 90 days of messages
+- More complex OAuth flow than other platforms
+
+**Example Use Cases**:
+- Daily standup bot (collects updates, posts summary)
+- PTO request manager with approval workflow
+- Incident response coordinator
+- GitHub/Jira integration for notifications
+- Anonymous feedback collector with Slack modals
+
+**Code Example** (Generated by Viably):
+
+```python
+# Slack bot with slash command
+@app.command("/standup")
+def handle_standup(ack, command, client):
+    ack()  # Acknowledge command immediately
+
+    # Open modal for standup form
+    client.views_open(
+        trigger_id=command["trigger_id"],
+        view={
+            "type": "modal",
+            "title": {"type": "plain_text", "text": "Daily Standup"},
+            "submit": {"type": "plain_text", "text": "Submit"},
+            "blocks": [
+                {
+                    "type": "input",
+                    "label": {"type": "plain_text", "text": "What did you work on yesterday?"},
+                    "element": {"type": "plain_text_input", "multiline": True}
+                }
+            ]
+        }
+    )
+```
+
+### WhatsApp Bot Template
+
+**When to Choose**:
+- Building customer support or business messaging
+- Need to reach general consumers (not just tech users)
+- Want verified business account benefits
+
+**Unique Features**:
+- Message templates (pre-approved messages for outreach)
+- WhatsApp Business verified checkmark
+- Rich media (images, videos, documents, audio)
+- Quick reply buttons and list messages
+- End-to-end encryption
+
+**Limitations**:
+- Requires Meta Business account and API approval (1-2 days)
+- Message templates must be pre-approved by Meta
+- Costs $0.005-$0.09 per conversation (pricing varies by country)
+- 24-hour conversation window (customer must initiate)
+
+**Example Use Cases**:
+- E-commerce order tracking and updates
+- Appointment booking and reminders
+- Customer support with ticket creation
+- Product catalog browser
+- Payment link delivery
+
+**Code Example** (Generated by Viably):
+
+```python
+# WhatsApp bot with quick reply buttons
+from whatsapp import send_message
+
+def send_welcome(phone_number):
+    send_message(
+        to=phone_number,
+        type="interactive",
+        interactive={
+            "type": "button",
+            "body": {"text": "Welcome! How can I help you today?"},
+            "action": {
+                "buttons": [
+                    {"type": "reply", "reply": {"id": "1", "title": "Track Order"}},
+                    {"type": "reply", "reply": {"id": "2", "title": "Support"}},
+                    {"type": "reply", "reply": {"id": "3", "title": "Catalog"}}
+                ]
+            }
+        }
+    )
+```
+
+### Custom Bot Template
+
+**When to Choose**:
+- Building for multiple platforms simultaneously
+- Need complete control over infrastructure
+- Integrating with custom APIs or databases
+
+**Unique Features**:
+- Platform-agnostic design (bring your own adapter)
+- Custom webhook handling
+- Direct database integration
+- Advanced AI/ML model integration
+- Multi-tenant architecture support
+
+**Limitations**:
+- Requires more setup and infrastructure knowledge
+- No platform-specific optimizations out of the box
+- You handle all scaling, monitoring, and debugging
+
+**Example Use Cases**:
+- Multi-platform chatbot (same brain, multiple interfaces)
+- API middleware with conversational interface
+- Database query bot with natural language
+- Internal tool automation (CI/CD, deployments, etc.)
+- Custom messaging platform integration
+
+**Code Example** (Generated by Viably):
+
+```python
+# Custom bot with webhook handler
+from fastapi import FastAPI, Request
+
+app = FastAPI()
+
+@app.post("/webhook")
+async def handle_webhook(request: Request):
+    payload = await request.json()
+
+    # Extract message regardless of platform
+    message = extract_message(payload)
+
+    # Process with AI
+    response = await generate_response(message)
+
+    # Send via appropriate platform adapter
+    await send_response(response, platform=payload["platform"])
+
+    return {"status": "ok"}
+```
+
+---
+
+## Customization Capabilities
+
+Every Viably template is fully customizable. Here's what you can change:
+
+### Configuration-Level Customization (No Code)
+
+**Bot Personality**:
+- Tone: professional, casual, playful, technical
+- Language: English, Spanish, French, or custom
+- Response length: concise, detailed, verbose
+
+**Commands**:
+- Add custom slash commands
+- Define trigger keywords
+- Set command permissions (admin-only, public, etc.)
+
+**Response Style**:
+- Greeting messages
+- Error handling fallbacks
+- Help text and documentation
+
+**Integration Settings**:
+- API keys for external services (weather, news, etc.)
+- Database connection strings
+- Webhook URLs for notifications
+
+### Code-Level Customization (Advanced)
+
+**API Integrations**:
+```python
+# Add weather API integration
+import requests
+
+async def get_weather(city):
+    response = requests.get(f"https://api.openweathermap.org/data/2.5/weather?q={city}")
+    return response.json()
+```
+
+**Database Queries**:
+```python
+# Store user preferences
+async def save_preference(user_id, preference):
+    async with db.pool.acquire() as conn:
+        await conn.execute(
+            "INSERT INTO preferences (user_id, value) VALUES ($1, $2)",
+            user_id, preference
+        )
+```
+
+**Custom AI Logic**:
+```python
+# Use custom AI model instead of default
+from anthropic import Anthropic
+
+client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
+async def generate_response(message):
+    response = await client.messages.create(
+        model="claude-3-5-sonnet-20241022",
+        max_tokens=1024,
+        messages=[{"role": "user", "content": message}]
+    )
+    return response.content[0].text
+```
+
+**Workflow Automation**:
+```python
+# Multi-step workflow with state management
+class SupportTicketWorkflow:
+    async def start(self, user_id):
+        await ask_category(user_id)
+        state.set(user_id, "awaiting_category")
+
+    async def handle_category(self, user_id, category):
+        await ask_description(user_id)
+        state.set(user_id, "awaiting_description", category=category)
+
+    async def handle_description(self, user_id, description):
+        ticket_id = await create_ticket(user_id, description)
+        await send_confirmation(user_id, ticket_id)
+```
+
+### Limitations and Workarounds
+
+**Platform API Limits**:
+- **Problem**: Discord limits embeds to 6000 characters
+- **Workaround**: Split long messages into multiple embeds with pagination
+
+**Rate Limiting**:
+- **Problem**: Telegram limits to 30 messages per second
+- **Workaround**: Implement message queue with backoff
+
+**Authentication**:
+- **Problem**: WhatsApp requires 24-hour conversation window
+- **Workaround**: Use message templates for re-engagement
+
+**File Size**:
+- **Problem**: Slack limits file uploads to 1GB
+- **Workaround**: Upload to cloud storage, send download link
+
+---
+
+## Deployment Options
+
+Viably supports multiple deployment strategies:
+
+### One-Click Deployment (Railway)
+
+**Best For**: Quick testing, MVPs, small-to-medium bots
+
+**How It Works**:
+1. Click "Deploy to Railway" button after generation
+2. Railway automatically creates project, deploys code, sets environment variables
+3. Your bot is live in under 2 minutes
+
+**Pricing**:
+- Free tier: $5/month credit (enough for most small bots)
+- Usage-based: $0.000463 per GB-hour
+- Estimated cost: $3-10/month for typical bot
+
+**Pros**:
+- Zero configuration required
+- Automatic SSL, logging, monitoring
+- Easy rollbacks and redeployments
+
+**Cons**:
+- Limited to Railway's infrastructure
+- Can become expensive at scale (1M+ messages/day)
+
+### Self-Hosting
+
+**Best For**: High-volume bots, enterprise, cost optimization
+
+**Popular Options**:
+
+**DigitalOcean Droplet**:
+- $6/month for basic VPS
+- Full control, root access
+- Manual scaling and monitoring
+
+**AWS EC2 + Lambda**:
+- Free tier available (750 hours/month)
+- Auto-scaling with load balancers
+- Pay only for usage (can be $0-5/month for small bots)
+
+**Google Cloud Run**:
+- Serverless, auto-scaling
+- Free tier: 2M requests/month
+- Excellent for sporadic traffic patterns
+
+**Docker + Your Own Server**:
+- Download generated code
+- Build Docker image: `docker build -t my-bot .`
+- Run anywhere: `docker run -p 8000:8000 my-bot`
+
+**Pros**:
+- Lower long-term costs at scale
+- Complete infrastructure control
+- Custom security and compliance
+
+**Cons**:
+- Requires DevOps knowledge
+- You handle monitoring, logging, backups
+- Manual SSL certificate management
+
+### Hybrid Deployment
+
+**Best For**: Multi-region, high-availability, compliance requirements
+
+**Strategy**:
+- Deploy to Railway for primary region (US East)
+- Self-host in Europe for GDPR compliance
+- Use load balancer to route traffic
+
+---
+
+## Cost Considerations
+
+Understanding total cost of ownership helps you choose the right template and deployment strategy.
+
+### Viably Credit Costs
+
+- **Bot Generation**: 10 credits per generation
+- **Regeneration**: 10 credits each time you regenerate
+- **Free Credits**: 100 on signup + 10 daily login bonus
+- **Paid Credits**: $10 for 100 credits ($0.10 per generation)
+
+**Typical Usage**:
+- Testing and learning: 5-10 generations (50-100 credits)
+- Production bot: 1-3 generations (10-30 credits)
+- Major iteration: 1-2 regenerations per month (10-20 credits/month)
+
+### Platform API Costs
+
+**Free Forever**:
+- Discord: No API fees, unlimited bots
+- Telegram: Free for personal and commercial use
+
+**Paid After Threshold**:
+- Slack: Free up to 10 integrations, then $8/user/month
+- WhatsApp: $0.005-$0.09 per conversation (varies by country)
+
+### Deployment Costs
+
+**Railway**:
+- Free tier: $5 credit/month
+- Typical bot: $3-10/month
+- High-volume bot: $20-100/month
+
+**Self-Hosted (DigitalOcean)**:
+- Basic droplet: $6/month
+- Production-ready: $12-24/month
+- High-availability: $50-100/month
+
+**AWS/GCP Serverless**:
+- Low traffic: Free tier ($0/month)
+- Medium traffic: $5-20/month
+- High traffic: $30-100/month
+
+### Total Monthly Cost Examples
+
+**Hobbyist Discord Bot**:
+- Viably: $0 (daily free credits)
+- Discord API: $0
+- Railway: $0 (within free tier)
+- **Total: $0/month**
+
+**Small Business WhatsApp Support**:
+- Viably: $0 (1 regeneration/month, covered by daily credits)
+- WhatsApp API: $50/month (1000 conversations)
+- Railway: $8/month
+- **Total: $58/month**
+
+**Enterprise Slack Automation**:
+- Viably: $10/month (occasional iterations)
+- Slack: $400/month (50 users)
+- Self-hosted: $24/month (DigitalOcean)
+- **Total: $434/month**
+
+---
+
+## Best Practices
+
+### Template Selection Tips
+
+1. **Start Simple**: Begin with Discord or Telegram before attempting WhatsApp or Custom
+2. **Match User Behavior**: Choose the platform your users already use daily
+3. **Consider Future Scaling**: WhatsApp costs scale with usage, Discord doesn't
+4. **Test Before Committing**: Use Railway free tier to test your bot before scaling
+5. **Read Platform Docs**: Each platform has unique quirks and best practices
+
+### Common Mistakes to Avoid
+
+**Mistake #1: Choosing Custom for Your First Bot**
+- **Why It's Bad**: Steep learning curve, more things to break
+- **Better Approach**: Start with platform template, migrate to Custom later if needed
+
+**Mistake #2: Ignoring Rate Limits**
+- **Why It's Bad**: Your bot gets banned or users see delays
+- **Better Approach**: Implement message queues and backoff strategies
+
+**Mistake #3: Hardcoding Secrets in Code**
+- **Why It's Bad**: API keys leak when sharing code
+- **Better Approach**: Use environment variables (`.env` file) for all secrets
+
+**Mistake #4: Not Testing Locally**
+- **Why It's Bad**: Debug cycles slow down when deploying to production each time
+- **Better Approach**: Use platform's test environments (Discord: test server, Telegram: test bot)
+
+**Mistake #5: Over-Customizing Before Launch**
+- **Why It's Bad**: Perfectionism delays actual user feedback
+- **Better Approach**: Launch with 80% of features, iterate based on real usage
+
+### Performance Optimization
+
+**Reduce Response Time**:
+- Use async/await for non-blocking I/O
+- Cache frequent API calls (weather, news, etc.)
+- Defer heavy processing to background tasks
+
+**Minimize Memory Usage**:
+- Don't store large conversation history in memory
+- Use database or Redis for stateful conversations
+- Clean up resources after each request
+
+**Handle Scale**:
+- Implement connection pooling for database queries
+- Use CDN for media files (images, videos)
+- Add horizontal scaling with load balancer
+
+**Code Example** (Optimization):
+```python
+# Bad: blocking API call
+def get_weather(city):
+    return requests.get(f"https://api.weather.com?q={city}").json()
+
+# Good: async + caching
+from functools import lru_cache
+
+@lru_cache(maxsize=100)
+async def get_weather(city):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(f"https://api.weather.com?q={city}") as response:
+            return await response.json()
+```
+
+### Security Considerations
+
+**Validate All Inputs**:
+```python
+# Prevent injection attacks
+def sanitize_input(user_input):
+    # Remove SQL keywords
+    banned_keywords = ["DROP", "DELETE", "INSERT", "UPDATE"]
+    for keyword in banned_keywords:
+        user_input = user_input.replace(keyword, "")
+    return user_input
+```
+
+**Use Environment Variables**:
+```python
+# Never hardcode secrets
+API_KEY = os.getenv("API_KEY")  # Good
+# API_KEY = "sk-abc123..."  # Bad!
+```
+
+**Implement Rate Limiting**:
+```python
+from collections import defaultdict
+import time
+
+user_requests = defaultdict(list)
+
+def rate_limit(user_id, max_requests=10, window=60):
+    now = time.time()
+    # Remove old requests outside window
+    user_requests[user_id] = [
+        req_time for req_time in user_requests[user_id]
+        if now - req_time < window
+    ]
+
+    if len(user_requests[user_id]) >= max_requests:
+        return False  # Rate limited
+
+    user_requests[user_id].append(now)
+    return True
+```
+
+**Encrypt Sensitive Data**:
+```python
+from cryptography.fernet import Fernet
+
+key = os.getenv("ENCRYPTION_KEY")
+cipher = Fernet(key)
+
+# Encrypt user data before storing
+encrypted = cipher.encrypt(user_data.encode())
+
+# Decrypt when retrieving
+decrypted = cipher.decrypt(encrypted).decode()
+```
+
+---
+
+## Migration Guide
+
+### Switching Between Templates
+
+**Scenario**: You started with Telegram but now want Discord.
+
+**Steps**:
+1. Export your bot's configuration (commands, responses, personality)
+2. Create new bot from Discord template
+3. Paste your configuration into new template
+4. Adjust platform-specific features (embeds instead of keyboards)
+5. Regenerate (10 credits)
+6. Test thoroughly before switching users
+
+**What Transfers**:
+- Bot personality and tone
+- Core command logic
+- External API integrations
+- Response patterns
+
+**What Needs Rewriting**:
+- Platform-specific UI (embeds, keyboards, modals)
+- Authentication flows
+- Media handling (file size limits differ)
+
+### Data Migration
+
+**User Data**:
+- Export from old bot's database
+- Map user IDs (Discord snowflakes vs Telegram integers)
+- Import into new bot's database
+
+**Conversation History**:
+- Generally not portable across platforms
+- Consider starting fresh or exporting to CSV for analysis
+
+**Settings and Preferences**:
+- Export as JSON
+- Transform keys if schema changed
+- Import with validation
+
+**Example Migration Script**:
+```python
+# Export from Telegram bot
+telegram_users = await db.fetch("SELECT user_id, preferences FROM users")
+
+# Transform for Discord bot
+discord_users = [
+    {
+        "user_id": map_telegram_to_discord(user["user_id"]),
+        "preferences": user["preferences"]
+    }
+    for user in telegram_users
+]
+
+# Import to Discord bot
+await db.executemany(
+    "INSERT INTO users (user_id, preferences) VALUES ($1, $2)",
+    discord_users
+)
+```
+
+### Maintaining Backwards Compatibility
+
+If migrating gradually (some users on old platform, some on new):
+
+**Shared Backend**:
+```python
+# Platform-agnostic message handler
+async def handle_message(message, platform):
+    response = await generate_response(message.text)
+
+    if platform == "telegram":
+        await send_telegram_message(message.chat_id, response)
+    elif platform == "discord":
+        await send_discord_message(message.channel_id, response)
+```
+
+**API Abstraction**:
+```python
+class BotAdapter:
+    async def send_message(self, recipient, text):
+        raise NotImplementedError
+
+class TelegramAdapter(BotAdapter):
+    async def send_message(self, chat_id, text):
+        await bot.send_message(chat_id, text)
+
+class DiscordAdapter(BotAdapter):
+    async def send_message(self, channel_id, text):
+        channel = bot.get_channel(channel_id)
+        await channel.send(text)
+```
+
+---
+
+## Case Studies
+
+Real-world examples of how developers chose and customized templates.
+
+### Case Study 1: Gaming Community Bot (Discord)
+
+**Background**: 500-member gaming clan needed moderation, event scheduling, and game stats tracking.
+
+**Template Choice**: Discord Bot (Beginner, 10-minute setup)
+
+**Why Discord**:
+- Users already on Discord for voice chat
+- Rich embeds perfect for game stats display
+- Role management for clan hierarchy
+
+**Customizations**:
+- Added Riot Games API integration for League of Legends stats
+- Event calendar with RSVP buttons (Discord interactive components)
+- Auto-moderation with warning system and ban appeals
+
+**Deployment**: Railway free tier (bot uses ~$2/month, well within $5 credit)
+
+**Results**:
+- 95% reduction in manual moderation time
+- Event attendance increased 40% with automated reminders
+- Users can check their stats without leaving Discord
+
+**Key Learnings**:
+- Start with default template commands, add custom features based on user requests
+- Discord's permission system is powerful—leverage it for admin commands
+- Cache game API responses to avoid hitting rate limits
+
+### Case Study 2: E-Commerce Support Bot (WhatsApp)
+
+**Background**: Online clothing store with 1000+ daily customer inquiries. Small team couldn't keep up.
+
+**Template Choice**: WhatsApp Bot (Intermediate, 30-minute setup)
+
+**Why WhatsApp**:
+- 90% of customers already use WhatsApp daily
+- Message templates allow proactive order updates
+- Higher trust than email or website chat
+
+**Customizations**:
+- Shopify API integration for real-time order tracking
+- Product catalog browser with image carousels
+- Payment link generation for abandoned carts
+- Handoff to human agent when bot can't help
+
+**Deployment**: Self-hosted on AWS Lambda (serverless, costs ~$15/month for 30K conversations)
+
+**Platform Costs**: WhatsApp Business API ~$200/month (average $0.02 per conversation in US)
+
+**Results**:
+- 70% of inquiries resolved by bot (no human needed)
+- Average response time reduced from 2 hours to 30 seconds
+- Customer satisfaction score increased from 3.2 to 4.6/5
+- Support team now handles escalations only
+
+**Key Learnings**:
+- WhatsApp approval process takes 2-3 days—plan accordingly
+- Message templates must be pre-approved by Meta (submit 5-10 variations)
+- 24-hour conversation window is real—use templates to re-engage users
+
+### Case Study 3: Team Productivity Bot (Slack)
+
+**Background**: 50-person remote team struggled with async standups and scattered project updates.
+
+**Template Choice**: Slack Bot (Intermediate, 20-minute setup)
+
+**Why Slack**:
+- Team's primary communication tool
+- Slack workflows already used for other automations
+- Enterprise features needed for security compliance
+
+**Customizations**:
+- Daily standup collection with Slack modals (structured form)
+- Automatic summary posted to #general at 10am
+- Integration with Linear (project management) for task sync
+- PTO request workflow with manager approval
+
+**Deployment**: Railway (predictable costs, ~$8/month)
+
+**Platform Costs**: Slack Business+ plan already in use ($12.50/user/month)
+
+**Results**:
+- 100% standup participation (up from 60% with manual Slack messages)
+- Project visibility improved—fewer "what's everyone working on?" questions
+- 2 hours/week saved per team member (no more standup meetings)
+
+**Key Learnings**:
+- Slack modals are powerful but complex—use template examples first
+- Slash commands should autocomplete for discoverability
+- OAuth setup is tricky—follow Slack's documentation exactly
+
+---
+
+## FAQ
+
+### Can I switch templates later?
+
+Yes, but you'll need to regenerate your bot (10 credits). Your configuration and code can often be reused, but platform-specific features (like Discord embeds or Slack modals) will need rewriting.
+
+**Best Practice**: Test your chosen platform with a simple bot before heavily customizing. Switching after 100 hours of customization is painful.
+
+### Can I use multiple templates for one bot?
+
+Not directly. Each template generates a complete, standalone bot for one platform. However, you can:
+
+1. **Multi-Platform Bot**: Use the Custom template and build adapters for each platform
+2. **Separate Bots**: Deploy multiple bots (one per platform) that share a backend API
+
+**Recommended Approach**:
+```
+Shared Backend API (Custom template)
+├── Discord Adapter (Discord template)
+├── Telegram Adapter (Telegram template)
+└── Slack Adapter (Slack template)
+```
+
+### How do I customize templates?
+
+**Configuration Changes** (no coding):
+- Edit bot personality, commands, and responses in the Viably editor
+- Regenerate bot (10 credits)
+
+**Code Changes** (advanced):
+- Download generated code
+- Modify Python/JavaScript files locally
+- Test with your bot's test account
+- Deploy manually or use Railway
+
+**Best Practice**: Make small changes, test frequently. Don't customize everything at once.
+
+### What if my platform isn't listed?
+
+**Option 1: Use Custom Template**
+- Start with blank Custom template
+- Add your platform's SDK/API library
+- Build message handlers and response formatters
+- Deploy to your infrastructure
+
+**Option 2: Request a Template**
+- Email [support@viably.dev](mailto:support@viably.dev)
+- If there's enough demand, we'll add it (usually within 1-2 months)
+
+**Popular Requested Platforms**:
+- Microsoft Teams
+- Facebook Messenger
+- Twitch Chat
+- Reddit
+
+### Can I sell bots built with Viably templates?
+
+**Yes.** Your generated code is yours to do with as you please:
+- Sell as a service to clients
+- Offer as SaaS (software-as-a-service)
+- Open-source under your preferred license
+- Redistribute commercially
+
+**Only Restriction**: You cannot resell Viably credits or access to the Viably platform itself.
+
+### How often are templates updated?
+
+Templates are updated quarterly (every 3 months) to:
+- Support new platform features (Discord adds new API, Slack releases modals v2, etc.)
+- Fix security vulnerabilities
+- Improve performance and best practices
+- Add community-requested features
+
+**Your Generated Code**: Updating templates doesn't affect your already-generated bots. You can regenerate to get updates, or manually merge changes.
+
+---
+
+## Next Steps
+
+You now understand Viably's template ecosystem and how to choose the right one for your needs.
+
+### Ready to Build?
+
+1. **Browse Templates**: Visit the [Templates Gallery](/templates) to see live demos
+2. **Create Your First Bot**: Follow the [Quick Start Guide](/docs/quickstart) for step-by-step instructions
+3. **Join the Community**: Ask questions in our [Discord server](https://discord.gg/viably)
+
+### Learn More
+
+**Platform-Specific Guides**:
+- [Discord Bot Guide](/docs/templates/discord) - Deep dive into Discord features
+- [Telegram Bot Guide](/docs/templates/telegram) - Master Telegram inline keyboards
+- [Slack Bot Guide](/docs/templates/slack) - Build workplace automation
+- [WhatsApp Bot Guide](/docs/templates/whatsapp) - Navigate Meta's approval process
+- [Custom Bot Guide](/docs/templates/custom) - Build multi-platform bots
+
+**Advanced Topics**:
+- [AI Model Customization](/docs/advanced/ai-models) - Use GPT-4, Claude, or custom models
+- [Database Integration](/docs/advanced/database) - Add PostgreSQL, Redis, or MongoDB
+- [Deployment Strategies](/docs/deployment) - Self-hosting, scaling, and monitoring
+- [Security Best Practices](/docs/security) - Protect your bot and user data
+
+**Community Resources**:
+- [Template Showcase](https://community.viably.dev/showcase) - See what others have built
+- [Code Snippets Library](https://community.viably.dev/snippets) - Reusable patterns and integrations
+- [Video Tutorials](https://youtube.com/viably) - Watch bot building in action
+
+---
+
+**Questions?** Reach out to us:
+- **Email**: [support@viably.dev](mailto:support@viably.dev)
+- **Discord**: [discord.gg/viably](https://discord.gg/viably)
+- **Twitter**: [@viablydev](https://twitter.com/viablydev)
+
+Happy bot building! 🤖

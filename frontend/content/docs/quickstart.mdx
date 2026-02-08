@@ -1,0 +1,412 @@
+---
+title: "Quick Start Guide"
+description: "Get started with Viably in 5 minutes. Create your first AI bot from template to deployment."
+date: "2024-02-08"
+author: "Viably Team"
+---
+
+# Quick Start Guide
+
+Welcome to Viably! In just 5 minutes, you'll create your first AI bot and deploy it to the cloud. No coding required, no infrastructure headaches. Let's get started.
+
+## What You'll Accomplish
+
+By the end of this guide, you'll have:
+
+- A fully functional AI bot running in the cloud
+- Your bot deployed on Discord, Telegram, Slack, or WhatsApp
+- A working knowledge of the Viably platform
+
+Ready? Let's build your first bot.
+
+## Watch the Demo
+
+Prefer video? Watch this 2-minute walkthrough to see the entire process in action:
+
+<div className="my-8">
+  <LiteYouTube
+    videoId="dQw4w9WgXcQ"
+    title="Viably Quick Start — Create Your First Bot in 5 Minutes"
+  />
+</div>
+
+---
+
+## Step 1: Sign Up & Get Credits
+
+First, you need to create your Viably account and claim your free credits.
+
+### Create Your Account
+
+1. Go to [viably.dev](https://viably.dev)
+2. Click **Sign Up** in the top right corner
+3. Enter your email and create a password
+4. Verify your email address
+
+![Sign up process](/docs/quickstart/step-1-signup.png)
+
+### Claim Your Free Credits
+
+When you sign up, you automatically receive **100 free credits** to start building. These credits let you generate and test your bots without entering payment information.
+
+> **Daily Bonus**: Come back every day to claim an additional **10 free credits**. Building habits pays off!
+
+### Understanding Credits
+
+Each bot generation costs **10 credits**. With your starting balance of 100 credits, you can:
+
+- Generate 10 different bots
+- Experiment with various templates
+- Test different configurations
+
+**Next Step**: Now that you have credits, let's choose a template for your first bot.
+
+---
+
+## Step 2: Choose a Template
+
+Viably offers ready-made templates for popular messaging platforms. These templates include best practices, common commands, and pre-configured personalities.
+
+### Browse the Template Gallery
+
+1. From your dashboard, click **Templates** in the sidebar
+2. Browse the available templates
+3. Click any template to see details and preview conversations
+
+![Template gallery](/docs/quickstart/step-2-template.png)
+
+### Available Templates
+
+**Discord Bot**
+- Perfect for gaming communities and Discord servers
+- Includes moderation, fun commands, and server management
+- Pre-configured for Discord's API
+
+**Telegram Bot**
+- Great for customer support and personal assistants
+- Works with Telegram's inline keyboards and commands
+- Optimized for fast responses
+
+**Slack Bot**
+- Ideal for team productivity and workplace automation
+- Integrates with Slack channels and direct messages
+- Supports slash commands and interactive messages
+
+**WhatsApp Bot**
+- Best for direct customer engagement and support
+- Works with WhatsApp Business API
+- Handles media messages and quick replies
+
+**Custom Bot**
+- Start from scratch with a blank template
+- Full flexibility to define your bot's behavior
+- For advanced users who want complete control
+
+### How to Choose
+
+Ask yourself:
+
+- **Where are your users?** Choose the platform where your audience already hangs out.
+- **What's your use case?** Customer support? Community management? Team productivity?
+- **Technical comfort?** Start with a pre-built template if you're new, or go custom if you want full control.
+
+For this guide, we'll use the **Discord Bot** template as an example.
+
+**Next Step**: Let's customize your bot's personality and behavior.
+
+---
+
+## Step 3: Customize Your Bot
+
+Now comes the fun part: making your bot uniquely yours. You'll define how your bot talks, what commands it understands, and how it responds to users.
+
+### Open the Editor
+
+1. Click **Use Template** on your chosen template
+2. You'll see the bot customization interface with three main sections:
+   - **Configuration** (left panel): Bot settings and metadata
+   - **Code Editor** (center): Your bot's logic and responses
+   - **Preview** (right panel): Test your bot in real-time
+
+![Bot customization interface](/docs/quickstart/step-3-customize.png)
+
+### Configure Basic Settings
+
+In the left panel, fill in:
+
+```typescript
+{
+  "name": "MyDiscordBot",
+  "platform": "discord",
+  "personality": "friendly and helpful",
+  "language": "en",
+  "responseTime": "fast"
+}
+```
+
+**Name**: Choose a memorable name for your bot (e.g., "SupportBot", "GameMaster", "TeamHelper")
+
+**Personality**: Describe how your bot should talk:
+- "friendly and helpful" - warm, approachable tone
+- "professional and concise" - business-like, direct
+- "playful and quirky" - fun, uses emojis and jokes
+- "technical and precise" - detailed, accurate responses
+
+### Customize Bot Behavior
+
+The Monaco Editor in the center lets you define your bot's commands and responses. Here's an example configuration:
+
+```python
+# Define bot commands
+commands = {
+    "hello": "Hi there! I'm {bot_name}, your AI assistant. How can I help you today?",
+    "help": "I can assist you with questions, provide information, or just chat. Try asking me anything!",
+    "about": "I'm an AI-powered bot created with Viably. I'm here to make your life easier!"
+}
+
+# Configure response style
+response_style = {
+    "greeting": "friendly",
+    "error_handling": "helpful",
+    "fallback": "I'm not sure I understand. Could you rephrase that?"
+}
+```
+
+### Key Areas to Customize
+
+**Commands**: What slash commands or keywords trigger specific responses
+**Greetings**: How your bot introduces itself
+**Error Messages**: What happens when users ask something unexpected
+**Personality Traits**: Tone, formality level, use of emojis
+
+> **Pro Tip**: Keep your initial bot simple. You can always add more complexity later. Start with 3-5 core commands and expand from there.
+
+### Test as You Go
+
+Use the Preview panel on the right to test your bot:
+
+1. Type a message in the preview chat
+2. See how your bot responds
+3. Adjust the configuration if needed
+4. Repeat until you're happy
+
+**Next Step**: Your bot is configured. Let's generate the production-ready code.
+
+---
+
+## Step 4: Generate with AI
+
+With your bot configured, it's time to let Viably's AI generate the production-ready code, configuration files, and deployment setup.
+
+### Start Generation
+
+1. Click the big green **Generate** button at the top right
+2. Confirm that you want to use **10 credits** for this generation
+3. Watch the magic happen
+
+![Generation progress screen](/docs/quickstart/step-4-generate.png)
+
+### What's Happening Behind the Scenes
+
+When you click Generate, Viably's AI:
+
+1. **Analyzes** your configuration and requirements
+2. **Generates** optimized bot code for your platform
+3. **Creates** configuration files (environment variables, API setup)
+4. **Prepares** deployment scripts and infrastructure code
+5. **Validates** everything works together
+
+This entire process takes **30-60 seconds** and costs **10 credits**.
+
+### Real-Time Progress Updates
+
+You'll see live updates via WebSocket connection:
+
+```bash
+[1/5] Analyzing configuration... ✓
+[2/5] Generating bot logic... ✓
+[3/5] Creating API handlers... ✓
+[4/5] Setting up deployment... ✓
+[5/5] Running final validation... ✓
+
+Generation complete! Your bot is ready to deploy.
+```
+
+### What You Get
+
+After generation completes, you'll have:
+
+- **Source Code**: Complete, production-ready bot implementation
+- **Configuration Files**: `.env.example`, `config.json`, API keys setup
+- **Deployment Scripts**: One-click deployment to Railway
+- **Documentation**: README with setup instructions
+
+### Review Generated Code
+
+Before deploying, you can:
+
+- Browse the generated files in the code viewer
+- Download the complete project as a `.zip` file
+- Read the auto-generated README for customization tips
+
+> **Note**: Each generation is unique. If you're not satisfied with the result, you can regenerate with different settings. Each regeneration costs another 10 credits.
+
+**Next Step**: Your bot is generated and ready. Let's deploy it to the cloud.
+
+---
+
+## Step 5: Deploy Your Bot
+
+The final step: deploy your bot to Railway and make it live for the world to use.
+
+### One-Click Deployment
+
+1. Click the **Deploy to Railway** button
+2. You'll be redirected to Railway (a cloud hosting platform)
+3. Railway will automatically:
+   - Create a new project
+   - Deploy your bot code
+   - Set up environment variables
+   - Start your bot
+
+![Deployment success screen](/docs/quickstart/step-5-deploy.png)
+
+### Railway Setup (First Time Only)
+
+If this is your first time using Railway:
+
+1. Sign in with GitHub or email
+2. Authorize Viably to deploy on your behalf
+3. Choose a project name
+
+Railway offers a generous free tier, so you won't need to enter payment information right away.
+
+### Deployment Progress
+
+Watch your bot go live in real-time:
+
+```bash
+Deploying to Railway...
+→ Creating project... ✓
+→ Pushing code... ✓
+→ Building container... ✓
+→ Starting services... ✓
+→ Bot is now LIVE! 🎉
+```
+
+### Get Your Bot URL
+
+Once deployed, you'll receive:
+
+- **Bot URL**: Your bot's public endpoint (e.g., `https://my-bot.railway.app`)
+- **Admin Dashboard**: Manage your bot on Railway
+- **Logs Link**: View real-time logs and debugging info
+
+### Connect Your Bot
+
+Depending on your platform:
+
+**Discord**:
+1. Copy your bot's URL
+2. Go to Discord Developer Portal
+3. Add the URL as your bot's endpoint
+4. Invite your bot to a server
+
+**Telegram**:
+1. Copy your bot token
+2. Set the webhook URL to your Railway endpoint
+3. Your bot is instantly live
+
+**Slack**:
+1. Go to Slack API Dashboard
+2. Set your bot's Request URL to the Railway endpoint
+3. Install the bot to your workspace
+
+**WhatsApp**:
+1. Configure the webhook in Meta Developer Console
+2. Verify the webhook token
+3. Your bot is ready to receive messages
+
+### Verify It's Working
+
+Test your bot:
+
+1. Open your messaging platform (Discord, Telegram, etc.)
+2. Send a message to your bot
+3. You should receive a response within 1-2 seconds
+
+> **Troubleshooting**: If your bot doesn't respond, check the Railway logs. Most issues are due to incorrect API tokens or webhook URLs.
+
+**Congratulations!** Your AI bot is now live and responding to users.
+
+---
+
+## What's Next?
+
+You've successfully created and deployed your first AI bot with Viably. Here are some ideas for what to do next:
+
+### Expand Your Bot's Capabilities
+
+- **Add more commands**: Teach your bot new skills
+- **Integrate APIs**: Connect to external services (weather, news, databases)
+- **Enhance personality**: Refine responses based on user feedback
+
+### Monitor Performance
+
+- **View Analytics**: Check your dashboard for usage stats
+- **Read Logs**: Railway provides real-time logs for debugging
+- **Track Credits**: Keep an eye on your credit balance
+
+### Explore Advanced Features
+
+- **Multi-Platform Bots**: Deploy the same bot to multiple platforms
+- **Custom Integrations**: Use webhooks to connect with your own services
+- **Team Collaboration**: Invite team members to manage your bots
+
+### Learn More
+
+- [**Templates Guide**](/docs/templates): Deep dive into all available templates
+- [**Advanced Customization**](/docs/advanced): Learn about custom code, APIs, and integrations
+- [**Deployment Options**](/docs/deployment): Explore self-hosting and alternative platforms
+- [**API Reference**](/docs/api): Automate bot creation programmatically
+
+---
+
+## Common Questions
+
+### How much do bot generations cost?
+
+Each generation costs **10 credits**. You get **100 free credits** on signup, plus **10 daily credits** for logging in.
+
+### Can I edit my bot after deployment?
+
+Yes! Return to your Viably dashboard, make changes, regenerate (10 credits), and redeploy. Railway will automatically update your live bot.
+
+### What if I run out of credits?
+
+You can purchase additional credits in your account settings, or wait for daily bonuses to accumulate.
+
+### Can I use my own hosting instead of Railway?
+
+Absolutely. Download your generated bot code and deploy it anywhere: AWS, Google Cloud, DigitalOcean, or your own servers.
+
+### Is my bot code open source?
+
+Your generated code is **yours to keep**. You can modify it, redistribute it, or use it commercially without restrictions.
+
+---
+
+## Need Help?
+
+We're here to support you:
+
+- **Documentation**: Browse our [complete documentation](/docs)
+- **Community**: Join our [Discord community](https://discord.gg/viably) (yes, we use our own bots!)
+- **Support**: Email us at [support@viably.dev](mailto:support@viably.dev)
+- **Report Bugs**: Open an issue on [GitHub](https://github.com/viably/platform)
+
+---
+
+**Ready to build more?** Head back to the [Templates Gallery](/templates) and create your next bot. Each one gets easier and faster.
+
+Happy building! 🚀
