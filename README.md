@@ -89,13 +89,49 @@ All technical specifications are in `/docs`:
 ## 🚀 Quick Start
 
 ### Prerequisites
+- **Docker** (версия 20.10+)
+- **Docker Compose** (версия 2.0+)
+
+### 🐳 Запуск за 3 команды (РЕКОМЕНДУЕТСЯ)
+
+```bash
+# 1. Убедитесь, что Docker запущен
+docker --version
+
+# 2. Запустите проект
+./start.sh
+
+# 3. Откройте браузер
+open http://localhost:3000
+```
+
+**Готово!** 🎉
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000/docs
+- **Health Check**: http://localhost:8000/health
+
+📚 **Подробная документация**: [QUICKSTART.md](QUICKSTART.md) | [DOCKER_SETUP.md](DOCKER_SETUP.md)
+
+### 🛠️ Альтернатива: Makefile
+
+```bash
+make start        # Запустить
+make logs         # Посмотреть логи
+make stop         # Остановить
+make help         # Все команды
+```
+
+### ⚙️ Ручная установка (без Docker)
+
+<details>
+<summary>Развернуть инструкции для ручной установки</summary>
+
+**Требования:**
 - Python 3.11+
 - Node.js 18+
 - PostgreSQL 15
 - Redis 7
-- Docker (for local dev)
-
-### Development Setup
 
 **Backend:**
 ```bash
@@ -117,10 +153,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-**Full Stack (Docker):**
-```bash
-docker-compose up
-```
+</details>
 
 ---
 

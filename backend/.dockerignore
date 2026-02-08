@@ -1,22 +1,47 @@
-.git
-.gitignore
-__pycache__
-*.pyc
-*.pyo
-.env
-.env.*
-tests/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
 .venv
-venv
-.mypy_cache
-.ruff_cache
-.pytest_cache
+
+# Testing
+.pytest_cache/
 .coverage
 htmlcov/
-*.egg-info/
-dist/
-build/
-README.md
-Dockerfile
-Dockerfile.worker
-.dockerignore
+*.cover
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docs
+docs/
+*.md
+
+# Alembic
+alembic.ini
+
+# Local
+.env.local
+.env.*.local
+
+# Temp
+*.tmp
+tmp/
+temp/
