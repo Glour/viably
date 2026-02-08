@@ -1,0 +1,398 @@
+openapi: 3.0.3
+info:
+  title: Viably Email Service API
+  description: Internal API for sending transactional emails via Resend
+  version: 1.0.0
+  contact:
+    name: Viably Team
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development
+  - url: https://api.viably.dev/api/v1
+    description: Production
+
+tags:
+  - name: emails
+    description: Email sending operations
+
+paths:
+  /emails/send:
+    post:
+      summary: Send transactional email
+      description: |
+        Send a transactional email using a predefined template.
+        This is an internal endpoint - not exposed to frontend.
+        Called by backend services when user triggers email events.
+      operationId: sendEmail
+      tags:
+        - emails
+      security:
+        - InternalServiceToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailRequest'
+            examples:
+              welcomeEmail:
+                summary: Welcome email example
+                value:
+                  user_id: "550e8400-e29b-41d4-a716-446655440000"
+                  email_type: "WELCOME"
+                  recipient_email: "user@example.com"
+                  template_variables:
+                    name: "Александр"
+                    credits: 5
+                    dashboard_url: "https://viably.dev/dashboard"
+              generationComplete:
+                summary: Generation complete email example
+                value:
+                  user_id: "550e8400-e29b-41d4-a716-446655440000"
+                  email_type: "GENERATION_COMPLETE"
+                  recipient_email: "user@example.com"
+                  template_variables:
+                    name: "Александр"
+                    project_name: "Мой Магазин Бот"
+                    deploy_url: "https://viably.dev/projects/abc123/deploy"
+                    download_url: "https://viably.dev/projects/abc123/download"
+      responses:
+        '200':
+          description: Email sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendEmailResponse'
+              example:
+                success: true
+                message: "Email sent successfully"
+                email_log_id: "660e8400-e29b-41d4-a716-446655440000"
+                resend_message_id: "re_abc123xyz"
+        '400':
+          description: Invalid request (validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "VALIDATION_ERROR"
+                message: "Invalid email address format"
+                details:
+                  field: "recipient_email"
+                  value: "invalid-email"
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "RATE_LIMIT_EXCEEDED"
+                message: "Too many emails sent. Retry after 60 seconds."
+                details:
+                  retry_after: 60
+        '500':
+          description: Email service error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "EMAIL_SERVICE_ERROR"
+                message: "Failed to send email via Resend API"
+                details:
+                  resend_error: "API key invalid"
+
+  /emails/logs/{user_id}:
+    get:
+      summary: Get email logs for user
+      description: Retrieve email delivery history for a specific user
+      operationId: getEmailLogs
+      tags:
+        - emails
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: User ID
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+          description: Number of logs to return
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+          description: Pagination offset
+        - name: email_type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [WELCOME, GENERATION_COMPLETE, DEPLOY_SUCCESS, LOW_CREDITS]
+          description: Filter by email type
+      responses:
+        '200':
+          description: Email logs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailLogsResponse'
+              example:
+                success: true
+                data:
+                  - id: "660e8400-e29b-41d4-a716-446655440000"
+                    email_type: "WELCOME"
+                    recipient_email: "user@example.com"
+                    subject: "Добро пожаловать в Viably!"
+                    status: "SENT"
+                    sent_at: "2026-02-08T12:00:00Z"
+                    created_at: "2026-02-08T11:59:50Z"
+                  - id: "770e8400-e29b-41d4-a716-446655440000"
+                    email_type: "GENERATION_COMPLETE"
+                    recipient_email: "user@example.com"
+                    subject: "Твой бот готов!"
+                    status: "SENT"
+                    sent_at: "2026-02-08T13:30:00Z"
+                    created_at: "2026-02-08T13:29:55Z"
+                total: 2
+                limit: 20
+                offset: 0
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden (user can only access their own logs)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from user authentication
+    InternalServiceToken:
+      type: apiKey
+      in: header
+      name: X-Internal-Service-Token
+      description: Internal service authentication token
+
+  schemas:
+    SendEmailRequest:
+      type: object
+      required:
+        - user_id
+        - email_type
+        - recipient_email
+        - template_variables
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          description: User ID to associate with email log
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        email_type:
+          type: string
+          enum: [WELCOME, GENERATION_COMPLETE, DEPLOY_SUCCESS, LOW_CREDITS]
+          description: Type of email template to send
+          example: "WELCOME"
+        recipient_email:
+          type: string
+          format: email
+          description: Recipient email address
+          example: "user@example.com"
+        template_variables:
+          type: object
+          description: Variables to inject into email template
+          additionalProperties: true
+          example:
+            name: "Александр"
+            credits: 5
+            dashboard_url: "https://viably.dev/dashboard"
+
+    SendEmailResponse:
+      type: object
+      required:
+        - success
+        - message
+        - email_log_id
+      properties:
+        success:
+          type: boolean
+          description: Whether email was sent successfully
+          example: true
+        message:
+          type: string
+          description: Human-readable success message
+          example: "Email sent successfully"
+        email_log_id:
+          type: string
+          format: uuid
+          description: ID of created email log entry
+          example: "660e8400-e29b-41d4-a716-446655440000"
+        resend_message_id:
+          type: string
+          nullable: true
+          description: Message ID from Resend API
+          example: "re_abc123xyz"
+
+    EmailLog:
+      type: object
+      required:
+        - id
+        - email_type
+        - recipient_email
+        - subject
+        - status
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Email log ID
+        email_type:
+          type: string
+          enum: [WELCOME, GENERATION_COMPLETE, DEPLOY_SUCCESS, LOW_CREDITS]
+          description: Type of email
+        recipient_email:
+          type: string
+          format: email
+          description: Recipient email address
+        subject:
+          type: string
+          description: Email subject line
+          maxLength: 200
+        status:
+          type: string
+          enum: [PENDING, SENT, FAILED, BOUNCED]
+          description: Delivery status
+        error_message:
+          type: string
+          nullable: true
+          description: Error message if failed
+          maxLength: 500
+        sent_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp when email was sent
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when log entry was created
+
+    EmailLogsResponse:
+      type: object
+      required:
+        - success
+        - data
+        - total
+        - limit
+        - offset
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailLog'
+        total:
+          type: integer
+          description: Total number of logs matching query
+          example: 42
+        limit:
+          type: integer
+          description: Pagination limit used
+          example: 20
+        offset:
+          type: integer
+          description: Pagination offset used
+          example: 0
+
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+        - message
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          description: Error code
+          enum:
+            - VALIDATION_ERROR
+            - RATE_LIMIT_EXCEEDED
+            - EMAIL_SERVICE_ERROR
+            - UNAUTHORIZED
+            - FORBIDDEN
+            - NOT_FOUND
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Invalid email address format"
+        details:
+          type: object
+          description: Additional error details
+          additionalProperties: true
+          example:
+            field: "recipient_email"
+            value: "invalid-email"
+
+  examples:
+    WelcomeEmailVariables:
+      summary: Variables for Welcome Email template
+      value:
+        name: "Александр"
+        credits: 5
+        dashboard_url: "https://viably.dev/dashboard"
+
+    GenerationCompleteVariables:
+      summary: Variables for Generation Complete Email template
+      value:
+        name: "Александр"
+        project_name: "Мой Магазин Бот"
+        deploy_url: "https://viably.dev/projects/abc123/deploy"
+        download_url: "https://viably.dev/projects/abc123/download"
+
+    DeploySuccessVariables:
+      summary: Variables for Deploy Success Email template
+      value:
+        name: "Александр"
+        bot_username: "my_shop_bot"
+        bot_url: "https://t.me/my_shop_bot"
+
+    LowCreditsVariables:
+      summary: Variables for Low Credits Warning template
+      value:
+        name: "Александр"
+        credits: 2
+        top_up_url: "https://viably.dev/settings/credits"
