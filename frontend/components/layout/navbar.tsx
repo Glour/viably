@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { cn } from "@/lib/utils"
 import { useCreditBalance } from "@/lib/hooks/use-credits"
+import { useComponentCleanup } from "@/hooks/useComponentCleanup"
 import type { NavItem } from "@/types"
 
 const navItems: NavItem[] = [
@@ -29,15 +30,25 @@ export function Navbar() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { data: creditBalance, isLoading: isCreditsLoading } = useCreditBalance()
+  const { registerSubscription } = useComponentCleanup("Navbar")
 
-  // Close mobile menu on Escape key (subscribing to external event)
+  // Close mobile menu on Escape key (subscribing to external event, T037)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setMobileMenuOpen(false)
     }
+
+    // Register listener with cleanup hook
+    registerSubscription({
+      type: "event",
+      createdAt: Date.now(),
+      cleanupFn: () => document.removeEventListener("keydown", handleKeyDown),
+      metadata: { event: "keydown", target: "document", purpose: "close-mobile-menu-on-escape" },
+    })
+
     document.addEventListener("keydown", handleKeyDown)
     return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [])
+  }, [registerSubscription])
 
   return (
     <nav aria-label="Основная навигация" className="sticky top-0 z-50">

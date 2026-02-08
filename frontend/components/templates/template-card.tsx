@@ -12,8 +12,12 @@ interface TemplateCardProps {
  * Maps template category to documentation slug
  */
 function getDocSlugForCategory(category: Template["category"]): string {
-  const categoryMap: Record<Template["category"], string> = {
+  const categoryMap: Partial<Record<Template["category"], string>> = {
     telegram_bot: "telegram",
+    discord_bot: "discord",
+    web_app: "web",
+    api: "api",
+    automation: "automation",
   }
   return categoryMap[category] || "custom"
 }

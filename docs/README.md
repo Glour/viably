@@ -11,6 +11,7 @@ This directory contains all technical specifications and development documentati
 - **[database-schema.sql](./database-schema.sql)** - Full PostgreSQL database schema with all tables
 - **[api-contracts.md](./api-contracts.md)** - Complete REST API specification
 - **[pricing-model.md](./pricing-model.md)** - Credits system and monetization strategy
+- **[DEVELOPMENT-SETUP.md](./DEVELOPMENT-SETUP.md)** - Frontend development setup guide with memory monitoring
 
 ### Backend Module Specifications
 Located in `/docs/backend/` - detailed specifications for each backend module:
@@ -31,9 +32,23 @@ Located in `/docs/frontend/` - detailed UI/UX specifications:
 3. **[template-gallery.md](./frontend/template-gallery.md)** - Template selection
 4. **[generation-flow.md](./frontend/generation-flow.md)** - Code generation UI
 
+### Development Guides
+Located in `/docs/guides/` - best practices and how-to guides:
+
+1. **[memory-optimization.md](./guides/memory-optimization.md)** - Memory management, leak detection, and optimization
+
 ---
 
 ## 🔧 How to Use This Documentation
+
+### For New Developers
+
+Start here if you're joining the project:
+
+1. **Read**: [DEVELOPMENT-SETUP.md](./DEVELOPMENT-SETUP.md) - Get your environment running
+2. **Read**: [master-spec.md](./master-spec.md) - Understand the architecture
+3. **Explore**: Frontend/backend module specs based on your area
+4. **Reference**: [guides/memory-optimization.md](./guides/memory-optimization.md) for performance best practices
 
 ### For Development with Claude Code
 

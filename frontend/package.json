@@ -11,6 +11,11 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
+    "test:e2e:memory": "playwright test e2e/memory --reporter=line",
+    "test:e2e:memory:headed": "playwright test e2e/memory --headed",
+    "test:e2e:memory:debug": "playwright test e2e/memory --debug",
+    "test:memory": "tsx scripts/test-memory-concurrent.ts",
+    "test:memory:stores": "tsx --expose-gc scripts/test-memory-stores.ts",
     "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
@@ -63,6 +68,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "tw-animate-css": "^1.4.0",
     "typescript": "^5"
   }

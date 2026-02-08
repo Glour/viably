@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-02-08T19:49:01.719Z",
+  "testName": "Template Gallery - 500 Items",
+  "metrics": {
+    "current": 0,
+    "average": 0,
+    "min": 0,
+    "bodyText": ""
+  },
+  "passed": false,
+  "screenshots": {
+    "initial": ".tmp/current/gallery-500-initial.png",
+    "final": ".tmp/current/gallery-500-final.png"
+  }
+}

@@ -7,14 +7,22 @@
  * Features:
  * - Automatic cleanup on component unmount
  * - Dev-mode warnings for uncleaned resources
+ * - **WebSocket-specific leak detection** with readyState validation
  * - Manual cleanup methods for early disposal
  * - Unique ID generation per registration
+ *
+ * WebSocket Cleanup Best Practices:
+ * 1. Always register WebSocket subscriptions with readyState metadata
+ * 2. Close WebSocket connections in cleanup function (ws.close())
+ * 3. Use react-use-websocket for automatic reconnection management
+ * 4. Avoid manual WebSocket instantiation unless necessary
  *
  * @example
  * ```tsx
  * function MyComponent() {
  *   const { registerSubscription, registerResource } = useComponentCleanup('MyComponent');
  *
+ *   // Example: Event listener
  *   useEffect(() => {
  *     const id = registerSubscription({
  *       type: 'event',
@@ -27,6 +35,32 @@
  *
  *     return () => {}; // useComponentCleanup handles cleanup automatically
  *   }, []);
+ *
+ *   // Example: WebSocket (with readyState tracking)
+ *   useEffect(() => {
+ *     const ws = new WebSocket('ws://localhost:8000');
+ *
+ *     const id = registerSubscription({
+ *       type: 'websocket',
+ *       createdAt: Date.now(),
+ *       cleanupFn: () => {
+ *         if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+ *           ws.close();
+ *         }
+ *       },
+ *       metadata: {
+ *         url: 'ws://localhost:8000',
+ *         readyState: ws.readyState, // Track initial state
+ *       }
+ *     });
+ *
+ *     // Update readyState on state changes
+ *     ws.onopen = () => {
+ *       // Update metadata if needed (optional)
+ *     };
+ *
+ *     return () => {}; // Hook handles cleanup
+ *   }, []);
  * }
  * ```
  */
@@ -37,6 +71,56 @@ import type {
   ExternalResource,
   UseComponentCleanupResult,
 } from '@/lib/memory/types';
+
+/**
+ * Extended metadata for WebSocket subscriptions.
+ * Tracks connection state to detect unclosed connections.
+ */
+interface WebSocketMetadata {
+  url?: string;
+  readyState?: number; // WebSocket.CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3
+  protocols?: string[];
+  [key: string]: unknown;
+}
+
+/**
+ * Converts WebSocket readyState number to human-readable label.
+ *
+ * @param readyState - WebSocket readyState value (0-3)
+ * @returns Human-readable label
+ */
+function getReadyStateLabel(readyState: number | undefined): string {
+  switch (readyState) {
+    case 0:
+      return 'CONNECTING';
+    case 1:
+      return 'OPEN';
+    case 2:
+      return 'CLOSING';
+    case 3:
+      return 'CLOSED';
+    default:
+      return 'UNKNOWN';
+  }
+}
+
+/**
+ * Validates WebSocket cleanup to detect unclosed connections.
+ * Returns true if WebSocket appears to be unclosed (OPEN or CONNECTING state).
+ *
+ * @param subscription - The subscription to validate
+ * @returns True if WebSocket is unclosed, false otherwise
+ */
+function validateWebSocketCleanup(subscription: Subscription): boolean {
+  if (subscription.type !== 'websocket') return false;
+
+  const metadata = subscription.metadata as WebSocketMetadata | undefined;
+  if (!metadata || metadata.readyState === undefined) return false;
+
+  // WebSocket.OPEN = 1, WebSocket.CONNECTING = 0
+  // If readyState is 0 or 1, connection is still active
+  return metadata.readyState === 0 || metadata.readyState === 1;
+}
 
 /**
  * Hook for managing component lifecycle cleanup.
@@ -188,14 +272,77 @@ export function useComponentCleanup(
       Array.from(subscriptions.entries()).forEach(([id, subscription]) => {
         if (!subscription.cleaned) {
           if (process.env.NODE_ENV === 'development') {
-            console.warn(
-              `⚠️ Component ${componentName} unmounted with active subscription: ${subscription.type}`,
-              {
+            // T038: Enhanced warnings for event listeners
+            // T032: WebSocket-specific validation and warnings
+            const isUncloseWebSocket = validateWebSocketCleanup(subscription);
+
+            if (isUncloseWebSocket) {
+              const metadata = subscription.metadata as WebSocketMetadata | undefined;
+              console.warn(
+                `⚠️ WEBSOCKET LEAK: Component ${componentName} unmounted with UNCLOSED WebSocket connection!`,
+                {
+                  id,
+                  url: metadata?.url || 'unknown',
+                  readyState: metadata?.readyState,
+                  readyStateLabel: getReadyStateLabel(metadata?.readyState),
+                  createdAt: new Date(subscription.createdAt).toISOString(),
+                  recommendation: 'WebSocket connections should be closed in cleanup function or useEffect return.',
+                }
+              );
+            } else if (subscription.type === 'event') {
+              // T038: Enhanced warnings for event listeners with fix recommendations
+              const eventType = subscription.metadata?.event || 'unknown';
+              const target = subscription.metadata?.target || 'unknown';
+              const element = subscription.metadata?.element;
+
+              console.group(
+                `⚠️ Memory Leak Warning: Uncleaned Event Listener in ${componentName}`
+              );
+              console.warn('Event listener was not cleaned up before unmount');
+              const details: Record<string, unknown> = {
                 id,
-                createdAt: new Date(subscription.createdAt).toISOString(),
+                eventType,
+                target,
+                registeredAt: new Date(subscription.createdAt).toISOString(),
                 metadata: subscription.metadata,
+              };
+              if (element) {
+                details.element = element;
               }
-            );
+              console.log('Details:', details);
+              console.log('\n💡 How to fix:');
+              console.log('1. Ensure registerSubscription is called BEFORE addEventListener');
+              console.log('2. Use the same function reference for add and remove');
+              console.log('3. Example:');
+              console.log(`
+  const { registerSubscription } = useComponentCleanup('${componentName}');
+
+  useEffect(() => {
+    const handleEvent = (e) => { /* handler */ };
+
+    // Register cleanup FIRST
+    registerSubscription({
+      type: 'event',
+      createdAt: Date.now(),
+      cleanupFn: () => ${target}.removeEventListener('${eventType}', handleEvent),
+      metadata: { event: '${eventType}', target: '${target}' }
+    });
+
+    // Then add listener
+    ${target}.addEventListener('${eventType}', handleEvent);
+  }, [registerSubscription]);
+              `);
+              console.groupEnd();
+            } else {
+              console.warn(
+                `⚠️ Component ${componentName} unmounted with active subscription: ${subscription.type}`,
+                {
+                  id,
+                  createdAt: new Date(subscription.createdAt).toISOString(),
+                  metadata: subscription.metadata,
+                }
+              );
+            }
           }
 
           try {

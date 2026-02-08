@@ -1,11 +1,13 @@
-import posthog from "posthog-js"
+import { getPostHogClient } from "./posthog"
 
 /**
- * Typed analytics event helpers for PostHog.
+ * Typed analytics event helpers for PostHog with dynamic import.
+ *
+ * T054: Lazy-loads PostHog only when needed in production.
  *
  * Each function is a no-op when PostHog is not initialized (i.e. when
- * NEXT_PUBLIC_POSTHOG_KEY is not configured). This makes it safe to call
- * tracking functions unconditionally throughout the codebase.
+ * NEXT_PUBLIC_POSTHOG_KEY is not configured or in development). This makes
+ * it safe to call tracking functions unconditionally throughout the codebase.
  *
  * Event naming follows the project data model conventions.
  */
@@ -14,11 +16,16 @@ import posthog from "posthog-js"
 // Internal helper
 // ---------------------------------------------------------------------------
 
-function capture(event: string, properties?: Record<string, unknown>): void {
+async function capture(event: string, properties?: Record<string, unknown>): Promise<void> {
   try {
-    // posthog.__loaded is set after successful init()
+    // T054: Skip in development
+    if (process.env.NODE_ENV === "development") return
     if (typeof window === "undefined") return
-    if (!posthog.__loaded) return
+
+    // T054: Dynamic import - only loads in production
+    const posthog = await getPostHogClient()
+    if (!posthog) return
+
     posthog.capture(event, properties)
   } catch {
     // Silently ignore - analytics should never break the app
@@ -31,7 +38,7 @@ function capture(event: string, properties?: Record<string, unknown>): void {
 
 /** Track successful user registration. */
 export function trackSignup(method: string): void {
-  capture("signup", { method })
+  void capture("signup", { method })
 }
 
 // ---------------------------------------------------------------------------
@@ -43,7 +50,7 @@ export function trackProjectCreated(
   projectId: string,
   templateId?: string,
 ): void {
-  capture("project_created", {
+  void capture("project_created", {
     project_id: projectId,
     template_id: templateId,
   })
@@ -58,7 +65,7 @@ export function trackGenerationStarted(
   projectId: string,
   templateType?: string,
 ): void {
-  capture("generation_started", {
+  void capture("generation_started", {
     project_id: projectId,
     template_type: templateType,
   })
@@ -70,7 +77,7 @@ export function trackGenerationComplete(
   durationMs: number,
   tokensUsed?: number,
 ): void {
-  capture("generation_complete", {
+  void capture("generation_complete", {
     project_id: projectId,
     duration_ms: durationMs,
     tokens_used: tokensUsed,
@@ -86,7 +93,7 @@ export function trackDeployed(
   projectId: string,
   platform?: string,
 ): void {
-  capture("deployed", {
+  void capture("deployed", {
     project_id: projectId,
     platform,
   })
@@ -101,7 +108,7 @@ export function trackPurchasedCredits(
   amount: number,
   packageId?: string,
 ): void {
-  capture("purchased_credits", {
+  void capture("purchased_credits", {
     amount,
     package_id: packageId,
   })

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { AnimatePresence, motion } from "motion/react"
-import confetti from "canvas-confetti"
 import {
   Eye,
   EyeOff,
@@ -26,6 +25,7 @@ import { DeployProgress } from "./deploy-progress"
 import { DeploySuccess } from "./deploy-success"
 import { useDeploy } from "@/lib/hooks/use-deploy"
 import { prefersReducedMotion } from "@/lib/animations"
+import { useComponentCleanup } from "@/hooks/useComponentCleanup"
 
 interface DeployModalProps {
   open: boolean
@@ -42,22 +42,37 @@ export function DeployModal({
 }: DeployModalProps) {
   // Use real deploy hook
   const deployment = useDeploy(projectId)
+  const { registerResource } = useComponentCleanup('DeployModal')
 
   const [botToken, setBotToken] = useState("")
   const [envVars, setEnvVars] = useState<Record<string, string>>({})
   const [showToken, setShowToken] = useState(false)
 
-  // T047: Trigger confetti on success
+  // T054: Trigger confetti on success with dynamic import
   useEffect(() => {
     if (deployment.status === "success" && !prefersReducedMotion()) {
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        disableForReducedMotion: true,
+      // T054: Dynamic import - only load confetti when needed
+      import("canvas-confetti").then(({ default: confetti }) => {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          disableForReducedMotion: true,
+        })
+
+        // Register confetti as a resource with cleanup
+        registerResource({
+          type: 'custom',
+          createdAt: Date.now(),
+          disposeFn: () => {
+            // Reset confetti to remove any canvas elements
+            confetti.reset()
+          },
+          metadata: { library: 'canvas-confetti', action: 'deploy-success' }
+        })
       })
     }
-  }, [deployment.status])
+  }, [deployment.status, registerResource])
 
   // Handle deployment start
   const handleDeploy = async () => {

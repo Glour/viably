@@ -180,7 +180,7 @@ export interface ProjectsStoreState {
 
 // Templates Gallery types
 
-export type TemplateCategory = "telegram_bot"
+export type TemplateCategory = "telegram_bot" | "discord_bot" | "web_app" | "api" | "automation"
 
 export type ConfigFieldType =
   | "text"

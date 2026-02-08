@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "motion/react"
 import { Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/hooks/use-reduced-motion"
+import { useComponentCleanup } from "@/hooks/useComponentCleanup"
 
 const NAV_LINKS = [
   { label: "Demo", href: "#demo", isAnchor: true },
@@ -21,26 +22,45 @@ export function LandingNav() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const reduced = useReducedMotion()
+  const { registerSubscription } = useComponentCleanup("LandingNav")
 
-  // Track scroll position for glass effect
+  // Track scroll position for glass effect (T037)
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > SCROLL_THRESHOLD)
     }
     // Check initial position (e.g. page reload mid-scroll)
     handleScroll()
+
+    // Register scroll listener with cleanup hook
+    registerSubscription({
+      type: "event",
+      createdAt: Date.now(),
+      cleanupFn: () => window.removeEventListener("scroll", handleScroll),
+      metadata: { event: "scroll", target: "window", passive: true, purpose: "glass-effect" },
+    })
+
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [registerSubscription])
 
-  // Close mobile menu on Escape key
+  // Close mobile menu on Escape key (T037)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setMobileMenuOpen(false)
     }
+
+    // Register keydown listener with cleanup hook
+    registerSubscription({
+      type: "event",
+      createdAt: Date.now(),
+      cleanupFn: () => document.removeEventListener("keydown", handleKeyDown),
+      metadata: { event: "keydown", target: "document", purpose: "close-mobile-menu-on-escape" },
+    })
+
     document.addEventListener("keydown", handleKeyDown)
     return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [])
+  }, [registerSubscription])
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {

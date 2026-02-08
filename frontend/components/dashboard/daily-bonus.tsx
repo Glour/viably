@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef } from "react"
 import { Check } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -9,20 +9,36 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Shimmer } from "@/components/ui/shimmer"
 import { useDailyBonusStatus, useClaimDailyBonus } from "@/lib/hooks/use-credits"
+import { useComponentCleanup } from "@/hooks/useComponentCleanup"
 
 export function DailyBonus() {
   const { data, isLoading } = useDailyBonusStatus()
   const claimMutation = useClaimDailyBonus()
   const [justClaimed, setJustClaimed] = useState(false)
+  const { registerSubscription, cleanupSubscription } = useComponentCleanup('DailyBonus')
+  const subscriptionIdRef = useRef<string | null>(null)
 
   const handleClaim = useCallback(() => {
     claimMutation.mutate(undefined, {
       onSuccess: () => {
+        // Clear any existing animation timeout
+        if (subscriptionIdRef.current) {
+          cleanupSubscription(subscriptionIdRef.current)
+        }
+
         setJustClaimed(true)
-        setTimeout(() => setJustClaimed(false), 600)
+        const timeoutId = setTimeout(() => setJustClaimed(false), 600)
+
+        // Register timeout for automatic cleanup on unmount
+        subscriptionIdRef.current = registerSubscription({
+          type: 'timer',
+          createdAt: Date.now(),
+          cleanupFn: () => clearTimeout(timeoutId),
+          metadata: { duration: 600, action: 'claim-animation-reset' }
+        })
       },
     })
-  }, [claimMutation])
+  }, [claimMutation, registerSubscription, cleanupSubscription])
 
   if (isLoading) {
     return (

@@ -1,0 +1,29 @@
+{
+  "timestamp": "2026-02-08T19:45:02.178Z",
+  "storeTests": [
+    {
+      "storeName": "Projects",
+      "iterations": 10,
+      "initialMemoryMB": 5.579704284667969,
+      "finalMemoryMB": 5.8702392578125,
+      "growthMB": 0.29053497314453125,
+      "averagePerInstanceKB": 29.75078125,
+      "leakDetected": false
+    },
+    {
+      "storeName": "Generation",
+      "iterations": 10,
+      "initialMemoryMB": 5.7510986328125,
+      "finalMemoryMB": 5.818290710449219,
+      "growthMB": 0.06719207763671875,
+      "averagePerInstanceKB": 6.88046875,
+      "leakDetected": false
+    }
+  ],
+  "isolationTest": true,
+  "largeDataTest": {
+    "success": true,
+    "memoryMB": 10.530014038085938,
+    "timeMs": 22.44937700000014
+  }
+}

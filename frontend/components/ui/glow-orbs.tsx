@@ -5,6 +5,7 @@ import { motion, useMotionValue, useSpring } from "motion/react"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/hooks/use-reduced-motion"
 import { useMediaQuery } from "@/hooks/use-media-query"
+import { useComponentCleanup } from "@/hooks/useComponentCleanup"
 
 const orbs = [
   { color: "#7C3AED", size: 400, x: "20%", y: "30%" },
@@ -19,6 +20,7 @@ export function GlowOrbs({ className, count = 3 }: { className?: string; count?:
   const mouseY = useMotionValue(0)
   const springX = useSpring(mouseX, { stiffness: 50, damping: 30 })
   const springY = useSpring(mouseY, { stiffness: 50, damping: 30 })
+  const { registerSubscription } = useComponentCleanup("GlowOrbs")
 
   useEffect(() => {
     if (reduced) return
@@ -26,9 +28,18 @@ export function GlowOrbs({ className, count = 3 }: { className?: string; count?:
       mouseX.set(e.clientX - window.innerWidth / 2)
       mouseY.set(e.clientY - window.innerHeight / 2)
     }
+
+    // Register listener with cleanup hook (T037)
+    registerSubscription({
+      type: "event",
+      createdAt: Date.now(),
+      cleanupFn: () => window.removeEventListener("mousemove", handleMouseMove),
+      metadata: { event: "mousemove", target: "window", conditional: "!reduced" },
+    })
+
     window.addEventListener("mousemove", handleMouseMove)
     return () => window.removeEventListener("mousemove", handleMouseMove)
-  }, [reduced, mouseX, mouseY])
+  }, [reduced, mouseX, mouseY, registerSubscription])
 
   if (!isDesktop) return null
 

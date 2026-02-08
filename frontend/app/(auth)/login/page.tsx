@@ -22,12 +22,13 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { SocialLoginButtons } from "@/components/auth/social-login-buttons"
+import { useShakeAnimation } from "@/hooks/use-shake-animation"
 
 export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [showPassword, setShowPassword] = useState(false)
-  const [isShaking, setIsShaking] = useState(false)
+  const { isShaking, triggerShake } = useShakeAnimation({ duration: 300 })
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -48,8 +49,7 @@ export default function LoginPage() {
     } catch (error) {
       const message = error instanceof ApiError ? error.message : "An unexpected error occurred. Please try again."
       toast.error(message)
-      setIsShaking(true)
-      setTimeout(() => setIsShaking(false), 300)
+      triggerShake()
     }
   }
 

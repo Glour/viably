@@ -10,6 +10,7 @@ import { MobileTabs } from "@/components/generation/mobile-tabs"
 import { GenerationErrorBoundary } from "@/components/generation/error-boundary"
 import { useGenerationWrapper as useGeneration } from "@/lib/generation/use-generation-wrapper"
 import { useProject } from "@/lib/hooks/use-projects"
+import { useComponentCleanup } from "@/hooks/useComponentCleanup"
 
 interface GeneratePageProps {
   params: Promise<{ id: string }>
@@ -18,6 +19,7 @@ interface GeneratePageProps {
 export default function GeneratePage({ params }: GeneratePageProps) {
   const { id } = React.use(params)
   const [activeTab, setActiveTab] = React.useState("preview")
+  const { registerSubscription } = useComponentCleanup("GeneratePage")
 
   // Load project details via React Query hook
   const { data: currentProject } = useProject(id)
@@ -92,7 +94,7 @@ export default function GeneratePage({ params }: GeneratePageProps) {
     }
   }, [])
 
-  // beforeunload warning when generation is in progress (FR-018)
+  // beforeunload warning when generation is in progress (FR-018, T037)
   React.useEffect(() => {
     if (!isGenerating) return
 
@@ -100,9 +102,17 @@ export default function GeneratePage({ params }: GeneratePageProps) {
       e.preventDefault()
     }
 
+    // Register listener with cleanup hook
+    registerSubscription({
+      type: "event",
+      createdAt: Date.now(),
+      cleanupFn: () => window.removeEventListener("beforeunload", handleBeforeUnload),
+      metadata: { event: "beforeunload", target: "window", purpose: "warn-before-closing-during-generation" },
+    })
+
     window.addEventListener("beforeunload", handleBeforeUnload)
     return () => window.removeEventListener("beforeunload", handleBeforeUnload)
-  }, [isGenerating])
+  }, [isGenerating, registerSubscription])
 
   // Handlers for ChatPanel (with double-click protection FR-017)
   const handleGenerate = React.useCallback(() => {

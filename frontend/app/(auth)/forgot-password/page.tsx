@@ -22,11 +22,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import { useShakeAnimation } from "@/hooks/use-shake-animation"
 
 export default function ForgotPasswordPage() {
   const [isSuccess, setIsSuccess] = useState(false)
   const [submittedEmail, setSubmittedEmail] = useState("")
-  const [isShaking, setIsShaking] = useState(false)
+  const { isShaking, triggerShake } = useShakeAnimation({ duration: 300 })
 
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -46,8 +47,7 @@ export default function ForgotPasswordPage() {
     } catch (_error) {
       toast.error("An unexpected error occurred. Please try again.")
       // Trigger shake animation
-      setIsShaking(true)
-      setTimeout(() => setIsShaking(false), 300)
+      triggerShake()
     }
   }
 

@@ -6,10 +6,26 @@
 
 ---
 
+## Quick Start for Developers
+
+**Want to enable memory monitoring right now?**
+
+1. Add `<MemoryMonitor />` to `frontend/app/layout.tsx` (inside `<body>`, after `<Toaster />`)
+2. Run `npm run dev` in the `frontend` directory
+3. Look for a memory panel in the bottom-right corner of your browser
+4. Click "Start" to begin tracking memory usage
+
+**That's it!** See [Development Setup](#development-setup-quick-start) for detailed instructions.
+
+---
+
 ## Table of Contents
 
 1. [Overview](#overview)
 2. [Memory Monitoring Tools](#memory-monitoring-tools)
+   - [Development Setup (Quick Start)](#development-setup-quick-start)
+   - [MemoryMonitor Component](#memorymonitor-component)
+   - [Browser DevTools](#browser-devtools)
 3. [Best Practices](#best-practices)
 4. [Common Memory Leaks](#common-memory-leaks)
 5. [Optimization Strategies](#optimization-strategies)
@@ -52,6 +68,87 @@ The Viably frontend has been optimized to minimize memory usage:
 
 ## Memory Monitoring Tools
 
+### Development Setup (Quick Start)
+
+To enable memory monitoring in your local development environment:
+
+#### Step 1: Add MemoryMonitor to Root Layout
+
+Edit `frontend/app/layout.tsx`:
+
+```tsx
+import { MemoryMonitor } from '@/components/dev/MemoryMonitor';
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="ru" suppressHydrationWarning>
+      <body>
+        <Providers>
+          <ThemeProvider>
+            {children}
+            <Toaster />
+            {/* Add MemoryMonitor at the end */}
+            <MemoryMonitor />
+          </ThemeProvider>
+        </Providers>
+      </body>
+    </html>
+  );
+}
+```
+
+**Important Notes:**
+- Place `<MemoryMonitor />` as the last child in `<body>` for proper z-index layering
+- Component is automatically hidden in production builds (only shows in `NODE_ENV=development`)
+- No additional configuration needed - it works out of the box
+
+#### Step 2: Start Development Server
+
+```bash
+cd frontend
+npm run dev
+```
+
+You should see a memory monitor panel in the bottom-right corner of your browser.
+
+#### Step 3: Enable Chrome DevTools Memory Profiling (Optional)
+
+For more detailed memory analysis:
+
+```bash
+# macOS/Linux
+google-chrome --enable-precise-memory-info --js-flags="--expose-gc" http://localhost:3000
+
+# Windows
+chrome.exe --enable-precise-memory-info --js-flags="--expose-gc" http://localhost:3000
+```
+
+This enables:
+- Precise memory measurements (without rounding)
+- Manual garbage collection via DevTools Console
+
+#### Development Mode Warnings
+
+The memory cleanup system emits warnings in development mode when resources aren't properly cleaned up:
+
+**Example warning:**
+```
+⚠️ Memory Leak Warning: Uncleaned Event Listener in ProjectEditor
+  Event listener was not cleaned up before unmount
+  Details: {
+    eventType: "resize",
+    target: "window",
+    registeredAt: "2026-02-08T12:34:56.789Z"
+  }
+```
+
+**What to do:**
+1. Identify the component mentioned in the warning
+2. Add cleanup using `useComponentCleanup` hook (see [Best Practices](#best-practices))
+3. Verify the warning is gone after implementing the fix
+
+**These warnings are intentionally verbose** - treat them as errors and fix immediately to prevent production memory leaks.
+
 ### MemoryMonitor Component
 
 The `MemoryMonitor` component provides real-time memory visualization during development.
@@ -64,13 +161,13 @@ The `MemoryMonitor` component provides real-time memory visualization during dev
 - **Visual indicators**: Animated status dot and color-coded warnings
 - **Zero production impact**: Automatically removed from production builds
 
-#### Installation
+#### Installation Options
 
-**Global monitoring** (recommended for most cases):
+**Global monitoring** (recommended - add to root layout):
 
 ```tsx
 // app/layout.tsx
-import { MemoryMonitor } from '@/components/dev';
+import { MemoryMonitor } from '@/components/dev/MemoryMonitor';
 
 export default function RootLayout({ children }) {
   return (
@@ -88,7 +185,7 @@ export default function RootLayout({ children }) {
 
 ```tsx
 // app/projects/[id]/page.tsx
-import { MemoryMonitor } from '@/components/dev';
+import { MemoryMonitor } from '@/components/dev/MemoryMonitor';
 
 export default function ProjectPage() {
   return (
@@ -109,10 +206,23 @@ export default function ProjectPage() {
 5. **Clear history**: Click "Clear" to reset statistics
 6. **Stop monitoring**: Click "Stop" to pause tracking
 
+#### Understanding the Metrics
+
+| Metric | Description | Good Range | Warning Range |
+|--------|-------------|------------|---------------|
+| **Current** | Memory currently in use | <80 MB | >120 MB |
+| **Peak** | Highest memory usage since start | <100 MB | >150 MB |
+| **Average** | Mean memory usage | <70 MB | >100 MB |
+| **Growth** | MB/minute increase rate | <0.5 MB/min | >1 MB/min |
+
+**Growth Rate Colors:**
+- **Blue**: Normal growth (<1 MB/min) - acceptable
+- **Red**: High growth (>1 MB/min) - potential memory leak
+
 #### Browser Compatibility
 
 - **Chrome/Edge**: Full support via `performance.memory` API
-- **Firefox/Safari**: Graceful degradation with console warning
+- **Firefox/Safari**: Graceful degradation with console warning (feature not available)
 
 ### Browser DevTools
 

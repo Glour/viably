@@ -2,12 +2,12 @@
 
 import { useEffect } from "react"
 import { motion } from "motion/react"
-import confetti from "canvas-confetti"
 import { Bot, ExternalLink, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import type { DeployedBotInfo } from "@/types"
 import { prefersReducedMotion } from "@/lib/animations"
+import { useComponentCleanup } from "@/hooks/useComponentCleanup"
 
 interface DeploySuccessProps {
   botInfo: DeployedBotInfo
@@ -16,16 +16,33 @@ interface DeploySuccessProps {
 }
 
 export function DeploySuccess({ botInfo, onOpenTelegram, onBackToProjects }: DeploySuccessProps) {
+  const { registerResource } = useComponentCleanup('DeploySuccess')
+
   useEffect(() => {
     if (prefersReducedMotion()) return
 
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      disableForReducedMotion: true,
+    // T054: Dynamic import - only load confetti when needed
+    import("canvas-confetti").then(({ default: confetti }) => {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        disableForReducedMotion: true,
+      })
+
+      // Register confetti as a resource with cleanup
+      // canvas-confetti creates a canvas element that should be cleaned up
+      registerResource({
+        type: 'custom',
+        createdAt: Date.now(),
+        disposeFn: () => {
+          // Reset confetti to remove any canvas elements
+          confetti.reset()
+        },
+        metadata: { library: 'canvas-confetti', action: 'celebration' }
+      })
     })
-  }, [])
+  }, [registerResource])
 
   return (
     <div className="flex flex-col items-center justify-center gap-6 p-6 text-center">

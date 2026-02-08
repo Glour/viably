@@ -5,6 +5,7 @@ import { Highlight, themes, type Language } from "prism-react-renderer"
 import { Check, Copy } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useComponentCleanup } from "@/hooks/useComponentCleanup"
 
 interface CodeBlockProps {
   children: string
@@ -18,6 +19,8 @@ interface CodeBlockProps {
  */
 export function CodeBlock({ children, className = '', showLineNumbers = false }: CodeBlockProps) {
   const [isCopied, setIsCopied] = React.useState(false)
+  const { registerSubscription, cleanupSubscription } = useComponentCleanup('CodeBlock')
+  const subscriptionIdRef = React.useRef<string | null>(null)
 
   // Extract language from className (format: language-xxx)
   const languageMatch = className.match(/language-(\w+)/)
@@ -30,8 +33,22 @@ export function CodeBlock({ children, className = '', showLineNumbers = false }:
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(code)
+
+      // Clear any existing timeout to prevent multiple timers
+      if (subscriptionIdRef.current) {
+        cleanupSubscription(subscriptionIdRef.current)
+      }
+
       setIsCopied(true)
-      setTimeout(() => setIsCopied(false), 2000)
+      const timeoutId = setTimeout(() => setIsCopied(false), 2000)
+
+      // Register timeout for automatic cleanup on unmount
+      subscriptionIdRef.current = registerSubscription({
+        type: 'timer',
+        createdAt: Date.now(),
+        cleanupFn: () => clearTimeout(timeoutId),
+        metadata: { duration: 2000, action: 'copy-feedback-reset' }
+      })
     } catch (err) {
       console.error('Failed to copy code:', err)
     }

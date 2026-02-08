@@ -609,18 +609,76 @@ The hook emits warnings in development mode when resources are not cleaned up pr
 
 ### Warning Types
 
+#### Enhanced Event Listener Warning (T038)
+
+```
+⚠️ Memory Leak Warning: Uncleaned Event Listener in MyComponent
+  Event listener was not cleaned up before unmount
+  Details: {
+    id: "MyComponent-1234567890-abc123",
+    eventType: "resize",
+    target: "window",
+    registeredAt: "2026-02-08T12:34:56.789Z",
+    metadata: { event: "resize", target: "window" }
+  }
+
+  💡 How to fix:
+  1. Ensure registerSubscription is called BEFORE addEventListener
+  2. Use the same function reference for add and remove
+  3. Example:
+
+  const { registerSubscription } = useComponentCleanup('MyComponent');
+
+  useEffect(() => {
+    const handleEvent = (e) => { /* handler */ };
+
+    // Register cleanup FIRST
+    registerSubscription({
+      type: 'event',
+      createdAt: Date.now(),
+      cleanupFn: () => window.removeEventListener('resize', handleEvent),
+      metadata: { event: 'resize', target: 'window' }
+    });
+
+    // Then add listener
+    window.addEventListener('resize', handleEvent);
+  }, [registerSubscription]);
+```
+
+**What it means**: An event listener was registered but not cleaned up before component unmount. This warning includes the specific event type (click, scroll, resize, etc.) and target (window, document, element) to help you quickly locate the issue.
+
+**Common causes**:
+- Cleanup function registered too late (after addEventListener)
+- Different function references used for addEventListener and removeEventListener
+- Conditional effect that didn't run cleanup
+- Early component unmount during async operation
+
+**How to fix**:
+1. Register the cleanup function BEFORE calling addEventListener
+2. Store the handler in a variable and use the same reference for both add and remove
+3. Ensure the cleanup function has access to the correct handler reference
+
+**Key improvements over standard warning**:
+- Shows exact event type (resize, click, scroll, keydown, etc.)
+- Shows target element (window, document, specific element)
+- Provides actionable fix recommendations
+- Includes working code example with correct event type and target
+- Groups all information together for easier debugging
+
+---
+
 #### Uncleaned Subscription Warning
 
 ```
-⚠️ Component MyComponent unmounted with active subscription: event
+⚠️ Component MyComponent unmounted with active subscription: timer
 {
   id: "MyComponent-1234567890-abc123",
   createdAt: "2026-02-08T12:34:56.789Z",
-  metadata: { event: "resize", target: "window" }
+  metadata: { delay: 5000 }
 }
 ```
 
-**What it means**: The component unmounted but the subscription cleanup function was not called before unmount. The hook will automatically cleanup, but this indicates a potential issue.
+**What it means**: A non-event subscription (timer, interval, query, custom) was not cleaned up before unmount. The hook will automatically cleanup, but this indicates a potential issue.
 
 **Common causes**:
 - Cleanup function registered too late
@@ -1047,6 +1105,7 @@ When manually testing cleanup behavior:
 
 ## Related Documentation
 
+- [Lazy Loading Strategy Guide](./LAZY-LOADING.md) - Comprehensive guide for lazy loading and code splitting
 - [Memory Optimization Quickstart](../../../specs/020-memory-optimization/quickstart.md) - Complete memory optimization guide
 - [Memory Monitoring Contracts](../../../specs/020-memory-optimization/contracts/memory-monitoring.ts) - TypeScript type definitions
 - [Memory Snapshot API](./snapshot.ts) - Performance API utilities

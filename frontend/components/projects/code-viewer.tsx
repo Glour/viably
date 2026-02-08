@@ -3,9 +3,8 @@
 import { useState, useCallback } from "react"
 import { Code2, PanelLeftClose, PanelLeftOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Shimmer } from "@/components/ui/shimmer"
 import { FileTree } from "./file-tree"
-import { useMonacoEditor } from "@/hooks/useMonacoEditor"
+import { MonacoEditorDynamic } from "@/components/editor/monaco-editor-dynamic"
 import type { ProjectFile } from "@/types"
 
 /* ------------------------------------------------------------------ */
@@ -75,22 +74,6 @@ export function CodeViewer({ files }: CodeViewerProps) {
     ? findFileByPath(files, selectedPath)
     : null
 
-  // Use Monaco hook for automatic memory management
-  const { containerRef, isReady } = useMonacoEditor({
-    value: selectedFile?.content ?? "",
-    language: selectedFile ? getLanguageFromPath(selectedFile.path) : "plaintext",
-    theme: "vs-dark",
-    options: {
-      readOnly: true,
-      minimap: { enabled: true },
-      lineNumbers: "on",
-      fontFamily: "'JetBrains Mono', monospace",
-      fontSize: 14,
-      scrollBeyondLastLine: false,
-      wordWrap: "on",
-    },
-  })
-
   const handleSelectFile = useCallback((file: ProjectFile) => {
     setSelectedPath(file.path)
     // Auto-collapse tree on mobile after file selection
@@ -141,8 +124,20 @@ export function CodeViewer({ files }: CodeViewerProps) {
         <div className="flex-1 min-h-0">
         {selectedFile ? (
           <div className="relative h-full w-full">
-            {!isReady && <Shimmer height="100%" className="rounded-lg" />}
-            <div ref={containerRef} className="h-full w-full" />
+            <MonacoEditorDynamic
+              value={selectedFile.content ?? ""}
+              language={getLanguageFromPath(selectedFile.path)}
+              theme="vs-dark"
+              options={{
+                readOnly: true,
+                minimap: { enabled: true },
+                lineNumbers: "on",
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 14,
+                scrollBeyondLastLine: false,
+                wordWrap: "on",
+              }}
+            />
           </div>
         ) : (
           <div className="flex h-full items-center justify-center text-muted-foreground">
