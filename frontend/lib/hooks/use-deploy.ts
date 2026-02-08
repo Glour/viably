@@ -3,6 +3,7 @@ import useWebSocket, { ReadyState } from "react-use-websocket"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuthStore } from "@/stores/auth"
 import { getAccessToken } from "@/lib/api/tokens"
+import { env } from "@/lib/env"
 import { startDeploy as apiStartDeploy } from "@/lib/api/generation"
 import { queryKeys } from "@/lib/api/query-keys"
 import { toast } from "sonner"
@@ -86,7 +87,7 @@ export function useDeploy(projectId: string) {
   // T039: Construct WebSocket URL with user ID and auth token
   const wsUrl =
     user && token
-      ? `${process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000"}/ws/${user.id}?token=${token}`
+      ? `${env.NEXT_PUBLIC_WS_URL}/ws/${user.id}?token=${token}`
       : null
 
   // T039: Establish WebSocket connection (shared with useGeneration)

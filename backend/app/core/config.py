@@ -45,6 +45,12 @@ class Settings(BaseSettings):
     DEPLOYMENT_POLL_INTERVAL_SECONDS: int = 10
     HEALTH_CHECK_TIMEOUT_SECONDS: float = 10.0  # Health check HTTP request timeout
 
+    # Observability
+    SENTRY_DSN: str = ""
+    ENVIRONMENT: str = "development"
+    LOG_LEVEL: str = "INFO"
+    LOG_FORMAT: str = "json"  # "json" for production, "console" for development
+
     @model_validator(mode="after")
     def warn_localhost_cors_in_production(self):
         """Warn when CORS_ORIGINS contains only localhost values in production mode."""

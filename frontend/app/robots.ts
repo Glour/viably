@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next"
+import { env } from "@/lib/env"
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -7,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/api/", "/dashboard/", "/projects/", "/settings/"],
     },
-    sitemap: "https://viably.dev/sitemap.xml",
+    sitemap: `${env.NEXT_PUBLIC_SITE_URL}/sitemap.xml`,
   }
 }

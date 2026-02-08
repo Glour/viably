@@ -1,8 +1,9 @@
 import ky, { HTTPError } from "ky"
 import type { AuthUser } from "@/types"
 import { getAccessToken, getRefreshToken, setTokens, clearTokens } from "./tokens"
+import { env } from "@/lib/env"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+const API_BASE_URL = env.NEXT_PUBLIC_API_URL
 
 // Concurrent refresh prevention
 let refreshPromise: Promise<string | null> | null = null
