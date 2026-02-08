@@ -16,6 +16,7 @@ import {
   Code,
   Github,
   Search,
+  LayoutGrid,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -46,6 +47,7 @@ const navigation: NavSection[] = [
   {
     title: "Templates",
     items: [
+      { title: "Templates Overview", href: "/docs/templates", icon: LayoutGrid },
       { title: "Template Guide", href: "/docs/templates/guide", icon: BookOpen },
       { title: "Discord Bot", href: "/docs/templates/discord", icon: MessageSquare },
       { title: "Telegram Bot", href: "/docs/templates/telegram", icon: Phone },

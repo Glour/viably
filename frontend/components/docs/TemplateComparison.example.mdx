@@ -1,0 +1,48 @@
+# Template Comparison Example
+
+This is an example of how to use the TemplateComparison component in MDX files.
+
+## Usage
+
+Simply import and render the component:
+
+```tsx
+import { TemplateComparison } from "@/components/docs/TemplateComparison"
+
+<TemplateComparison />
+```
+
+## Live Example
+
+<TemplateComparison />
+
+## Features
+
+- **Responsive Design**: Full table on desktop, card layout on mobile
+- **Interactive**: Hover effects and clickable rows that link to template guides
+- **Color-coded Badges**: Difficulty levels use semantic colors (success/warning/info)
+- **Icons**: Each template has a unique icon from lucide-react
+- **Feature Tags**: Key features displayed as badges for easy scanning
+- **Dark Mode**: Fully supports dark mode via Tailwind CSS
+
+## Component Props
+
+The component takes no props - it's completely self-contained.
+
+## Data Structure
+
+The component uses the following data structure:
+
+```typescript
+interface TemplateInfo {
+  name: string
+  slug: string
+  icon: React.ComponentType<{ className?: string }>
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced'
+  setupTime: string
+  bestFor: string[]
+  keyFeatures: string[]
+  apiCost: string
+  creditCost: number
+}
+```
