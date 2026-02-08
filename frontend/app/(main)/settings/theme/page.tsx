@@ -1,7 +1,11 @@
-"use client"
+import type { Metadata } from "next"
 
 import { FadeInUp } from "@/components/motion/fade-in-up"
 import { ThemeSelector } from "@/components/settings/theme-selector"
+
+export const metadata: Metadata = {
+  title: "Оформление",
+}
 
 export default function ThemeSettingsPage() {
   return (
