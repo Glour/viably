@@ -92,7 +92,7 @@ export function CodeViewer({ files }: CodeViewerProps) {
 
   if (files.length === 0) {
     return (
-      <div className="flex h-[600px] items-center justify-center rounded-xl border bg-card">
+      <div className="flex h-[50vh] sm:h-[400px] lg:h-[600px] items-center justify-center rounded-xl border bg-card">
         <div className="text-center text-muted-foreground">
           <Code2 className="mx-auto mb-3 size-10 opacity-40" />
           <p className="text-sm">Нет файлов для этого проекта</p>
@@ -102,7 +102,7 @@ export function CodeViewer({ files }: CodeViewerProps) {
   }
 
   return (
-    <div className="flex h-[600px] overflow-hidden rounded-xl border bg-card">
+    <div className="flex h-[50vh] sm:h-[400px] lg:h-[600px] overflow-hidden rounded-xl border bg-card">
       {/* File tree sidebar — collapsible, hidden by default on mobile */}
       {showTree && (
         <div className="w-56 shrink-0 overflow-y-auto border-r bg-muted/30 py-2">

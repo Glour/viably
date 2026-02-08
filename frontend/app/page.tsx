@@ -8,8 +8,19 @@ import { Footer } from "@/components/landing/footer"
 
 export const metadata: Metadata = {
   title: "Viably — AI-Powered Bot Builder",
-  description:
-    "Viably превращает твои идеи в работающие Telegram-боты. Без кода. Без знаний. За 60 секунд.",
+  description: "Viably превращает твои идеи в работающие Telegram-боты. Без кода. Без знаний. За 60 секунд.",
+  openGraph: {
+    title: "Viably — AI-Powered Telegram Bot Builder",
+    description: "Создавай Telegram-ботов за 60 секунд. Без кода. Без знаний. Просто опиши идею.",
+    url: "https://viably.dev",
+    siteName: "Viably",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Viably — AI-Powered Telegram Bot Builder",
+    description: "Создавай Telegram-ботов за 60 секунд.",
+  },
 }
 
 export default function LandingPage() {

@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { motion, useMotionValue, useSpring } from "motion/react"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/hooks/use-reduced-motion"
+import { useMediaQuery } from "@/hooks/use-media-query"
 
 const orbs = [
   { color: "#7C3AED", size: 400, x: "20%", y: "30%" },
@@ -13,6 +14,7 @@ const orbs = [
 
 export function GlowOrbs({ className, count = 3 }: { className?: string; count?: number }) {
   const reduced = useReducedMotion()
+  const isDesktop = useMediaQuery("(min-width: 768px)")
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
   const springX = useSpring(mouseX, { stiffness: 50, damping: 30 })
@@ -27,6 +29,8 @@ export function GlowOrbs({ className, count = 3 }: { className?: string; count?:
     window.addEventListener("mousemove", handleMouseMove)
     return () => window.removeEventListener("mousemove", handleMouseMove)
   }, [reduced, mouseX, mouseY])
+
+  if (!isDesktop) return null
 
   const visibleOrbs = orbs.slice(0, count)
 

@@ -8,8 +8,12 @@ import { spaceGrotesk, inter, jetbrainsMono } from "./fonts"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Viably",
-  description: "Платформа для создания Telegram-ботов с помощью ИИ",
+  title: {
+    template: "%s | Viably",
+    default: "Viably — AI-Powered Telegram Bot Builder",
+  },
+  description: "Создавай Telegram-ботов за 60 секунд. Без кода. Без знаний. Просто опиши идею.",
+  keywords: ["telegram bot", "no-code", "AI", "bot builder", "viably"],
 }
 
 export default function RootLayout({

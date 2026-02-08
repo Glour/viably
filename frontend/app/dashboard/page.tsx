@@ -1,4 +1,4 @@
-"use client"
+import type { Metadata } from "next"
 
 import { MainLayout } from "@/components/layout/main-layout"
 import { FadeInUp } from "@/components/motion/fade-in-up"
@@ -6,6 +6,10 @@ import { WelcomeCard } from "@/components/dashboard/welcome-card"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { RecentProjects } from "@/components/dashboard/recent-projects"
 import { DailyBonus } from "@/components/dashboard/daily-bonus"
+
+export const metadata: Metadata = {
+  title: "Дашборд",
+}
 
 export default function DashboardPage() {
   return (

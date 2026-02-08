@@ -108,7 +108,7 @@ export function LogsViewer({ logs }: LogsViewerProps) {
       {hasLogs ? (
         <div
           ref={logContainerRef}
-          className="h-[500px] overflow-y-auto rounded-lg bg-[#0D1117] p-4 font-mono text-sm"
+          className="h-[50vh] sm:h-[350px] lg:h-[500px] overflow-y-auto rounded-lg bg-[#0D1117] p-4 font-mono text-sm"
         >
           {filteredLogs.map((log) => (
             <div key={log.id} className="flex gap-2 py-0.5">
@@ -123,7 +123,7 @@ export function LogsViewer({ logs }: LogsViewerProps) {
           ))}
         </div>
       ) : (
-        <div className="flex h-[500px] items-center justify-center rounded-lg bg-[#0D1117]">
+        <div className="flex h-[50vh] sm:h-[350px] lg:h-[500px] items-center justify-center rounded-lg bg-[#0D1117]">
           <p className="text-sm text-zinc-500">Нет логов</p>
         </div>
       )}

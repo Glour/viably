@@ -68,7 +68,7 @@ export function ProjectListRow({ project, onDelete }: ProjectListRowProps) {
         </span>
 
         {/* Status Badge */}
-        <div className="w-28 shrink-0">
+        <div className="w-20 sm:w-28 shrink-0">
           <StatusBadge status={project.status} />
         </div>
 

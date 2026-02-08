@@ -104,12 +104,12 @@ export function ProfileInfoForm() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Avatar */}
-            <div className="flex items-center gap-6">
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
               <div
                 role="button"
                 tabIndex={0}
                 aria-label="Загрузить аватар"
-                className={`relative size-[120px] rounded-full overflow-hidden cursor-pointer border-2 transition-colors ${
+                className={`relative size-20 sm:size-[120px] rounded-full overflow-hidden cursor-pointer border-2 transition-colors ${
                   isDragging ? "border-primary border-dashed" : "border-border"
                 }`}
                 onClick={() => fileInputRef.current?.click()}
