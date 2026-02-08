@@ -620,8 +620,112 @@ pnpm playwright test e2e/memory/ --ui
 
 ---
 
-## Next Steps
+## Implementation Deviations & Notes
 
-✅ Quickstart guide created
-→ Generate tasks.md with `/speckit.tasks`
-→ Execute implementation with `/speckit.implement`
+This section documents actual implementation differences from the original quickstart guide.
+
+### ✅ What Was Implemented (Matches Spec)
+
+1. **Phase 1 - Setup & Baseline**
+   - ✅ React Compiler enabled in `next.config.ts` (line 13)
+   - ✅ Webpack memory optimizations enabled (line 14)
+   - ✅ @tanstack/react-virtual installed (3.13.18)
+   - ✅ Baseline metrics documented in `docs/memory-baseline-2026-02-08.md`
+
+2. **Phase 2 - Component Cleanup Patterns**
+   - ✅ `useComponentCleanup` hook created at `frontend/hooks/useComponentCleanup.ts`
+   - ✅ Enhanced with WebSocket-specific leak detection (lines 77-123)
+   - ✅ Enhanced with detailed event listener warnings (lines 293-335)
+   - ✅ Integrated with `useMonacoEditor` hook
+
+3. **Phase 3 - Monaco Editor Cleanup**
+   - ✅ `useMonacoEditor` hook created at `frontend/hooks/useMonacoEditor.ts`
+   - ✅ Proper disposal of editor instances and models (lines 168-201)
+   - ✅ Integrated with `useComponentCleanup` for resource tracking
+
+4. **Phase 4 - React Query & Zustand Configuration**
+   - ✅ React Query configured with proper staleTime (5min) and gcTime (10min) in `frontend/lib/api/query-client.ts`
+   - ✅ Detailed documentation of cache policy (lines 4-28)
+   - ✅ All Zustand stores have `reset()` methods:
+     - `frontend/stores/auth.ts` (line 120) - also calls reset on all other stores during logout
+     - `frontend/stores/projects.ts` (line 34)
+     - `frontend/stores/templates.ts` (line 23)
+     - `frontend/stores/generation.ts` (line 144)
+     - `frontend/stores/settings.ts` (has reset method)
+   - ✅ Comprehensive logout cleanup sequence in `auth.ts` (lines 52-88):
+     - Clears React Query caches
+     - Resets all Zustand stores
+     - Clears localStorage tokens
+     - Resets auth store
+     - Redirects to login
+
+5. **Phase 5 - Virtualization**
+   - ✅ Templates Gallery virtualized in `frontend/components/templates/template-gallery.tsx`
+   - ✅ Row-based virtualization for grid layout (not item-based)
+   - ✅ Dynamic measurement with Firefox compatibility check (lines 39-42)
+   - ✅ CSS containment for performance (line 53)
+
+### 🔄 Implementation Differences
+
+1. **Storage Location**
+   - **Spec**: `frontend/lib/stores/`
+   - **Actual**: `frontend/stores/`
+   - **Reason**: Project convention, no functional impact
+
+2. **React Query Client Pattern**
+   - **Spec**: Simple singleton pattern
+   - **Actual**: Server/Client split pattern with `getQueryClient()` factory
+   - **Reason**: Next.js 16 best practices for SSR compatibility
+   - **File**: `frontend/lib/api/query-client.ts` vs `frontend/lib/api/client.ts`
+
+3. **Virtualization Approach**
+   - **Spec**: Item-based virtualization (virtualizes individual cards)
+   - **Actual**: Row-based virtualization (virtualizes grid rows)
+   - **Reason**: Better performance for responsive grid layouts (1/2/3 columns)
+   - **Trade-off**: Same memory benefits, simpler measurement logic
+
+4. **Monaco Editor Loading**
+   - **Spec**: Manual monaco import
+   - **Actual**: Uses `@monaco-editor/react` loader API
+   - **Reason**: Better TypeScript integration and automatic Monaco initialization
+   - **File**: `frontend/hooks/useMonacoEditor.ts` (line 100)
+
+### ⚠️ Not Yet Implemented (Phase 6-7)
+
+1. **Phase 6 - Memory Monitoring**
+   - ❌ `useMemoryMonitor` hook NOT created
+   - ❌ `MemoryMonitor` dev component NOT created
+   - **Status**: Low priority (P4), deferred to future optimization phase
+
+2. **Phase 7 - Testing**
+   - ❌ MemLab integration NOT added
+   - ❌ Memory leak E2E tests NOT created
+   - **Status**: Low priority (P4), deferred to comprehensive testing phase
+
+### 📦 Package Differences
+
+**Spec**: Install memlab as dev dependency
+**Actual**: Not installed yet (deferred with Phase 7)
+
+### 🎯 Additional Improvements (Beyond Spec)
+
+1. **Enhanced Cleanup Warnings**
+   - WebSocket-specific leak detection with `readyState` validation
+   - Detailed fix recommendations in console output for event listeners
+   - Structured console groups for better debugging
+
+2. **Dynamic Store Imports**
+   - Auth store uses dynamic imports to avoid circular dependencies during logout
+   - Prevents bundler issues and improves code splitting
+
+3. **Comprehensive Cleanup Documentation**
+   - Extensive JSDoc comments in both hooks
+   - Real-world usage examples
+   - Performance optimization notes
+
+### 🚀 Next Steps
+
+✅ Phase 1-5 Complete (Critical and High Priority)
+→ Phase 6-7 deferred to future sprints (Low Priority)
+→ Monitor production memory metrics
+→ Add MemLab tests if memory issues detected
