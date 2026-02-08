@@ -77,11 +77,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Enhance health check in `backend/app/main.py`: add database connectivity check (async session test query), add Redis connectivity check, return `{"status": "healthy", "database": "ok", "redis": "ok"}` or 503 with failure details
-- [ ] T012 [US1] Add production CORS configuration: update `backend/app/core/config.py` to validate CORS_ORIGINS in production mode (must not contain localhost), ensure `backend/app/main.py` CORS middleware reads from settings
-- [ ] T013 [US1] Create `specs/019-infrastructure-devops/docs/railway-setup.md`: step-by-step Railway setup guide (create project, add PostgreSQL service, add Redis service, add backend from GitHub with Dockerfile path, add worker service, configure custom domain api.viably.dev, set env vars, enable auto-deploy from main)
-- [ ] T014 [US1] Create `specs/019-infrastructure-devops/docs/vercel-setup.md`: step-by-step Vercel setup guide (import repo, set root directory frontend/, configure domains viably.dev + www redirect, set env vars, verify preview deploys for PRs)
-- [ ] T015 [US1] Create `specs/019-infrastructure-devops/docs/dns-setup.md`: DNS configuration guide (viably.dev CNAME to cname.vercel-dns.com, www.viably.dev CNAME to cname.vercel-dns.com, api.viably.dev CNAME to Railway domain)
+- [x] T011 [US1] Enhance health check in `backend/app/main.py`: add database connectivity check (async session test query), add Redis connectivity check, return `{"status": "healthy", "database": "ok", "redis": "ok"}` or 503 with failure details
+- [x] T012 [US1] Add production CORS configuration: update `backend/app/core/config.py` to validate CORS_ORIGINS in production mode (must not contain localhost), ensure `backend/app/main.py` CORS middleware reads from settings
+- [x] T013 [US1] Create `specs/019-infrastructure-devops/docs/railway-setup.md`: step-by-step Railway setup guide (create project, add PostgreSQL service, add Redis service, add backend from GitHub with Dockerfile path, add worker service, configure custom domain api.viably.dev, set env vars, enable auto-deploy from main)
+- [x] T014 [US1] Create `specs/019-infrastructure-devops/docs/vercel-setup.md`: step-by-step Vercel setup guide (import repo, set root directory frontend/, configure domains viably.dev + www redirect, set env vars, verify preview deploys for PRs)
+- [x] T015 [US1] Create `specs/019-infrastructure-devops/docs/dns-setup.md`: DNS configuration guide (viably.dev CNAME to cname.vercel-dns.com, www.viably.dev CNAME to cname.vercel-dns.com, api.viably.dev CNAME to Railway domain)
 
 **Checkpoint**: Backend and frontend can be deployed to production. Health check validates database and Redis connectivity. Domain routing documented.
 

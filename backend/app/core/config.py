@@ -52,16 +52,22 @@ class Settings(BaseSettings):
     LOG_FORMAT: str = "json"  # "json" for production, "console" for development
 
     @model_validator(mode="after")
-    def warn_localhost_cors_in_production(self):
-        """Warn when CORS_ORIGINS contains only localhost values in production mode."""
-        if not self.DEBUG:
-            origins = [o.strip() for o in self.CORS_ORIGINS.split(",")]
-            if all("localhost" in o or "127.0.0.1" in o for o in origins):
-                logger.warning(
-                    "CORS_ORIGINS contains only localhost values in production mode. "
-                    "This will block legitimate frontend requests. "
-                    "Set CORS_ORIGINS environment variable to include production domains."
-                )
+    def validate_cors_origins(self):
+        """Validate CORS_ORIGINS configuration based on environment."""
+        origins = [o.strip() for o in self.CORS_ORIGINS.split(",")]
+        all_localhost = all("localhost" in o or "127.0.0.1" in o for o in origins)
+
+        if self.ENVIRONMENT == "production" and all_localhost:
+            raise ValueError(
+                "CORS_ORIGINS contains only localhost values in production. "
+                "Set CORS_ORIGINS to include production domains (e.g., https://viably.dev)."
+            )
+
+        if not self.DEBUG and all_localhost:
+            logger.warning(
+                "CORS_ORIGINS contains only localhost values in non-debug mode. "
+                "Set CORS_ORIGINS environment variable to include production domains."
+            )
         return self
 
     class Config:

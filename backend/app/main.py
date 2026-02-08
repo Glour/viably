@@ -6,12 +6,15 @@ from contextlib import asynccontextmanager
 import redis.asyncio as redis
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi_limiter import FastAPILimiter
+from sqlalchemy import text
 
 from app.ai.routes import router as ai_router
 from app.auth.routes import router as auth_router
 from app.core.config import settings
-from app.core.redis import close_redis
+from app.core.database import async_session_maker
+from app.core.redis import close_redis, get_redis
 from app.credits.cron import start_scheduler, stop_scheduler
 from app.credits.routes import router as credits_router
 from app.deploy.routes import router as deploy_router
@@ -97,6 +100,31 @@ app.include_router(users_router, prefix="/api/users", tags=["users"])
 
 
 @app.get("/health")
-async def health_check() -> dict[str, str]:
-    """Health check endpoint."""
-    return {"status": "healthy"}
+async def health_check() -> JSONResponse:
+    """Health check endpoint with database and Redis connectivity checks."""
+    checks: dict[str, str] = {}
+    healthy = True
+
+    # Database check
+    try:
+        async with async_session_maker() as session:
+            await session.execute(text("SELECT 1"))
+        checks["database"] = "ok"
+    except Exception:
+        checks["database"] = "error"
+        healthy = False
+
+    # Redis check
+    try:
+        redis_client = await get_redis()
+        await redis_client.ping()
+        checks["redis"] = "ok"
+    except Exception:
+        checks["redis"] = "error"
+        healthy = False
+
+    status_code = 200 if healthy else 503
+    return JSONResponse(
+        content={"status": "healthy" if healthy else "unhealthy", **checks},
+        status_code=status_code,
+    )
