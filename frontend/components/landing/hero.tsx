@@ -108,7 +108,7 @@ export function Hero() {
         {/* Right column: demo card */}
         <motion.div
           variants={reduced ? undefined : fadeInUp}
-          className="w-full max-w-md lg:w-[40%] lg:max-w-none"
+          className="w-full max-w-full sm:max-w-md lg:w-[40%] lg:max-w-none"
         >
           <DemoCard reduced={reduced} />
         </motion.div>

@@ -57,7 +57,7 @@ export function WelcomeCard() {
       />
 
       {/* Greeting */}
-      <h2 className="font-heading text-2xl font-bold truncate max-w-[300px]">
+      <h2 className="font-heading text-2xl font-bold truncate max-w-full sm:max-w-[300px]">
         Привет, {displayName}!
       </h2>
 
