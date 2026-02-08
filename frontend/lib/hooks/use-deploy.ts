@@ -8,6 +8,7 @@ import { startDeploy as apiStartDeploy } from "@/lib/api/generation"
 import { queryKeys } from "@/lib/api/query-keys"
 import { toast } from "sonner"
 import { useOfflineDetection } from "./use-offline-detection"
+import { useComponentCleanup } from "@/hooks/useComponentCleanup"
 import {
   DEPLOY_STEPS,
   MAX_RECONNECT_ATTEMPTS,
@@ -47,6 +48,9 @@ export function useDeploy(projectId: string) {
   // T067: Offline detection
   const isOffline = useOfflineDetection()
 
+  // T017: Memory cleanup tracking with useComponentCleanup
+  const { registerResource, disposeResource } = useComponentCleanup('useDeploy')
+
   // T069: Memoize initial steps computation to avoid recreating on every render
   const initialSteps = useMemo(
     () => DEPLOY_STEPS.map((s) => ({ ...s, status: "pending" as StepStatus })),
@@ -76,11 +80,27 @@ export function useDeploy(projectId: string) {
   const [isReconnecting, setIsReconnecting] = useState(false)
 
   // Set didUnmount flag on component unmount
+  // T017: Register WebSocket lifecycle with useComponentCleanup for tracking
   useEffect(() => {
+    // Register WebSocket connection as external resource
+    const resourceId = registerResource({
+      type: 'websocket',
+      createdAt: Date.now(),
+      disposeFn: () => {
+        // Set didUnmount flag to prevent reconnection
+        didUnmount.current = true
+      },
+      metadata: {
+        projectId,
+      },
+    })
+
     return () => {
+      // Manual cleanup before automatic disposal
       didUnmount.current = true
+      disposeResource(resourceId)
     }
-  }, [])
+  }, [registerResource, disposeResource, projectId])
 
   // T039: Construct WebSocket URL with user ID and auth token
   const wsUrl =
