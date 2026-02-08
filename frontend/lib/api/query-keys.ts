@@ -22,4 +22,7 @@ export const queryKeys = {
     }) => ["credits", "transactions", filters ?? {}] as const,
     dailyBonus: ["credits", "daily-bonus"] as const,
   },
+  generation: {
+    code: (projectId: string) => ["generation", "code", projectId] as const,
+  },
 } as const

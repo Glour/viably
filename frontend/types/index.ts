@@ -265,6 +265,7 @@ export interface GenerationSession {
   error: string | null
   startedAt: string | null
   completedAt: string | null
+  codeSnippets?: string[]
 }
 
 export type DeploymentStatus = "config" | "deploying" | "success" | "failure"

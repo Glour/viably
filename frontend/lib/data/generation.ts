@@ -1,4 +1,5 @@
 import type { ProjectFile } from "@/types"
+import type { GenerationStep, DeployStep } from "@/types/websocket"
 
 // --- Mock generated files for a Python Telegram bot (aiogram 3.x) ---
 
@@ -298,3 +299,39 @@ if not BOT_TOKEN:
     raise ValueError("BOT_TOKEN is required")`,
   },
 ]
+
+// --- WebSocket Generation Flow Constants ---
+
+/**
+ * Generation steps for AI code generation flow
+ * Based on data-model.md Section 5 (T008)
+ */
+export const GENERATION_STEPS: Omit<GenerationStep, 'status'>[] = [
+  { name: 'Analyzing template' },
+  { name: 'Generating architecture' },
+  { name: 'Writing code' },
+  { name: 'Code review' },
+  { name: 'Testing' },
+  { name: 'Finalizing' },
+]
+
+/**
+ * Deployment steps for bot deployment flow
+ * Based on data-model.md Section 5 (T009)
+ */
+export const DEPLOY_STEPS: Omit<DeployStep, 'status'>[] = [
+  { name: 'Creating GitHub repo' },
+  { name: 'Pushing code' },
+  { name: 'Connecting to Railway' },
+  { name: 'Building container' },
+  { name: 'Starting bot' },
+  { name: 'Health check' },
+]
+
+/**
+ * WebSocket reconnection configuration
+ * Based on data-model.md Section 5 (T010)
+ */
+export const MAX_RECONNECT_ATTEMPTS = 5
+export const INITIAL_RECONNECT_INTERVAL = 3000 // 3s
+export const MAX_RECONNECT_INTERVAL = 48000 // 48s

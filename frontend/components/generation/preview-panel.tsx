@@ -1,6 +1,8 @@
 "use client"
 
 import { AnimatePresence, motion } from "motion/react"
+import { Loader2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { IdleState } from "./idle-state"
 import { GenerationProgress } from "./generation-progress"
@@ -16,6 +18,12 @@ interface PreviewPanelProps {
   onDownload?: () => void
   onRetry?: () => void
   onModify?: () => void
+  onCancel?: () => void
+  // T036-T037: Reconnection UI props
+  reconnectAttempts?: number
+  isReconnecting?: boolean
+  maxReconnectAttempts?: number
+  onManualReconnect?: () => void
 }
 
 export function PreviewPanel({
@@ -26,7 +34,21 @@ export function PreviewPanel({
   onDownload,
   onRetry,
   onModify,
+  onCancel,
+  reconnectAttempts,
+  isReconnecting,
+  maxReconnectAttempts,
+  onManualReconnect,
 }: PreviewPanelProps) {
+  // T036: Show reconnection banner when reconnecting
+  const showReconnectBanner = isReconnecting && (reconnectAttempts ?? 0) > 0
+
+  // T037: Show manual reconnect button when max attempts reached
+  const showManualReconnect =
+    !isReconnecting &&
+    (reconnectAttempts ?? 0) >= (maxReconnectAttempts ?? 5) &&
+    generation.error?.includes("Connection lost")
+
   const renderPreviewContent = () => {
     switch (generation.status) {
       case "idle":
@@ -56,6 +78,8 @@ export function PreviewPanel({
               steps={generation.steps}
               progress={generation.progress}
               currentStep={generation.currentStep}
+              codeSnippets={generation.codeSnippets}
+              onCancel={onCancel}
             />
           </motion.div>
         )
@@ -148,16 +172,48 @@ export function PreviewPanel({
   )
 
   return (
-    <Tabs
-      value={activeTab}
-      onValueChange={onTabChange}
-      className="h-full flex flex-col"
-    >
-      <TabsList variant="line" className="px-6 border-b">
-        <TabsTrigger value="preview">Preview</TabsTrigger>
-        <TabsTrigger value="code">Code</TabsTrigger>
-        <TabsTrigger value="logs">Logs</TabsTrigger>
-      </TabsList>
+    <div className="flex flex-col h-full">
+      {/* T036: Reconnection status banner */}
+      {showReconnectBanner && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800 px-4 py-2">
+          <div className="flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-200">
+            <Loader2 className="size-4 animate-spin" />
+            <span>
+              Reconnecting... (attempt {reconnectAttempts}/{maxReconnectAttempts ?? 5})
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* T037: Manual reconnect banner */}
+      {showManualReconnect && (
+        <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 px-4 py-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-red-800 dark:text-red-200">
+              Connection lost after {maxReconnectAttempts ?? 5} attempts
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onManualReconnect}
+              className="ml-4"
+            >
+              Reconnect
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <Tabs
+        value={activeTab}
+        onValueChange={onTabChange}
+        className="h-full flex flex-col"
+      >
+        <TabsList variant="line" className="px-6 border-b">
+          <TabsTrigger value="preview">Preview</TabsTrigger>
+          <TabsTrigger value="code">Code</TabsTrigger>
+          <TabsTrigger value="logs">Logs</TabsTrigger>
+        </TabsList>
 
       <TabsContent value="preview" className="flex-1 overflow-hidden m-0">
         <AnimatePresence mode="wait">{renderPreviewContent()}</AnimatePresence>
@@ -170,6 +226,7 @@ export function PreviewPanel({
       <TabsContent value="logs" className="flex-1 overflow-hidden m-0">
         <AnimatePresence mode="wait">{renderLogsContent()}</AnimatePresence>
       </TabsContent>
-    </Tabs>
+      </Tabs>
+    </div>
   )
 }

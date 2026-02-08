@@ -2,14 +2,18 @@
 
 import { motion } from "motion/react"
 import { Check, Circle, Loader2, X } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { CodeSnippetAnimation } from "./code-snippet-animation"
-import { MOCK_CODE_SNIPPETS } from "@/lib/data/generation"
+import { useDebouncedValue } from "@/lib/hooks/use-debounced-value"
+import { useRafProgress } from "@/lib/hooks/use-raf-progress"
 import type { GenerationStep } from "@/types"
 
 interface GenerationProgressProps {
   steps: GenerationStep[]
   progress: number
   currentStep: number
+  codeSnippets?: string[]
+  onCancel?: () => void
 }
 
 function StepIcon({ status }: { status: GenerationStep["status"] }) {
@@ -56,10 +60,31 @@ export function GenerationProgress({
   steps,
   progress,
   currentStep,
+  codeSnippets = [],
+  onCancel,
 }: GenerationProgressProps) {
+  // T068: Debounce progress updates (100ms) to smooth visual updates
+  const debouncedProgress = useDebouncedValue(progress, 100)
+
+  // T070: Smooth RAF-based progress animation for 60fps counter updates
+  const smoothProgress = useRafProgress(debouncedProgress, 300)
+
   return (
     <div className="flex flex-col h-full p-6">
-      <h3 className="text-lg font-semibold mb-4">Генерация кода...</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold">Генерация кода...</h3>
+        {onCancel && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onCancel}
+            className="text-muted-foreground hover:text-destructive"
+          >
+            <X className="size-4 mr-1" />
+            Отменить
+          </Button>
+        )}
+      </div>
 
       {/* Steps list */}
       <div className="space-y-1">
@@ -90,19 +115,19 @@ export function GenerationProgress({
         <div className="h-2 bg-muted rounded-full overflow-hidden">
           <motion.div
             className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full"
-            animate={{ width: `${progress}%` }}
+            animate={{ width: `${smoothProgress}%` }}
             transition={{ duration: 0.3, ease: "easeOut" }}
           />
         </div>
         <p className="text-xs text-muted-foreground mt-1 text-right">
-          {Math.round(progress)}%
+          {Math.round(smoothProgress)}%
         </p>
       </div>
 
       {/* Code snippets */}
-      {currentStep >= 2 && (
+      {currentStep >= 2 && codeSnippets.length > 0 && (
         <div className="mt-6 flex-1 overflow-auto">
-          <CodeSnippetAnimation snippets={MOCK_CODE_SNIPPETS.slice(0, 3)} />
+          <CodeSnippetAnimation snippets={codeSnippets} />
         </div>
       )}
     </div>

@@ -7,7 +7,8 @@ import { ChatPanel } from "@/components/generation/chat-panel"
 import { PreviewPanel } from "@/components/generation/preview-panel"
 import { DeployModal } from "@/components/generation/deploy-modal"
 import { MobileTabs } from "@/components/generation/mobile-tabs"
-import { useGeneration } from "@/lib/generation/use-generation"
+import { GenerationErrorBoundary } from "@/components/generation/error-boundary"
+import { useGenerationWrapper as useGeneration } from "@/lib/generation/use-generation-wrapper"
 import { useProject } from "@/lib/hooks/use-projects"
 
 interface GeneratePageProps {
@@ -33,10 +34,15 @@ export default function GeneratePage({ params }: GeneratePageProps) {
     startGeneration,
     retryGeneration,
     resetGeneration,
+    cancelGeneration,
     startDeployment,
     downloadCode,
     canGenerate,
     isGenerating,
+    // T036-T037: Reconnection state for UI
+    reconnectAttempts,
+    isReconnecting,
+    maxReconnectAttempts,
   } = useGeneration(id)
 
   // Mobile tab state
@@ -119,7 +125,8 @@ export default function GeneratePage({ params }: GeneratePageProps) {
       />
 
       {/* Desktop: Split layout */}
-      <div className="hidden md:flex flex-1 overflow-hidden">
+      <GenerationErrorBoundary>
+        <div className="hidden md:flex flex-1 overflow-hidden">
         <Group
           orientation="horizontal"
           id="gen-layout"
@@ -155,13 +162,20 @@ export default function GeneratePage({ params }: GeneratePageProps) {
               onDownload={downloadCode}
               onRetry={retryGeneration}
               onModify={resetGeneration}
+              onCancel={cancelGeneration}
+              reconnectAttempts={reconnectAttempts}
+              isReconnecting={isReconnecting}
+              maxReconnectAttempts={maxReconnectAttempts}
+              onManualReconnect={() => window.location.reload()}
             />
           </Panel>
         </Group>
-      </div>
+        </div>
+      </GenerationErrorBoundary>
 
       {/* Mobile: Tabbed interface */}
-      <div className="flex md:hidden flex-1 overflow-hidden flex-col">
+      <GenerationErrorBoundary>
+        <div className="flex md:hidden flex-1 overflow-hidden flex-col">
         <div className="flex-1 overflow-hidden">
           {mobileTab === "chat" ? (
             <ChatPanel
@@ -186,20 +200,25 @@ export default function GeneratePage({ params }: GeneratePageProps) {
               onDownload={downloadCode}
               onRetry={retryGeneration}
               onModify={resetGeneration}
+              onCancel={cancelGeneration}
+              reconnectAttempts={reconnectAttempts}
+              isReconnecting={isReconnecting}
+              maxReconnectAttempts={maxReconnectAttempts}
+              onManualReconnect={() => window.location.reload()}
             />
           )}
         </div>
 
         {/* Bottom tabs */}
         <MobileTabs activeTab={mobileTab} onTabChange={setMobileTab} />
-      </div>
+        </div>
+      </GenerationErrorBoundary>
 
       {/* Deploy Modal */}
       <DeployModal
         open={deployOpen}
         onOpenChange={setDeployOpen}
-        deployment={deployment}
-        onDeploy={startDeployment}
+        projectId={id}
         onDownload={downloadCode}
       />
     </div>

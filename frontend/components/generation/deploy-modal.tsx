@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { AnimatePresence, motion } from "motion/react"
+import confetti from "canvas-confetti"
 import {
   Eye,
   EyeOff,
@@ -23,25 +24,48 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { DeployProgress } from "./deploy-progress"
 import { DeploySuccess } from "./deploy-success"
-import type { DeploymentSession, DeployConfig } from "@/types"
+import { useDeploy } from "@/lib/hooks/use-deploy"
+import { prefersReducedMotion } from "@/lib/animations"
 
 interface DeployModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  deployment: DeploymentSession
-  onDeploy: (config: DeployConfig) => void
+  projectId: string
   onDownload: () => void
 }
 
 export function DeployModal({
   open,
   onOpenChange,
-  deployment,
-  onDeploy,
+  projectId,
   onDownload,
 }: DeployModalProps) {
+  // Use real deploy hook
+  const deployment = useDeploy(projectId)
+
   const [botToken, setBotToken] = useState("")
+  const [envVars, setEnvVars] = useState<Record<string, string>>({})
   const [showToken, setShowToken] = useState(false)
+
+  // T047: Trigger confetti on success
+  useEffect(() => {
+    if (deployment.status === "success" && !prefersReducedMotion()) {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        disableForReducedMotion: true,
+      })
+    }
+  }, [deployment.status])
+
+  // Handle deployment start
+  const handleDeploy = async () => {
+    await deployment.startDeploy({
+      TELEGRAM_BOT_TOKEN: botToken,
+      ...envVars,
+    })
+  }
 
   return (
     <Dialog
@@ -53,12 +77,12 @@ export function DeployModal({
       <DialogContent className="sm:max-w-[520px] max-md:h-full max-md:max-h-full max-md:rounded-none max-md:border-0 max-md:translate-y-0 max-md:data-[state=open]:slide-in-from-bottom max-md:data-[state=closed]:slide-out-to-bottom">
         <DialogHeader>
           <DialogTitle>
-            {deployment.status === "config" && "Развернуть бота"}
+            {deployment.status === "idle" && "Развернуть бота"}
             {deployment.status === "deploying" && "Развёртывание..."}
             {deployment.status === "success" && "Готово!"}
-            {deployment.status === "failure" && "Ошибка"}
+            {deployment.status === "error" && "Ошибка"}
           </DialogTitle>
-          {deployment.status === "config" && (
+          {deployment.status === "idle" && (
             <DialogDescription>
               Введите токен бота для автоматического развёртывания
             </DialogDescription>
@@ -74,7 +98,7 @@ export function DeployModal({
             transition={{ duration: 0.2 }}
           >
             {/* Phase 1: Config */}
-            {deployment.status === "config" && (
+            {deployment.status === "idle" && (
               <>
                 <div className="space-y-4">
                   {/* Bot token input with show/hide toggle */}
@@ -107,6 +131,20 @@ export function DeployModal({
                     </p>
                   </div>
 
+                  {/* Additional env vars (optional) */}
+                  <div className="space-y-2">
+                    <Label htmlFor="database-url">Database URL (опционально)</Label>
+                    <Input
+                      id="database-url"
+                      type="text"
+                      placeholder="postgresql://..."
+                      value={envVars.DATABASE_URL || ""}
+                      onChange={(e) =>
+                        setEnvVars((prev) => ({ ...prev, DATABASE_URL: e.target.value }))
+                      }
+                    />
+                  </div>
+
                   {/* Warning text */}
                   <div className="flex gap-2 rounded-lg bg-amber-500/10 p-3">
                     <AlertTriangle className="size-4 text-amber-500 shrink-0 mt-0.5" />
@@ -127,7 +165,7 @@ export function DeployModal({
                     Скачать ZIP
                   </Button>
                   <Button
-                    onClick={() => onDeploy({ botToken, envVars: {} })}
+                    onClick={handleDeploy}
                     disabled={!botToken.trim()}
                     className="gap-2 bg-[image:var(--gradient-main)] hover:brightness-110"
                   >
@@ -147,30 +185,46 @@ export function DeployModal({
             )}
 
             {/* Phase 3a: Success */}
-            {deployment.status === "success" && deployment.botInfo && (
-              <DeploySuccess
-                botInfo={deployment.botInfo}
-                onOpenTelegram={() =>
-                  window.open(deployment.botInfo!.url, "_blank")
-                }
-                onBackToProjects={() => onOpenChange(false)}
-              />
+            {deployment.status === "success" && deployment.deploymentInfo && (
+              <>
+                <DeploySuccess
+                  botInfo={{
+                    username: deployment.deploymentInfo.botUsername,
+                    url: deployment.deploymentInfo.botUrl,
+                    status: "running",
+                  }}
+                  onOpenTelegram={() =>
+                    window.open(deployment.deploymentInfo!.botUrl, "_blank")
+                  }
+                  onBackToProjects={() => onOpenChange(false)}
+                />
+                <DialogFooter className="gap-2 sm:gap-0 mt-4">
+                  <Button
+                    variant="ghost"
+                    onClick={onDownload}
+                    className="gap-2"
+                  >
+                    <Download className="size-4" />
+                    Скачать ZIP
+                  </Button>
+                </DialogFooter>
+              </>
             )}
 
-            {/* Phase 3b: Failure */}
-            {deployment.status === "failure" && (
+            {/* Phase 3b: Error */}
+            {deployment.status === "error" && (
               <>
-                <div className="space-y-4 text-center">
-                  <div className="size-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
-                    <AlertTriangle className="size-6 text-destructive" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold">
-                      Ошибка развёртывания
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {deployment.error || "Неизвестная ошибка"}
-                    </p>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+                    <AlertTriangle className="size-5 text-destructive shrink-0" />
+                    <div className="flex-1">
+                      <h3 className="text-sm font-semibold text-destructive">
+                        Ошибка развёртывания
+                      </h3>
+                      <p className="text-sm text-destructive/80 mt-1">
+                        {deployment.error || "Неизвестная ошибка"}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -184,12 +238,11 @@ export function DeployModal({
                     Скачать ZIP
                   </Button>
                   <Button
-                    onClick={() => onDeploy({ botToken, envVars: {} })}
-                    disabled={!botToken.trim()}
+                    onClick={deployment.retryDeploy}
                     className="gap-2"
                   >
                     <RefreshCw className="size-4" />
-                    Повторить
+                    Попробовать снова
                   </Button>
                 </DialogFooter>
               </>

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { ThemeProvider } from "next-themes"
 import { Toaster } from "@/components/ui/sonner"
 import { AuthInitializer } from "@/components/auth/auth-initializer"
+import { OfflineBannerWrapper } from "@/components/ui/offline-banner-wrapper"
 import { Providers } from "./providers"
 import { spaceGrotesk, inter, jetbrainsMono } from "./fonts"
 import "./globals.css"
@@ -31,6 +32,7 @@ export default function RootLayout({
             storageKey="viably-theme"
             disableTransitionOnChange={false}
           >
+            <OfflineBannerWrapper />
             <AuthInitializer />
             {children}
             <Toaster richColors position="top-right" />

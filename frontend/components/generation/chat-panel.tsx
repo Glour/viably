@@ -11,6 +11,7 @@ import { ConfigForm } from "./config-form"
 import { FreeTextInput } from "./free-text-input"
 import { fadeInUp } from "@/lib/animations"
 import { cn } from "@/lib/utils"
+import { checkCreditBalance } from "@/lib/utils/credit-check"
 
 interface ChatPanelProps {
   template: Template | null
@@ -52,7 +53,8 @@ export function ChatPanel({
     )
   }
 
-  const hasInsufficientCredits = credits < template.creditCost
+  const creditCheck = checkCreditBalance(credits, template.creditCost)
+  const hasInsufficientCredits = !creditCheck.hasSufficientCredits
   const hasConfigFields = template.configFields.length > 0
 
   return (
@@ -169,9 +171,12 @@ export function ChatPanel({
           </Button>
 
           {hasInsufficientCredits && (
-            <div className="text-center">
+            <div className="text-center space-y-1">
+              <p className="text-xs text-muted-foreground">
+                Недостаточно {creditCheck.shortfall} {creditCheck.shortfall === 1 ? 'кредита' : 'кредитов'}
+              </p>
               <a
-                href="/dashboard"
+                href="/settings/billing"
                 className="text-xs text-primary hover:underline inline-flex items-center gap-1"
               >
                 Пополнить →
