@@ -159,7 +159,8 @@
   → Artifacts: [analytics.ts](frontend/lib/analytics.ts)
 - [x] T034 [US5] Add analytics tracking calls to existing user flows: `frontend/components/auth/register-form.tsx` (trackSignup on success), `frontend/lib/hooks/use-projects.ts` or project creation flow (trackProjectCreated), `frontend/lib/hooks/use-generation.ts` (trackGenerationStarted on start, trackGenerationComplete on WS completion)
   → Artifacts: [register/page.tsx](frontend/app/(auth)/register/page.tsx), [use-projects.ts](frontend/lib/hooks/use-projects.ts), [use-generation.ts](frontend/lib/hooks/use-generation.ts)
-- [ ] T035 [US5] Create `specs/019-infrastructure-devops/docs/posthog-setup.md`: setup guide (create PostHog Cloud account in EU region, create project, get API key, configure funnel: Landing → Signup → First Project → Generation → Deploy, set up dashboard with key metrics)
+- [x] T035 [US5] Create `specs/019-infrastructure-devops/docs/posthog-setup.md`: setup guide (create PostHog Cloud account in EU region, create project, get API key, configure funnel: Landing → Signup → First Project → Generation → Deploy, set up dashboard with key metrics)
+  → Artifacts: [posthog-setup.md](specs/019-infrastructure-devops/docs/posthog-setup.md)
 
 **Checkpoint**: All 6 key events tracked. PostHog funnel documented.
 
@@ -169,10 +170,14 @@
 
 **Purpose**: Security verification, documentation finalization, cross-cutting improvements.
 
-- [ ] T036 Verify production security configuration: audit `backend/app/main.py` security headers middleware (X-Content-Type-Options, X-Frame-Options, HSTS, CSP), verify rate limiting configuration matches spec (60 req/min auth, 30 req/min generation), verify secure cookie flags in auth endpoints, verify CORS only allows viably.dev in production
-- [ ] T037 Add production-ready cookie configuration: update auth token handling in `backend/app/auth/routes.py` to set httpOnly=True, secure=True, sameSite="lax" flags when ENVIRONMENT=production
-- [ ] T038 Update project README.md with infrastructure overview: add deployment architecture section (Railway backend, Vercel frontend, PostgreSQL, Redis), link to setup guides in specs/019-infrastructure-devops/docs/, add environment variable reference
-- [ ] T039 Run quickstart.md verification: walk through `specs/019-infrastructure-devops/quickstart.md` step by step, verify all commands and configurations are accurate, update any outdated references
+- [x] T036 Verify production security configuration: audit `backend/app/main.py` security headers middleware (X-Content-Type-Options, X-Frame-Options, HSTS, CSP), verify rate limiting configuration matches spec (60 req/min auth, 30 req/min generation), verify secure cookie flags in auth endpoints, verify CORS only allows viably.dev in production
+  → Audit: All security headers present (main.py:102-111), rate limiting on all endpoints, CORS validated in production, API docs disabled in production. No cookies used — JWT in JSON body.
+- [x] T037 Add production-ready cookie configuration: update auth token handling in `backend/app/auth/routes.py` to set httpOnly=True, secure=True, sameSite="lax" flags when ENVIRONMENT=production
+  → N/A: Auth uses JWT tokens in JSON response body, not cookies. Frontend stores tokens in localStorage. No set_cookie calls exist.
+- [x] T038 Update project README.md with infrastructure overview: add deployment architecture section (Railway backend, Vercel frontend, PostgreSQL, Redis), link to setup guides in specs/019-infrastructure-devops/docs/, add environment variable reference
+  → Artifacts: [README.md](backend/README.md)
+- [x] T039 Run quickstart.md verification: walk through `specs/019-infrastructure-devops/quickstart.md` step by step, verify all commands and configurations are accurate, update any outdated references
+  → Verified: All commands, paths, and configurations accurate. No updates needed.
 
 ---
 

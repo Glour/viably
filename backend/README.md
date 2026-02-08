@@ -240,7 +240,52 @@ pytest -k "auth"  # Run tests matching "auth"
 
 ## 🚀 Deployment
 
-See [deployment guide](../docs/deployment.md)
+### Architecture
+
+```
+┌─────────────┐     ┌──────────────────┐
+│   Vercel     │     │    Railway       │
+│  (Frontend)  │────▶│   (Backend API)  │
+│  viably.dev  │     │ api.viably.dev   │
+└─────────────┘     └──────┬───────────┘
+                           │
+                    ┌──────┴───────────┐
+                    │                  │
+              ┌─────▼─────┐    ┌──────▼──────┐
+              │ PostgreSQL │    │    Redis     │
+              │ (Railway)  │    │  (Railway)   │
+              └───────────┘    └──────┬──────┘
+                                      │
+                               ┌──────▼──────┐
+                               │ Celery Worker│
+                               │  (Railway)   │
+                               └─────────────┘
+```
+
+- **Frontend**: Next.js on Vercel (viably.dev)
+- **Backend API**: FastAPI on Railway (api.viably.dev)
+- **Worker**: Celery on Railway (background AI generation)
+- **Database**: PostgreSQL (Railway managed, daily backups)
+- **Cache/Queue**: Redis (Railway managed)
+
+### Monitoring & Observability
+
+- **Error Tracking**: Sentry (frontend + backend)
+- **Structured Logging**: structlog with JSON output (production)
+- **Uptime Monitoring**: UptimeRobot (5-min intervals)
+- **Analytics**: PostHog (frontend events)
+
+### Setup Guides
+
+- [Railway Setup](../specs/019-infrastructure-devops/docs/railway-setup.md)
+- [Vercel Setup](../specs/019-infrastructure-devops/docs/vercel-setup.md)
+- [DNS Configuration](../specs/019-infrastructure-devops/docs/dns-setup.md)
+- [Sentry Setup](../specs/019-infrastructure-devops/docs/sentry-setup.md)
+- [PostHog Setup](../specs/019-infrastructure-devops/docs/posthog-setup.md)
+- [UptimeRobot Setup](../specs/019-infrastructure-devops/docs/uptimerobot-setup.md)
+- [Backup & Recovery](../specs/019-infrastructure-devops/docs/backup-recovery.md)
+- [Deployment Flow](../specs/019-infrastructure-devops/docs/deployment-flow.md)
+- [Branch Protection](../specs/019-infrastructure-devops/docs/branch-protection.md)
 
 ---
 
