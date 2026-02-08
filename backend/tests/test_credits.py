@@ -10,7 +10,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.models import User
-from app.auth.service import generate_referral_code, hash_password
+from app.auth.service import hash_password
+from app.core.utils import generate_referral_code
 from app.credits.models import CreditTransaction, DailyBonus
 from app.credits.service import (
     DAILY_BONUSES,
