@@ -41,9 +41,12 @@
 
 **Purpose**: Install testing tools and configure project infrastructure shared across all user stories.
 
-- [ ] T001 Install Playwright and @next/bundle-analyzer as devDependencies in `frontend/package.json`, run `npx playwright install chromium`
-- [ ] T002 Create Playwright configuration in `frontend/playwright.config.ts` — Chromium-only, testDir `./e2e`, webServer pointing to `npm run dev` on port 3000, baseURL `http://localhost:3000`, HTML reporter
-- [ ] T003 [P] Add npm scripts to `frontend/package.json`: `test:e2e` (`playwright test`), `test:e2e:ui` (`playwright test --ui`), `test:e2e:headed` (`playwright test --headed`), `analyze` (`ANALYZE=true next build`)
+- [x] T001 Install Playwright and @next/bundle-analyzer as devDependencies in `frontend/package.json`, run `npx playwright install chromium`
+  → Artifacts: [package.json](../../frontend/package.json), [package-lock.json](../../frontend/package-lock.json)
+- [x] T002 Create Playwright configuration in `frontend/playwright.config.ts` — Chromium-only, testDir `./e2e`, webServer pointing to `npm run dev` on port 3000, baseURL `http://localhost:3000`, HTML reporter
+  → Artifacts: [playwright.config.ts](../../frontend/playwright.config.ts)
+- [x] T003 [P] Add npm scripts to `frontend/package.json`: `test:e2e` (`playwright test`), `test:e2e:ui` (`playwright test --ui`), `test:e2e:headed` (`playwright test --headed`), `analyze` (`ANALYZE=true next build`)
+  → Artifacts: [package.json](../../frontend/package.json)
 
 **Checkpoint**: Playwright installed, config created, scripts available. `npx playwright test` runs (with 0 tests).
 
@@ -55,8 +58,8 @@
 
 **CRITICAL**: No E2E test (US1) can be written until this phase is complete.
 
-- [ ] T004 Create typed mock data in `frontend/e2e/fixtures/mock-data.ts` — export mock responses for all API endpoints: auth (register, login, logout, me), credits (balance, daily-bonus), templates (list, detail with configSchema), projects (create, detail with generatedCode), deploy (deploy, deployment status). Types must match contracts in `specs/018-testing-polish/contracts/mock-api-contracts.md`
-- [ ] T005 Create test helpers in `frontend/e2e/fixtures/test-helpers.ts` — export functions: `setupAuthMocks(page)` (mocks auth endpoints + sets localStorage token), `setupCreditsMocks(page, balance?)` (mocks credits endpoints), `setupTemplatesMocks(page)` (mocks templates endpoints), `setupProjectsMocks(page)` (mocks projects endpoints), `setupGenerationWS(page)` (mocks WebSocket with progress sequence), `setupDeployMocks(page)` (mocks deploy endpoints), `loginAsTestUser(page)` (fills login form + submits). All use Playwright `page.route()` and `page.routeWebSocket()` with mock-data.ts responses.
+- [x] T004 Create typed mock data in `frontend/e2e/fixtures/mock-data.ts` — export mock responses for all API endpoints: auth (register, login, logout, me), credits (balance, daily-bonus), templates (list, detail with configSchema), projects (create, detail with generatedCode), deploy (deploy, deployment status). Types must match contracts in `specs/018-testing-polish/contracts/mock-api-contracts.md`
+- [x] T005 Create test helpers in `frontend/e2e/fixtures/test-helpers.ts` — export functions: `setupAuthMocks(page)` (mocks auth endpoints + sets localStorage token), `setupCreditsMocks(page, balance?)` (mocks credits endpoints), `setupTemplatesMocks(page)` (mocks templates endpoints), `setupProjectsMocks(page)` (mocks projects endpoints), `setupGenerationWS(page)` (mocks WebSocket with progress sequence), `setupDeployMocks(page)` (mocks deploy endpoints), `loginAsTestUser(page)` (fills login form + submits). All use Playwright `page.route()` and `page.routeWebSocket()` with mock-data.ts responses.
 
 **Checkpoint**: Fixtures ready. `import { setupAuthMocks, loginAsTestUser } from './fixtures/test-helpers'` works in any spec file.
 
