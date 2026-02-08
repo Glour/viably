@@ -7,6 +7,7 @@ import {
   deleteProject,
   updateProject,
 } from "@/lib/api/projects"
+import { trackProjectCreated } from "@/lib/analytics"
 import { useAuthStore } from "@/stores/auth"
 import type {
   ApiProject,
@@ -78,7 +79,8 @@ export function useCreateProject() {
 
   return useMutation<ApiProject, Error, CreateProjectPayload>({
     mutationFn: createProject,
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      trackProjectCreated(data.id, variables.templateId)
       queryClient.invalidateQueries({ queryKey: ["projects"] })
     },
   })

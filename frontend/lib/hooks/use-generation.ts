@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/auth"
 import { getAccessToken } from "@/lib/api/tokens"
 import { env } from "@/lib/env"
 import { startGeneration as apiStartGeneration, cancelGeneration as apiCancelGeneration } from "@/lib/api/generation"
+import { trackGenerationStarted, trackGenerationComplete } from "@/lib/analytics"
 import { queryKeys } from "@/lib/api/query-keys"
 import { toast } from "sonner"
 import { useOfflineDetection } from "./use-offline-detection"
@@ -79,6 +80,9 @@ export function useGeneration(projectId: string) {
   )
 
   const [state, setState] = useState<GenerationProgressState>(INITIAL_STATE)
+
+  // Analytics: track generation duration
+  const generationStartTime = useRef<number>(0)
 
   // T034: Track component lifecycle to prevent reconnection after unmount
   const didUnmount = useRef(false)
@@ -219,6 +223,12 @@ export function useGeneration(projectId: string) {
         // T022: Set final generated code and invalidate queries
         const { generated_code } = lastJsonMessage.data
 
+        // Analytics: track generation completion with duration
+        const durationMs = generationStartTime.current
+          ? Date.now() - generationStartTime.current
+          : 0
+        trackGenerationComplete(projectId, durationMs)
+
         setState((prev) => ({
           ...prev,
           status: "complete",
@@ -291,7 +301,11 @@ export function useGeneration(projectId: string) {
       }
       return apiStartGeneration(projectId, params)
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
+      // Analytics: track generation start
+      generationStartTime.current = Date.now()
+      trackGenerationStarted(projectId, variables.template_id)
+
       // Reset state to generating on successful API call
       setState({
         ...INITIAL_STATE,

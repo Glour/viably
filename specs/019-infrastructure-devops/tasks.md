@@ -134,7 +134,8 @@
 
 ### Implementation for User Story 4
 
-- [ ] T029 [US4] Create `specs/019-infrastructure-devops/docs/backup-recovery.md`: comprehensive guide covering Railway managed PostgreSQL automatic daily backups, 7-day retention verification, step-by-step restore procedure, pre-deployment manual backup checklist, backup failure alerting (Railway dashboard notifications)
+- [x] T029 [US4] Create `specs/019-infrastructure-devops/docs/backup-recovery.md`: comprehensive guide covering Railway managed PostgreSQL automatic daily backups, 7-day retention verification, step-by-step restore procedure, pre-deployment manual backup checklist, backup failure alerting (Railway dashboard notifications)
+  → Artifacts: [backup-recovery.md](specs/019-infrastructure-devops/docs/backup-recovery.md)
 
 **Checkpoint**: Database backup and recovery fully documented. Railway handles automated backups; team knows how to restore.
 
@@ -148,11 +149,16 @@
 
 ### Implementation for User Story 5
 
-- [ ] T030 [P] [US5] Install posthog-js in `frontend/package.json`, create PostHog client initialization in `frontend/lib/posthog.ts` (init with NEXT_PUBLIC_POSTHOG_KEY and NEXT_PUBLIC_POSTHOG_HOST from env, disable in development, configure autocapture: false for privacy)
-- [ ] T031 [P] [US5] Create PostHog React provider in `frontend/components/providers/posthog-provider.tsx` (client component, wraps children with PostHogProvider from posthog-js/react, initializes on mount)
-- [ ] T032 [US5] Wrap app with PostHogProvider in `frontend/app/layout.tsx` (import PostHogProvider, wrap {children} inside Providers component)
-- [ ] T033 [US5] Create analytics event helpers in `frontend/lib/analytics.ts` (typed functions: trackSignup, trackProjectCreated, trackGenerationStarted, trackGenerationComplete, trackDeployed, trackPurchasedCredits — each calls posthog.capture with typed event name and properties per data-model.md)
-- [ ] T034 [US5] Add analytics tracking calls to existing user flows: `frontend/components/auth/register-form.tsx` (trackSignup on success), `frontend/lib/hooks/use-projects.ts` or project creation flow (trackProjectCreated), `frontend/lib/hooks/use-generation.ts` (trackGenerationStarted on start, trackGenerationComplete on WS completion)
+- [x] T030 [P] [US5] Install posthog-js in `frontend/package.json`, create PostHog client initialization in `frontend/lib/posthog.ts` (init with NEXT_PUBLIC_POSTHOG_KEY and NEXT_PUBLIC_POSTHOG_HOST from env, disable in development, configure autocapture: false for privacy)
+  → Artifacts: [posthog.ts](frontend/lib/posthog.ts)
+- [x] T031 [P] [US5] Create PostHog React provider in `frontend/components/providers/posthog-provider.tsx` (client component, wraps children with PostHogProvider from posthog-js/react, initializes on mount)
+  → Artifacts: [posthog-provider.tsx](frontend/components/providers/posthog-provider.tsx)
+- [x] T032 [US5] Wrap app with PostHogProvider in `frontend/app/layout.tsx` (import PostHogProvider, wrap {children} inside Providers component)
+  → Artifacts: [providers.tsx](frontend/app/providers.tsx)
+- [x] T033 [US5] Create analytics event helpers in `frontend/lib/analytics.ts` (typed functions: trackSignup, trackProjectCreated, trackGenerationStarted, trackGenerationComplete, trackDeployed, trackPurchasedCredits — each calls posthog.capture with typed event name and properties per data-model.md)
+  → Artifacts: [analytics.ts](frontend/lib/analytics.ts)
+- [x] T034 [US5] Add analytics tracking calls to existing user flows: `frontend/components/auth/register-form.tsx` (trackSignup on success), `frontend/lib/hooks/use-projects.ts` or project creation flow (trackProjectCreated), `frontend/lib/hooks/use-generation.ts` (trackGenerationStarted on start, trackGenerationComplete on WS completion)
+  → Artifacts: [register/page.tsx](frontend/app/(auth)/register/page.tsx), [use-projects.ts](frontend/lib/hooks/use-projects.ts), [use-generation.ts](frontend/lib/hooks/use-generation.ts)
 - [ ] T035 [US5] Create `specs/019-infrastructure-devops/docs/posthog-setup.md`: setup guide (create PostHog Cloud account in EU region, create project, get API key, configure funnel: Landing → Signup → First Project → Generation → Deploy, set up dashboard with key metrics)
 
 **Checkpoint**: All 6 key events tracked. PostHog funnel documented.
