@@ -52,12 +52,18 @@ This is a **web application** with:
 
 **Purpose**: Project initialization - install libraries and configure MDX/Email systems
 
-- [ ] T001 Install @next/mdx and MDX dependencies in /home/alex/PycharmProjects/viably/frontend/package.json [EXECUTOR: MAIN] [PARALLEL-GROUP-1]
-- [ ] T002 Configure Next.js for MDX support in /home/alex/PycharmProjects/viably/frontend/next.config.ts [EXECUTOR: fullstack-nextjs-specialist] [SEQUENTIAL]
-- [ ] T003 [P] Install react-email and @react-email/components in /home/alex/PycharmProjects/viably/frontend/package.json [EXECUTOR: MAIN] [PARALLEL-GROUP-1]
-- [ ] T004 [P] Install resend Python SDK in /home/alex/PycharmProjects/viably/backend/pyproject.toml [EXECUTOR: MAIN] [PARALLEL-GROUP-1]
-- [ ] T005 Create content directories: /home/alex/PycharmProjects/viably/frontend/content/docs/, /content/blog/, /content/social/ [EXECUTOR: MAIN] [PARALLEL-GROUP-1]
-- [ ] T006 Create email templates directory: /home/alex/PycharmProjects/viably/frontend/emails/ and /emails/components/ [EXECUTOR: MAIN] [PARALLEL-GROUP-1]
+- [X] T001 Install @next/mdx and MDX dependencies in /home/alex/PycharmProjects/viably/frontend/package.json [EXECUTOR: MAIN] [PARALLEL-GROUP-1]
+→ Artifacts: [package.json](../../frontend/package.json) - added @next/mdx, @mdx-js/loader, @mdx-js/react, @types/mdx
+- [X] T002 Configure Next.js for MDX support in /home/alex/PycharmProjects/viably/frontend/next.config.ts [EXECUTOR: fullstack-nextjs-specialist] [SEQUENTIAL]
+→ Artifacts: [next.config.ts](../../frontend/next.config.ts) - configured createMDX, added .mdx to pageExtensions
+- [X] T003 [P] Install react-email and @react-email/components in /home/alex/PycharmProjects/viably/frontend/package.json [EXECUTOR: MAIN] [PARALLEL-GROUP-1]
+→ Artifacts: [package.json](../../frontend/package.json) - added react-email, @react-email/components
+- [X] T004 [P] Install resend Python SDK in /home/alex/PycharmProjects/viably/backend/pyproject.toml [EXECUTOR: MAIN] [PARALLEL-GROUP-1]
+→ Artifacts: [pyproject.toml](../../backend/pyproject.toml) - added resend>=0.7.0
+- [X] T005 Create content directories: /home/alex/PycharmProjects/viably/frontend/content/docs/, /content/blog/, /content/social/ [EXECUTOR: MAIN] [PARALLEL-GROUP-1]
+→ Artifacts: Created directories: content/docs/templates/, content/blog/, content/social/
+- [X] T006 Create email templates directory: /home/alex/PycharmProjects/viably/frontend/emails/ and /emails/components/ [EXECUTOR: MAIN] [PARALLEL-GROUP-1]
+→ Artifacts: Created directories: emails/, emails/components/
 
 ---
 
