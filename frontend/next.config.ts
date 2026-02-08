@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
   // Experimental features if needed
   experimental: {
     mdxRs: false, // Use the stable MDX loader
+    reactCompiler: true, // Enable React 19 Compiler for automatic memoization
+    webpackMemoryOptimizations: true, // Reduce build memory usage
   },
 }
 
