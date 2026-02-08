@@ -1,6 +1,7 @@
 import ky, { HTTPError } from "ky"
 import type { AuthUser } from "@/types"
 import { getAccessToken, getRefreshToken, setTokens, clearTokens } from "./tokens"
+import { getQueryClient } from "./query-client"
 import { env } from "@/lib/env"
 
 const API_BASE_URL = env.NEXT_PUBLIC_API_URL
@@ -162,4 +163,17 @@ export async function parseApiError(error: unknown): Promise<never> {
   }
 
   throw error
+}
+
+// === Cache Management ===
+
+/**
+ * Clear all React Query caches
+ * Used on logout to ensure no stale data persists
+ */
+export function clearAllCaches(): void {
+  if (typeof window !== "undefined") {
+    const queryClient = getQueryClient()
+    queryClient.clear()
+  }
 }

@@ -75,6 +75,7 @@ export interface AuthStoreState {
   logout: () => Promise<void>
   checkAuth: () => Promise<void>
   setUser: (user: AuthUser | null) => void
+  reset: () => void
 }
 
 export interface UserProfile extends Pick<AuthUser, "id" | "email" | "plan" | "credits"> {
@@ -317,6 +318,7 @@ export interface GenerationStoreState {
   resetGeneration: () => void
   startDeployment: (config: DeployConfig) => void
   resetDeployment: () => void
+  reset: () => void
   _updateStep: (stepIndex: number, status: GenerationStepStatus, duration: number | null) => void
   _setProgress: (progress: number) => void
   _completeGeneration: (code: GeneratedCode) => void

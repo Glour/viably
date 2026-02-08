@@ -8,8 +8,7 @@ import { MainLayout } from "@/components/layout/main-layout"
 import { FadeInUp } from "@/components/motion/fade-in-up"
 import { Shimmer } from "@/components/ui/shimmer"
 import { Button } from "@/components/ui/button"
-import { ProjectCard } from "@/components/projects/project-card"
-import { ProjectListRow } from "@/components/projects/project-list-row"
+import { ProjectsList } from "@/components/projects/projects-list"
 import { ProjectToolbar } from "@/components/projects/project-toolbar"
 import { ProjectEmptyState } from "@/components/projects/project-empty-state"
 import { ProjectNoResults } from "@/components/projects/project-no-results"
@@ -163,26 +162,12 @@ export default function ProjectsPage() {
             <ProjectEmptyState />
           ) : filtered.length === 0 ? (
             <ProjectNoResults onReset={handleResetFilters} />
-          ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filtered.map((project) => (
-                <ProjectCard
-                  key={project.id}
-                  project={project}
-                  onDelete={handleDeleteRequest}
-                />
-              ))}
-            </div>
           ) : (
-            <div className="space-y-1">
-              {filtered.map((project) => (
-                <ProjectListRow
-                  key={project.id}
-                  project={project}
-                  onDelete={handleDeleteRequest}
-                />
-              ))}
-            </div>
+            <ProjectsList
+              projects={filtered}
+              viewMode={viewMode}
+              onDelete={handleDeleteRequest}
+            />
           )}
         </FadeInUp>
       </div>

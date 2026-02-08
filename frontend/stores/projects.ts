@@ -19,6 +19,7 @@ interface ProjectsUIState {
   setFilter: (filter: ProjectFilter) => void
   setSort: (sort: ProjectSort) => void
   setViewMode: (mode: ViewMode) => void
+  reset: () => void
 }
 
 export const useProjectsStore = create<ProjectsUIState>((set) => ({
@@ -30,4 +31,11 @@ export const useProjectsStore = create<ProjectsUIState>((set) => ({
   setFilter: (filter) => set({ filter }),
   setSort: (sort) => set({ sort }),
   setViewMode: (mode) => set({ viewMode: mode }),
+  reset: () =>
+    set({
+      searchQuery: "",
+      filter: "all",
+      sort: "newest",
+      viewMode: "grid",
+    }),
 }))

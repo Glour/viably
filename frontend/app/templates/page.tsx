@@ -3,7 +3,7 @@
 import { MainLayout } from "@/components/layout/main-layout"
 import { FadeInUp } from "@/components/motion/fade-in-up"
 import { Shimmer } from "@/components/ui/shimmer"
-import { TemplateCard } from "@/components/templates/template-card"
+import { TemplateGallery } from "@/components/templates/template-gallery"
 import { EmptyState } from "@/components/templates/empty-state"
 import { SearchBar } from "@/components/templates/search-bar"
 import { FilterTabs } from "@/components/templates/filter-tabs"
@@ -76,11 +76,7 @@ export default function TemplatesPage() {
               ))}
             </div>
           ) : filtered.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filtered.map((template) => (
-                <TemplateCard key={template.slug} template={template} />
-              ))}
-            </div>
+            <TemplateGallery templates={filtered} />
           ) : (
             <EmptyState onReset={resetFilters} />
           )}

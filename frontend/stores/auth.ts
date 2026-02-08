@@ -3,10 +3,14 @@ import type { AuthStoreState } from "@/types"
 import { api, mapUserResponse, parseApiError } from "@/lib/api/client"
 import { setTokens, getAccessToken, clearTokens } from "@/lib/api/tokens"
 
-export const useAuthStore = create<AuthStoreState>((set) => ({
+const initialState = {
   user: null,
   isLoading: true,
   isAuthenticated: false,
+}
+
+export const useAuthStore = create<AuthStoreState>((set) => ({
+  ...initialState,
 
   login: async (email: string, password: string) => {
     try {
@@ -84,5 +88,14 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
 
   setUser: (user) => {
     set({ user, isAuthenticated: user !== null })
+  },
+
+  /**
+   * Resets the auth store to initial state
+   * Clears user data and authentication status
+   * Used for cleanup on logout or auth errors
+   */
+  reset: () => {
+    set(initialState)
   },
 }))

@@ -7,6 +7,7 @@ interface TemplatesUIState {
   setSearchQuery: (query: string) => void
   setActiveTab: (tab: FilterTab) => void
   resetFilters: () => void
+  reset: () => void
 }
 
 export const useTemplatesStore = create<TemplatesUIState>((set) => ({
@@ -15,4 +16,9 @@ export const useTemplatesStore = create<TemplatesUIState>((set) => ({
   setSearchQuery: (query: string) => set({ searchQuery: query }),
   setActiveTab: (tab: FilterTab) => set({ activeTab: tab }),
   resetFilters: () => set({ searchQuery: "", activeTab: "all" }),
+  /**
+   * Resets the entire templates store to its initial state.
+   * Clears search query and resets active tab to "all".
+   */
+  reset: () => set({ searchQuery: "", activeTab: "all" }),
 }))

@@ -92,8 +92,10 @@
 
 ### Memory Leak Detection Tools (US1)
 
-- [ ] T011 [P] [US1] Implement useMemoryMonitor hook in frontend/hooks/useMemoryMonitor.ts
-- [ ] T012 [P] [US1] Create MemoryMonitor dev panel component in frontend/components/dev/MemoryMonitor.tsx
+- [x] T011 [P] [US1] Implement useMemoryMonitor hook in frontend/hooks/useMemoryMonitor.ts
+  → Artifacts: [useMemoryMonitor.ts](frontend/hooks/useMemoryMonitor.ts) - 272 lines, 7.5KB
+- [x] T012 [P] [US1] Create MemoryMonitor dev panel component in frontend/components/dev/MemoryMonitor.tsx
+  → Artifacts: [MemoryMonitor.tsx](frontend/components/dev/MemoryMonitor.tsx) - 144 lines, with documentation
 - [ ] T013 [P] [US1] Create MemLab E2E test for navigation cycle in frontend/e2e/memory/navigation-leak.spec.ts
 - [ ] T014 [P] [US1] Create MemLab E2E test for modal open/close in frontend/e2e/memory/modal-leak.spec.ts
 
@@ -107,7 +109,8 @@
 
 ### Monaco Editor Cleanup (US1 - Critical)
 
-- [ ] T020 [US1] Implement useMonacoEditor hook with auto-disposal in frontend/hooks/useMonacoEditor.ts
+- [x] T020 [US1] Implement useMonacoEditor hook with auto-disposal in frontend/hooks/useMonacoEditor.ts
+  → Artifacts: [useMonacoEditor.ts](frontend/hooks/useMonacoEditor.ts) - 6.8KB, auto-disposal pattern
 - [ ] T021 [US1] Replace Monaco Editor usage in frontend/app/generation/[id]/page.tsx with useMonacoEditor hook
 - [ ] T022 [US1] Replace Monaco Editor usage in frontend/app/projects/[id]/page.tsx with useMonacoEditor hook (if exists)
 - [ ] T023 [US1] Verify Monaco Editor disposal with heap snapshot comparison (document in baseline report)
