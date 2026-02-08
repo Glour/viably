@@ -21,7 +21,11 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/deployments", tags=["deployments"])
 
 
-@router.post("/projects/{project_id}/deploy", response_model=DeploymentResponse, dependencies=[Depends(RateLimiter(times=3, minutes=1))])
+@router.post(
+    "/projects/{project_id}/deploy",
+    response_model=DeploymentResponse,
+    dependencies=[Depends(RateLimiter(times=3, minutes=1))],
+)
 async def deploy_project(
     project_id: UUID,
     data: DeploymentCreate,
@@ -50,7 +54,11 @@ async def deploy_project(
         )
 
 
-@router.get("/{deployment_id}", response_model=DeploymentResponse, dependencies=[Depends(RateLimiter(times=30, minutes=1))])
+@router.get(
+    "/{deployment_id}",
+    response_model=DeploymentResponse,
+    dependencies=[Depends(RateLimiter(times=30, minutes=1))],
+)
 async def get_deployment(
     deployment_id: UUID,
     current_user: User = Depends(get_current_user),
@@ -69,7 +77,11 @@ async def get_deployment(
     return deployment
 
 
-@router.get("/{deployment_id}/logs", response_model=DeploymentLogsResponse, dependencies=[Depends(RateLimiter(times=30, minutes=1))])
+@router.get(
+    "/{deployment_id}/logs",
+    response_model=DeploymentLogsResponse,
+    dependencies=[Depends(RateLimiter(times=30, minutes=1))],
+)
 async def get_deployment_logs(
     deployment_id: UUID,
     current_user: User = Depends(get_current_user),
@@ -94,7 +106,11 @@ async def get_deployment_logs(
     )
 
 
-@router.delete("/{deployment_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(RateLimiter(times=10, minutes=1))])
+@router.delete(
+    "/{deployment_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(RateLimiter(times=10, minutes=1))],
+)
 async def stop_deployment(
     deployment_id: UUID,
     current_user: User = Depends(get_current_user),

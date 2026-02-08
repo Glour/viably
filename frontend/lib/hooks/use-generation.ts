@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import useWebSocket, { ReadyState } from "react-use-websocket"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuthStore } from "@/stores/auth"
 import { getAccessToken } from "@/lib/api/tokens"
+import { env } from "@/lib/env"
 import { startGeneration as apiStartGeneration, cancelGeneration as apiCancelGeneration } from "@/lib/api/generation"
+import { trackGenerationStarted, trackGenerationComplete } from "@/lib/analytics"
 import { queryKeys } from "@/lib/api/query-keys"
 import { toast } from "sonner"
 import { useOfflineDetection } from "./use-offline-detection"
@@ -16,10 +18,7 @@ import {
 import type {
   WebSocketMessage,
   GenerationProgressState,
-  GeneratedFile,
-  GenerationStatus,
   StepStatus,
-  GenerationStep,
 } from "@/types/websocket"
 
 /**
@@ -79,6 +78,9 @@ export function useGeneration(projectId: string) {
 
   const [state, setState] = useState<GenerationProgressState>(INITIAL_STATE)
 
+  // Analytics: track generation duration
+  const generationStartTime = useRef<number>(0)
+
   // T034: Track component lifecycle to prevent reconnection after unmount
   const didUnmount = useRef(false)
 
@@ -96,14 +98,132 @@ export function useGeneration(projectId: string) {
   // T020: Construct WebSocket URL with user ID and auth token
   const wsUrl =
     user && token
-      ? `${process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000"}/ws/${user.id}?token=${token}`
+      ? `${env.NEXT_PUBLIC_WS_URL}/ws/${user.id}?token=${token}`
       : null
 
+  // T021-T023: Handle incoming WebSocket messages via onMessage callback
+  const handleMessage = useCallback(
+    (event: MessageEvent) => {
+      const message = JSON.parse(event.data) as WebSocketMessage
+
+      // Filter: Only handle messages for this project
+      if (message.project_id !== projectId) {
+        return
+      }
+
+      switch (message.type) {
+        case "generation_progress": {
+          // T021: Update step status, progress, log, and accumulate code snippets
+          const { step, step_name: _step_name, step_status, progress, log, code_snippet } =
+            message.data as { step: number; step_name?: string; step_status: string; progress: number; log?: string; code_snippet?: string }
+
+          // T061: Out-of-order message protection
+          setState((prev) => {
+            // Ignore messages from past steps (out-of-order delivery)
+            if (step < prev.currentStep) {
+              console.warn(`[WebSocket] Ignoring out-of-order message: step ${step} received after step ${prev.currentStep}`)
+              return prev
+            }
+
+            // Map backend step_status to frontend StepStatus
+            const mappedStatus: StepStatus = step_status === "complete" ? "complete" : "running"
+
+            return {
+              ...prev,
+              status: "generating",
+              currentStep: step,
+              progress,
+              steps: prev.steps.map((s, idx) =>
+                idx + 1 === step
+                  ? { ...s, status: mappedStatus, log }
+                  : s
+              ),
+              // T025: Accumulate code snippets for typewriter animation
+              codeSnippets: code_snippet
+                ? [...prev.codeSnippets, code_snippet]
+                : prev.codeSnippets,
+            }
+          })
+          break
+        }
+
+        case "generation_complete": {
+          // T022: Set final generated code and invalidate queries
+          const { generated_code } = message.data
+
+          // Analytics: track generation completion with duration
+          const durationMs = generationStartTime.current
+            ? Date.now() - generationStartTime.current
+            : 0
+          trackGenerationComplete(projectId, durationMs)
+
+          setState((prev) => ({
+            ...prev,
+            status: "complete",
+            generatedCode: generated_code,
+            progress: 100,
+            steps: prev.steps.map((s) => ({
+              ...s,
+              status: "complete" as StepStatus,
+            })),
+          }))
+
+          // T024: Invalidate React Query cache to refetch project data
+          queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) })
+          queryClient.invalidateQueries({ queryKey: queryKeys.projects.all() })
+          break
+        }
+
+        case "generation_error": {
+          // T023: Handle generation errors
+          const { error } = message.data
+
+          // T063: Toast notification for generation error
+          toast.error(`Ошибка генерации: ${error}`)
+
+          setState((prev) => ({
+            ...prev,
+            status: "error",
+            error,
+            steps: prev.steps.map((s, idx) =>
+              idx === prev.currentStep - 1
+                ? { ...s, status: "error" as StepStatus }
+                : s
+            ),
+          }))
+          break
+        }
+
+        // Handle credits_updated messages (optional, for balance sync)
+        case "credits_updated": {
+          queryClient.invalidateQueries({ queryKey: queryKeys.credits.balance })
+          break
+        }
+
+        // T060: Unknown message type handler - graceful degradation
+        default: {
+          // Ignore deploy_* messages (handled by useDeploy hook)
+          if (message.type?.startsWith('deploy_')) {
+            break
+          }
+
+          // Log warning for truly unknown message types
+          console.warn('[WebSocket] Unknown message type received:', message.type, message)
+          break
+        }
+      }
+    },
+    [projectId, queryClient]
+  )
+
   // T020, T030-T033: Establish WebSocket connection with resilient reconnection
-  const { lastJsonMessage, readyState } = useWebSocket<WebSocketMessage>(
+  const { readyState } = useWebSocket<WebSocketMessage>(
     wsUrl,
     {
       share: true, // Multi-tab sync
+
+      // T021-T023: Handle incoming WebSocket messages
+      onMessage: handleMessage,
 
       // T030: Smart reconnection logic
       // Don't reconnect on normal closure (code 1000) or after component unmount
@@ -169,112 +289,6 @@ export function useGeneration(projectId: string) {
     !!wsUrl
   )
 
-  // T021-T023: Handle incoming WebSocket messages
-  useEffect(() => {
-    if (!lastJsonMessage) return
-
-    // Filter: Only handle messages for this project
-    if (lastJsonMessage.project_id !== projectId) {
-      return
-    }
-
-    switch (lastJsonMessage.type) {
-      case "generation_progress": {
-        // T021: Update step status, progress, log, and accumulate code snippets
-        const { step, step_name, step_status, progress, log, code_snippet } =
-          lastJsonMessage.data
-
-        // T061: Out-of-order message protection
-        setState((prev) => {
-          // Ignore messages from past steps (out-of-order delivery)
-          if (step < prev.currentStep) {
-            console.warn(`[WebSocket] Ignoring out-of-order message: step ${step} received after step ${prev.currentStep}`)
-            return prev
-          }
-
-          // Map backend step_status to frontend StepStatus
-          const mappedStatus: StepStatus = step_status === "complete" ? "complete" : "running"
-
-          return {
-            ...prev,
-            status: "generating",
-            currentStep: step,
-            progress,
-            steps: prev.steps.map((s, idx) =>
-              idx + 1 === step
-                ? { ...s, status: mappedStatus, log }
-                : s
-            ),
-            // T025: Accumulate code snippets for typewriter animation
-            codeSnippets: code_snippet
-              ? [...prev.codeSnippets, code_snippet]
-              : prev.codeSnippets,
-          }
-        })
-        break
-      }
-
-      case "generation_complete": {
-        // T022: Set final generated code and invalidate queries
-        const { generated_code } = lastJsonMessage.data
-
-        setState((prev) => ({
-          ...prev,
-          status: "complete",
-          generatedCode: generated_code,
-          progress: 100,
-          steps: prev.steps.map((s) => ({
-            ...s,
-            status: "complete" as StepStatus,
-          })),
-        }))
-
-        // T024: Invalidate React Query cache to refetch project data
-        queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) })
-        queryClient.invalidateQueries({ queryKey: queryKeys.projects.all() })
-        break
-      }
-
-      case "generation_error": {
-        // T023: Handle generation errors
-        const { error } = lastJsonMessage.data
-
-        // T063: Toast notification for generation error
-        toast.error(`Ошибка генерации: ${error}`)
-
-        setState((prev) => ({
-          ...prev,
-          status: "error",
-          error,
-          steps: prev.steps.map((s, idx) =>
-            idx === prev.currentStep - 1
-              ? { ...s, status: "error" as StepStatus }
-              : s
-          ),
-        }))
-        break
-      }
-
-      // Handle credits_updated messages (optional, for balance sync)
-      case "credits_updated": {
-        queryClient.invalidateQueries({ queryKey: queryKeys.credits.balance })
-        break
-      }
-
-      // T060: Unknown message type handler - graceful degradation
-      default: {
-        // Ignore deploy_* messages (handled by useDeploy hook)
-        if (lastJsonMessage.type?.startsWith('deploy_')) {
-          break
-        }
-
-        // Log warning for truly unknown message types
-        console.warn('[WebSocket] Unknown message type received:', lastJsonMessage.type, lastJsonMessage)
-        break
-      }
-    }
-  }, [lastJsonMessage, projectId, queryClient])
-
   // T019: Start generation mutation
   const startGenerationMutation = useMutation({
     mutationFn: (params: {
@@ -290,7 +304,11 @@ export function useGeneration(projectId: string) {
       }
       return apiStartGeneration(projectId, params)
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
+      // Analytics: track generation start
+      generationStartTime.current = Date.now()
+      trackGenerationStarted(projectId, variables.template_id)
+
       // Reset state to generating on successful API call
       setState({
         ...INITIAL_STATE,

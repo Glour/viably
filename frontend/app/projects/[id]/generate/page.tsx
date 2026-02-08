@@ -25,7 +25,7 @@ export default function GeneratePage({ params }: GeneratePageProps) {
   // Load generation state and actions
   const {
     generation,
-    deployment,
+    deployment: _deployment,
     formValues,
     freeTextInput,
     template,
@@ -35,7 +35,7 @@ export default function GeneratePage({ params }: GeneratePageProps) {
     retryGeneration,
     resetGeneration,
     cancelGeneration,
-    startDeployment,
+    startDeployment: _startDeployment,
     downloadCode,
     canGenerate,
     isGenerating,

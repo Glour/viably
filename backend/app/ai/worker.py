@@ -18,14 +18,14 @@ import asyncio
 import logging
 from uuid import UUID
 
-from celery import Celery
 from anthropic import (
-    APITimeoutError,
-    RateLimitError,
     APIConnectionError,
+    APITimeoutError,
     AuthenticationError,
     BadRequestError,
+    RateLimitError,
 )
+from celery import Celery
 
 from app.core.config import settings
 
@@ -206,11 +206,12 @@ async def _process_generation_async(project_id: str) -> dict:
         Any exception from AIGenerationService.generate_project_code().
     """
     # Import here to avoid circular imports and ensure fresh imports
+    from sqlalchemy import select
+
     from app.ai.service import AIGenerationService
+    from app.core.database import async_session_maker
     from app.credits.service import add_credits
     from app.projects.models import Project
-    from app.core.database import async_session_maker
-    from sqlalchemy import select
 
     async with async_session_maker() as db:
         try:

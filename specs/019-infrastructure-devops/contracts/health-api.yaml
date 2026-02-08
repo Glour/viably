@@ -1,0 +1,58 @@
+openapi: "3.1.0"
+info:
+  title: Viably Health API
+  version: "1.0.0"
+  description: Health check endpoint for production monitoring
+
+servers:
+  - url: https://api.viably.dev
+    description: Production
+  - url: http://localhost:8000
+    description: Local development
+
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      description: >
+        Returns the current health status of the API service.
+        Used by UptimeRobot and Railway for availability monitoring.
+        Already implemented in app/main.py — no changes needed.
+      tags:
+        - monitoring
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy]
+                    example: healthy
+              example:
+                status: healthy
+        "503":
+          description: Service unavailable (database/Redis connection issues)
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - detail
+                properties:
+                  status:
+                    type: string
+                    enum: [unhealthy]
+                  detail:
+                    type: string
+                    description: Description of the failure
+              example:
+                status: unhealthy
+                detail: "Database connection failed"

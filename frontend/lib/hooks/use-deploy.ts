@@ -3,6 +3,7 @@ import useWebSocket, { ReadyState } from "react-use-websocket"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuthStore } from "@/stores/auth"
 import { getAccessToken } from "@/lib/api/tokens"
+import { env } from "@/lib/env"
 import { startDeploy as apiStartDeploy } from "@/lib/api/generation"
 import { queryKeys } from "@/lib/api/query-keys"
 import { toast } from "sonner"
@@ -16,8 +17,6 @@ import {
 import type {
   WebSocketMessage,
   DeployProgressState,
-  DeploymentInfo,
-  DeployStatus,
   StepStatus,
 } from "@/types/websocket"
 
@@ -86,14 +85,122 @@ export function useDeploy(projectId: string) {
   // T039: Construct WebSocket URL with user ID and auth token
   const wsUrl =
     user && token
-      ? `${process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000"}/ws/${user.id}?token=${token}`
+      ? `${env.NEXT_PUBLIC_WS_URL}/ws/${user.id}?token=${token}`
       : null
 
+  // T040-T042: Handle incoming WebSocket messages via onMessage callback
+  const handleMessage = useCallback(
+    (event: MessageEvent) => {
+      const message = JSON.parse(event.data) as WebSocketMessage
+
+      // Filter: Only handle messages for this project
+      if (message.project_id !== projectId) {
+        return
+      }
+
+      switch (message.type) {
+        case "deploy_progress": {
+          // T040: Update step status, progress, and log
+          const { step, step_name: _step_name, step_status, progress, log } =
+            message.data as { step: number; step_name?: string; step_status: string; progress: number; log?: string }
+
+          // T061: Out-of-order message protection
+          setState((prev) => {
+            // Ignore messages from past steps (out-of-order delivery)
+            if (step < prev.currentStep) {
+              console.warn(`[WebSocket] Ignoring out-of-order deploy message: step ${step} received after step ${prev.currentStep}`)
+              return prev
+            }
+
+            // Map backend step_status to frontend StepStatus
+            const mappedStatus: StepStatus = step_status === "complete" ? "complete" : "running"
+
+            return {
+              ...prev,
+              status: "deploying",
+              currentStep: step,
+              progress,
+              steps: prev.steps.map((s, idx) =>
+                idx + 1 === step
+                  ? { ...s, status: mappedStatus, log }
+                  : s
+              ),
+            }
+          })
+          break
+        }
+
+        case "deploy_complete": {
+          // T041: Set deployment info and mark complete
+          const deploymentInfo = message.data
+
+          setState((prev) => ({
+            ...prev,
+            status: "success",
+            deploymentInfo,
+            progress: 100,
+            steps: prev.steps.map((s) => ({
+              ...s,
+              status: "complete" as StepStatus,
+            })),
+          }))
+
+          // T043: Invalidate React Query cache to refetch project data
+          queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) })
+          queryClient.invalidateQueries({ queryKey: queryKeys.projects.all() })
+          break
+        }
+
+        case "deploy_error": {
+          // T042: Handle deployment errors
+          const { error } = message.data
+
+          // T063: Toast notification for deploy error
+          toast.error(`Ошибка деплоя: ${error}`)
+
+          setState((prev) => ({
+            ...prev,
+            status: "error",
+            error,
+            steps: prev.steps.map((s, idx) =>
+              idx === prev.currentStep - 1
+                ? { ...s, status: "error" as StepStatus }
+                : s
+            ),
+          }))
+          break
+        }
+
+        // Handle credits_updated messages (optional, for balance sync)
+        case "credits_updated": {
+          queryClient.invalidateQueries({ queryKey: queryKeys.credits.balance })
+          break
+        }
+
+        // T060: Unknown message type handler - graceful degradation
+        default: {
+          // Ignore generation_* messages (handled by useGeneration hook)
+          if (message.type?.startsWith('generation_')) {
+            break
+          }
+
+          // Log warning for truly unknown message types
+          console.warn('[WebSocket] Unknown message type received:', message.type, message)
+          break
+        }
+      }
+    },
+    [projectId, queryClient]
+  )
+
   // T039: Establish WebSocket connection (shared with useGeneration)
-  const { lastJsonMessage, readyState } = useWebSocket<WebSocketMessage>(
+  const { readyState } = useWebSocket<WebSocketMessage>(
     wsUrl,
     {
       share: true, // Share connection with useGeneration for multi-tab sync
+
+      // T040-T042: Handle incoming WebSocket messages
+      onMessage: handleMessage,
 
       // Smart reconnection logic (same as useGeneration)
       shouldReconnect: (closeEvent) => {
@@ -158,107 +265,6 @@ export function useDeploy(projectId: string) {
     !!wsUrl
   )
 
-  // T040-T042: Handle incoming WebSocket messages
-  useEffect(() => {
-    if (!lastJsonMessage) return
-
-    // Filter: Only handle messages for this project
-    if (lastJsonMessage.project_id !== projectId) {
-      return
-    }
-
-    switch (lastJsonMessage.type) {
-      case "deploy_progress": {
-        // T040: Update step status, progress, and log
-        const { step, step_name, step_status, progress, log } = lastJsonMessage.data
-
-        // T061: Out-of-order message protection
-        setState((prev) => {
-          // Ignore messages from past steps (out-of-order delivery)
-          if (step < prev.currentStep) {
-            console.warn(`[WebSocket] Ignoring out-of-order deploy message: step ${step} received after step ${prev.currentStep}`)
-            return prev
-          }
-
-          // Map backend step_status to frontend StepStatus
-          const mappedStatus: StepStatus = step_status === "complete" ? "complete" : "running"
-
-          return {
-            ...prev,
-            status: "deploying",
-            currentStep: step,
-            progress,
-            steps: prev.steps.map((s, idx) =>
-              idx + 1 === step
-                ? { ...s, status: mappedStatus, log }
-                : s
-            ),
-          }
-        })
-        break
-      }
-
-      case "deploy_complete": {
-        // T041: Set deployment info and mark complete
-        const deploymentInfo = lastJsonMessage.data
-
-        setState((prev) => ({
-          ...prev,
-          status: "success",
-          deploymentInfo,
-          progress: 100,
-          steps: prev.steps.map((s) => ({
-            ...s,
-            status: "complete" as StepStatus,
-          })),
-        }))
-
-        // T043: Invalidate React Query cache to refetch project data
-        queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) })
-        queryClient.invalidateQueries({ queryKey: queryKeys.projects.all() })
-        break
-      }
-
-      case "deploy_error": {
-        // T042: Handle deployment errors
-        const { error } = lastJsonMessage.data
-
-        // T063: Toast notification for deploy error
-        toast.error(`Ошибка деплоя: ${error}`)
-
-        setState((prev) => ({
-          ...prev,
-          status: "error",
-          error,
-          steps: prev.steps.map((s, idx) =>
-            idx === prev.currentStep - 1
-              ? { ...s, status: "error" as StepStatus }
-              : s
-          ),
-        }))
-        break
-      }
-
-      // Handle credits_updated messages (optional, for balance sync)
-      case "credits_updated": {
-        queryClient.invalidateQueries({ queryKey: queryKeys.credits.balance })
-        break
-      }
-
-      // T060: Unknown message type handler - graceful degradation
-      default: {
-        // Ignore generation_* messages (handled by useGeneration hook)
-        if (lastJsonMessage.type?.startsWith('generation_')) {
-          break
-        }
-
-        // Log warning for truly unknown message types
-        console.warn('[WebSocket] Unknown message type received:', lastJsonMessage.type, lastJsonMessage)
-        break
-      }
-    }
-  }, [lastJsonMessage, projectId, queryClient])
-
   // Start deployment mutation
   const startDeployMutation = useMutation({
     mutationFn: (envVars: Record<string, string>) => {
@@ -297,7 +303,7 @@ export function useDeploy(projectId: string) {
   // Retry deployment: reset state to idle
   const retryDeploy = useCallback(() => {
     setState(INITIAL_STATE)
-  }, [])
+  }, [INITIAL_STATE])
 
   return {
     // Deployment state

@@ -1,7 +1,7 @@
 """Business logic for credits module."""
 
 import logging
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -11,8 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.models import User
 from app.core.constants import (
     REFERRAL_BONUS,
-    get_daily_bonus_claimable as get_daily_bonus_amount,
     get_rollover_limit,
+)
+from app.core.constants import (
+    get_daily_bonus_claimable as get_daily_bonus_amount,
 )
 from app.core.db_utils import get_user_with_lock
 from app.credits.models import CreditTransaction, DailyBonus

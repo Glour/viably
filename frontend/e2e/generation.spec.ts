@@ -350,7 +350,7 @@ test.describe("Template → Project → Generation Flow", () => {
     await expect(page.getByRole("button", { name: /генерировать/i }).first()).toBeVisible()
 
     // Find free text input (textarea)
-    const freeTextInput = page.locator("textarea").filter({ hasText: "" }).or(page.getByPlaceholder(/описать|опиши|подробнее/i))
+    const _freeTextInput = page.locator("textarea").filter({ hasText: "" }).or(page.getByPlaceholder(/описать|опиши|подробнее/i))
 
     // If no placeholder matches, just get the first textarea in chat panel
     const textarea = page.locator("textarea").first()

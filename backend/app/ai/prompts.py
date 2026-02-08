@@ -4,7 +4,9 @@ import json
 import re
 from typing import Any
 
-SYSTEM_PROMPT = """You are a senior Python developer specializing in Telegram bots using aiogram 3.x.
+SYSTEM_PROMPT = (
+    """You are a senior Python developer specializing in Telegram bots
+    using aiogram 3.x.
 
 Your task: Generate PRODUCTION-READY code.
 
@@ -23,6 +25,7 @@ Each file should be wrapped in markdown code blocks with the filename as a comme
 <code here>
 ```
 """
+)
 
 
 def build_generation_prompt(

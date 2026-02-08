@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
       // Always show success to prevent email enumeration
       setIsSuccess(true)
       setSubmittedEmail(data.email)
-    } catch (error) {
+    } catch (_error) {
       toast.error("An unexpected error occurred. Please try again.")
       // Trigger shake animation
       setIsShaking(true)

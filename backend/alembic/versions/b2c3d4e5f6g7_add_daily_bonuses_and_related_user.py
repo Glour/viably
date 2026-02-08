@@ -7,10 +7,9 @@ Create Date: 2026-02-05 10:00:00.000000
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = 'b2c3d4e5f6g7'
@@ -56,7 +55,10 @@ def upgrade() -> None:
         sa.Column('user_id', sa.UUID(), nullable=False),
         sa.Column('credits_awarded', sa.Integer(), nullable=False),
         sa.Column('bonus_date', sa.Date(), nullable=False),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+        sa.Column(
+            'created_at', sa.DateTime(timezone=True),
+            server_default=sa.text('now()'), nullable=True,
+        ),
         sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('user_id', 'bonus_date', name='unique_daily_bonus')
@@ -79,5 +81,8 @@ def downgrade() -> None:
     op.drop_column('credit_transactions', 'extra_data')
 
     # Drop related_user_id column
-    op.drop_constraint('fk_credit_transactions_related_user', 'credit_transactions', type_='foreignkey')
+    op.drop_constraint(
+        'fk_credit_transactions_related_user',
+        'credit_transactions', type_='foreignkey',
+    )
     op.drop_column('credit_transactions', 'related_user_id')

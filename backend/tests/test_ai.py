@@ -6,14 +6,13 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.prompts import build_generation_prompt, extract_code_files
 from app.auth.models import User
 from app.projects.models import Project, ProjectStatus
 from app.templates.models import Template
-
 
 # =============================================================================
 # T009: Test build_generation_prompt
@@ -773,7 +772,6 @@ class TestViewGeneratedCode:
         test_template: Template,
     ) -> None:
         """Test that generated code is accessible via GET /projects/{id}."""
-        from httpx import AsyncClient
 
         # Create a project with generated code (simulating post-generation state)
         generated_files = {
@@ -813,7 +811,8 @@ class TestViewGeneratedCode:
         assert data["generated_code"] is not None
         assert "files" in data["generated_code"]
         assert data["generated_code"]["files"]["main.py"] == 'print("Hello, World!")'
-        assert data["generated_code"]["files"]["config.py"] == 'BOT_TOKEN = "FAKE_API_TOKEN_FOR_TESTING_ONLY"'
+        expected = 'BOT_TOKEN = "FAKE_API_TOKEN_FOR_TESTING_ONLY"'
+        assert data["generated_code"]["files"]["config.py"] == expected
         assert data["ai_model_used"] == "claude-sonnet-4-20250514"
         assert data["generated_at"] is not None
 
@@ -917,11 +916,8 @@ class TestErrorHandlingWithCreditRefund:
         3. Trigger generation with mocked API failure
         4. Verify credits are refunded (original balance restored)
         """
-        from app.core.config import settings
-
         # Store initial credits
         initial_credits = test_user.credits
-        generation_cost = settings.GENERATION_COST
 
         # Create draft project
         project = Project(
@@ -1041,7 +1037,6 @@ class TestErrorHandlingWithCreditRefund:
 
         # Mock successful AI generation
         async def mock_generate(project_id):
-            from sqlalchemy import select
             result = await db_session.execute(
                 select(Project).where(Project.id == project_id)
             )
@@ -1195,7 +1190,7 @@ class TestCeleryWorkerConfiguration:
 
     def test_retry_configuration(self) -> None:
         """Test that retry settings are correctly configured (T026)."""
-        from app.ai.worker import celery_app, process_generation
+        from app.ai.worker import celery_app
 
         task = celery_app.tasks["process_generation"]
 
@@ -1206,14 +1201,15 @@ class TestCeleryWorkerConfiguration:
 
     def test_exception_classification(self) -> None:
         """Test that exceptions are classified correctly (T027)."""
-        from app.ai.worker import RETRYABLE_EXCEPTIONS, PERMANENT_EXCEPTIONS
         from anthropic import (
-            APITimeoutError,
-            RateLimitError,
             APIConnectionError,
+            APITimeoutError,
             AuthenticationError,
             BadRequestError,
+            RateLimitError,
         )
+
+        from app.ai.worker import PERMANENT_EXCEPTIONS, RETRYABLE_EXCEPTIONS
 
         # Verify retryable exceptions
         assert APITimeoutError in RETRYABLE_EXCEPTIONS

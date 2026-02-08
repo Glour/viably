@@ -5,8 +5,6 @@ import logging
 from fastapi import APIRouter, Depends, Response, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi_limiter.depends import RateLimiter
-
-logger = logging.getLogger(__name__)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.deps import get_current_user
@@ -29,6 +27,8 @@ from app.auth.service import (
 )
 from app.core.config import settings
 from app.core.database import get_db
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 

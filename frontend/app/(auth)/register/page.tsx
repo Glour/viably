@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Eye, EyeOff } from "lucide-react"
 import { toast } from "sonner"
 
+import { trackSignup } from "@/lib/analytics"
 import { registerSchema, type RegisterFormData } from "@/lib/validations/auth"
 import { useAuthStore } from "@/stores/auth"
 import { ApiError } from "@/types"
@@ -57,6 +58,7 @@ export default function RegisterPage() {
         password: data.password,
         fullName: data.name,
       })
+      trackSignup("email")
       toast.success("Account created successfully!")
       router.push("/dashboard")
     } catch (error) {

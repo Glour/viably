@@ -1,4 +1,4 @@
-import { api, mapUserResponse, unwrapResponse, parseApiError } from "./client"
+import { api, mapUserResponse, parseApiError } from "./client"
 import type { AuthUser } from "@/types"
 
 interface AuthApiResponse {

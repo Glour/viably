@@ -52,7 +52,9 @@ class DeploymentCreate(BaseModel):
             if not re.match(r'^[A-Z][A-Z0-9_]*$', key):
                 raise ValueError(
                     f"Invalid env var name '{key}'. "
-                    "Must start with uppercase letter and contain only uppercase letters, numbers, and underscores."
+                    "Must start with uppercase letter and"
+                    " contain only uppercase letters,"
+                    " numbers, and underscores."
                 )
 
             # Validate value length to prevent abuse
