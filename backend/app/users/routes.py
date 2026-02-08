@@ -8,13 +8,13 @@ from app.auth.deps import get_current_user
 from app.auth.models import User
 from app.auth.schemas import UserResponse
 from app.core.database import get_db
+from app.credits.schemas import TransactionResponse
 from app.users.schemas import (
     CreditBalanceResponse,
     PaginationInfo,
     TransactionsListResponse,
     UserUpdate,
 )
-from app.credits.schemas import TransactionResponse
 from app.users.service import (
     get_credit_balance,
     get_credit_transactions,
@@ -66,7 +66,10 @@ async def update_current_user_profile(
     return {"data": UserResponse.model_validate(updated_user).model_dump()}
 
 
-@router.get("/me/credits", response_model=dict, dependencies=[Depends(RateLimiter(times=30, minutes=1))])
+@router.get(
+    "/me/credits", response_model=dict,
+    dependencies=[Depends(RateLimiter(times=30, minutes=1))],
+)
 async def get_current_user_credits(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -90,7 +93,10 @@ async def get_current_user_credits(
     return {"data": response.model_dump()}
 
 
-@router.get("/me/transactions", response_model=dict, dependencies=[Depends(RateLimiter(times=30, minutes=1))])
+@router.get(
+    "/me/transactions", response_model=dict,
+    dependencies=[Depends(RateLimiter(times=30, minutes=1))],
+)
 async def get_current_user_transactions(
     page: int = Query(1, ge=1, description="Page number (1-indexed)"),
     per_page: int = Query(20, ge=1, le=100, description="Items per page (max 100)"),

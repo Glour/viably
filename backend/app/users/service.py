@@ -1,6 +1,5 @@
 """Business logic for users module."""
 
-from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from sqlalchemy import func, select

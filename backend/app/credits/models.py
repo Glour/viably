@@ -1,7 +1,6 @@
 """Database models for credits module."""
 
 import uuid
-from datetime import date
 
 from sqlalchemy import JSON, Column, Date, DateTime, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
@@ -28,10 +27,12 @@ class CreditTransaction(Base):
     )
 
     # Transaction details
-    amount = Column(Integer, nullable=False)  # Positive for credit, negative for debit
+    # Positive for credit, negative for debit
+    amount = Column(Integer, nullable=False)
     balance_after = Column(Integer, nullable=False)  # Denormalized for fast history display
     transaction_type = Column(String(20), nullable=False, index=True)
-    # Types: signup, daily_bonus, referral_bonus, purchase, refund, generation, rollover, admin_adjustment
+    # Types: signup, daily_bonus, referral_bonus, purchase,
+    # refund, generation, rollover, admin_adjustment
     description = Column(String(255), nullable=True)
 
     # Optional project reference (for generation transactions)

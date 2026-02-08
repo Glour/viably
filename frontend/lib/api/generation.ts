@@ -63,7 +63,7 @@ export async function downloadGeneratedCode(
  * Mock implementation: returns the first template from the templates array
  */
 export async function getTemplateForProject(
-  projectId: string
+  _projectId: string
 ): Promise<TemplateResponse> {
   await new Promise((resolve) => setTimeout(resolve, 300))
 

@@ -11,7 +11,6 @@ from app.auth.models import User
 from app.projects.models import Project, ProjectStatus
 from app.templates.models import Template
 
-
 # =============================================================================
 # User Story 1: Create Project
 # =============================================================================
@@ -350,7 +349,8 @@ async def test_trigger_generation_non_draft(
     )
 
     assert response.status_code == 400
-    assert "draft" in response.json()["detail"].lower() or "error" in response.json()["detail"].lower()
+    detail = response.json()["detail"].lower()
+    assert "draft" in detail or "error" in detail
 
 
 @pytest.mark.asyncio

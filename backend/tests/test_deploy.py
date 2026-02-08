@@ -9,10 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.models import User
 from app.deploy.models import Deployment
-from app.deploy.schemas import DeploymentStatus
 from app.deploy.service import DeploymentService
 from app.projects.models import Project
-
 
 # US1: Deploy Project Tests
 

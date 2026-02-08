@@ -13,7 +13,10 @@ class UserRegister(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=100)
     full_name: str | None = Field(None, max_length=255)
-    referrer_code: str | None = Field(None, max_length=8, description="Referral code of the user who referred this user")
+    referrer_code: str | None = Field(
+        None, max_length=8,
+        description="Referral code of the user who referred this user",
+    )
 
     @field_validator("password")
     @classmethod

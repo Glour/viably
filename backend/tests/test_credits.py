@@ -1,6 +1,5 @@
 """Tests for credits module."""
 
-import asyncio
 import uuid
 from datetime import date, datetime, timedelta, timezone
 
@@ -26,7 +25,6 @@ from app.credits.service import (
     get_rollover_limit,
     process_monthly_rollover,
 )
-
 
 # =============================================================================
 # Phase 3: User Story 1 - Deduct/Add Credits Tests

@@ -8,7 +8,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.templates.models import Template
 
-
 # =============================================================================
 # User Story 1: Browse Available Templates
 # =============================================================================

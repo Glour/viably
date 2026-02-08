@@ -5,8 +5,8 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
-from fastapi import HTTPException, status
 import jwt
+from fastapi import HTTPException, status
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -41,7 +41,10 @@ async def check_account_lockout(email: str) -> None:
         ttl = await redis.ttl(key)
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=f"Account temporarily locked due to multiple failed login attempts. Try again in {ttl} seconds.",
+            detail=(
+            "Account temporarily locked due to multiple failed"
+            f" login attempts. Try again in {ttl} seconds."
+        ),
         )
 
 

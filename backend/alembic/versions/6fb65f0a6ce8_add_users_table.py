@@ -1,15 +1,15 @@
 """Add users table
 
 Revision ID: 6fb65f0a6ce8
-Revises: 
+Revises:
 Create Date: 2026-02-04 15:53:18.722163
 
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = '6fb65f0a6ce8'
@@ -33,7 +33,10 @@ def upgrade() -> None:
     sa.Column('referred_by', sa.UUID(), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.Column('is_verified', sa.Boolean(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+    sa.Column(
+        'created_at', sa.DateTime(timezone=True),
+        server_default=sa.text('now()'), nullable=True,
+    ),
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('last_login_at', sa.DateTime(timezone=True), nullable=True),
     sa.ForeignKeyConstraint(['referred_by'], ['users.id'], ),

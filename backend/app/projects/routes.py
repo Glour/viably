@@ -30,7 +30,12 @@ from app.projects.service import (
 router = APIRouter()
 
 
-@router.post("", response_model=ProjectDetailResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(RateLimiter(times=10, minutes=1))])
+@router.post(
+    "",
+    response_model=ProjectDetailResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(RateLimiter(times=10, minutes=1))],
+)
 async def create_project_endpoint(
     data: ProjectCreate,
     current_user: User = Depends(get_current_user),
@@ -54,11 +59,17 @@ async def create_project_endpoint(
     return ProjectDetailResponse.model_validate(project)
 
 
-@router.get("", response_model=ProjectListResponse, dependencies=[Depends(RateLimiter(times=30, minutes=1))])
+@router.get(
+    "",
+    response_model=ProjectListResponse,
+    dependencies=[Depends(RateLimiter(times=30, minutes=1))],
+)
 async def list_projects_endpoint(
     page: int = Query(1, ge=1, description="Page number"),
     per_page: int = Query(20, ge=1, le=100, description="Items per page"),
-    status_filter: ProjectStatus | None = Query(None, alias="status", description="Filter by status"),
+    status_filter: ProjectStatus | None = Query(
+        None, alias="status", description="Filter by status",
+    ),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ProjectListResponse:
@@ -92,7 +103,11 @@ async def list_projects_endpoint(
     )
 
 
-@router.get("/public/{project_id}", response_model=ProjectResponse, dependencies=[Depends(RateLimiter(times=30, minutes=1))])
+@router.get(
+    "/public/{project_id}",
+    response_model=ProjectResponse,
+    dependencies=[Depends(RateLimiter(times=30, minutes=1))],
+)
 async def get_public_project_endpoint(
     project_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -113,7 +128,11 @@ async def get_public_project_endpoint(
     return ProjectResponse.model_validate(project)
 
 
-@router.get("/{project_id}", response_model=ProjectDetailResponse, dependencies=[Depends(RateLimiter(times=30, minutes=1))])
+@router.get(
+    "/{project_id}",
+    response_model=ProjectDetailResponse,
+    dependencies=[Depends(RateLimiter(times=30, minutes=1))],
+)
 async def get_project_endpoint(
     project_id: UUID,
     current_user: User = Depends(get_current_user),
@@ -137,7 +156,11 @@ async def get_project_endpoint(
     return ProjectDetailResponse.model_validate(project)
 
 
-@router.patch("/{project_id}", response_model=ProjectDetailResponse, dependencies=[Depends(RateLimiter(times=10, minutes=1))])
+@router.patch(
+    "/{project_id}",
+    response_model=ProjectDetailResponse,
+    dependencies=[Depends(RateLimiter(times=10, minutes=1))],
+)
 async def update_project_endpoint(
     project_id: UUID,
     data: ProjectUpdate,
@@ -164,7 +187,11 @@ async def update_project_endpoint(
     return ProjectDetailResponse.model_validate(project)
 
 
-@router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(RateLimiter(times=10, minutes=1))])
+@router.delete(
+    "/{project_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(RateLimiter(times=10, minutes=1))],
+)
 async def delete_project_endpoint(
     project_id: UUID,
     current_user: User = Depends(get_current_user),
@@ -184,7 +211,11 @@ async def delete_project_endpoint(
     await delete_project(project_id, current_user.id, db)
 
 
-@router.post("/{project_id}/generate", response_model=ProjectDetailResponse, dependencies=[Depends(RateLimiter(times=3, minutes=1))])
+@router.post(
+    "/{project_id}/generate",
+    response_model=ProjectDetailResponse,
+    dependencies=[Depends(RateLimiter(times=3, minutes=1))],
+)
 async def trigger_generation_endpoint(
     project_id: UUID,
     current_user: User = Depends(get_current_user),

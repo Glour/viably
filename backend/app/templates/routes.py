@@ -52,7 +52,11 @@ async def get_templates(
     }
 
 
-@router.get("/{template_id}", response_model=dict, dependencies=[Depends(RateLimiter(times=30, minutes=1))])
+@router.get(
+    "/{template_id}",
+    response_model=dict,
+    dependencies=[Depends(RateLimiter(times=30, minutes=1))],
+)
 async def get_template(
     template_id: str,
     db: AsyncSession = Depends(get_db),

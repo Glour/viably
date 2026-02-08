@@ -1,12 +1,11 @@
 """Pydantic schemas for users module requests and responses."""
 
-from datetime import datetime
-from uuid import UUID
 
 from pydantic import BaseModel, Field, HttpUrl
 
 # Re-export UserResponse from auth for consistency
 from app.auth.schemas import UserResponse
+
 # Re-export DailyBonusInfo and TransactionResponse from credits for consistency
 from app.credits.schemas import DailyBonusInfo, TransactionResponse
 

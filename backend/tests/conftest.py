@@ -14,12 +14,12 @@ from sqlalchemy.pool import StaticPool
 from app.auth.models import User
 from app.auth.service import create_access_token, generate_referral_code, hash_password
 from app.core.database import Base, get_db
-from app.main import app
-from app.templates.models import Template
 from app.credits.models import CreditTransaction, DailyBonus
-from app.projects.models import Project, ProjectStatus
 from app.deploy.models import Deployment
-from app.deploy.schemas import DeploymentStatus, DeploymentPlatform
+from app.deploy.schemas import DeploymentPlatform, DeploymentStatus
+from app.main import app
+from app.projects.models import Project, ProjectStatus
+from app.templates.models import Template
 
 # Test database URL (in-memory SQLite for testing)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"

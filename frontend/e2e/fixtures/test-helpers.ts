@@ -106,7 +106,7 @@ export async function setupProjectsMocks(page: Page, project = mock.MOCK_PROJECT
 // Setup WebSocket mock for generation flow
 export async function setupGenerationWS(page: Page) {
   await page.routeWebSocket(/.*\/ws\/.*/, (ws) => {
-    ws.onMessage((message) => {
+    ws.onMessage((_message) => {
       // No response needed for client messages — just simulate server-initiated progress
     })
 

@@ -3,11 +3,10 @@
 import uuid
 from enum import Enum
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, String, Text
+from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Index, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from sqlalchemy import JSON
 
 from app.core.database import Base
 

@@ -7,9 +7,9 @@ Create Date: 2026-02-04 23:00:00.000000
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = 'a1b2c3d4e5f6'
@@ -28,14 +28,28 @@ def upgrade() -> None:
         sa.Column('transaction_type', sa.String(length=20), nullable=False),
         sa.Column('description', sa.String(length=255), nullable=True),
         sa.Column('project_id', sa.UUID(), nullable=True),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+        sa.Column(
+            'created_at', sa.DateTime(timezone=True),
+            server_default=sa.text('now()'), nullable=True,
+        ),
         sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_credit_transactions_user_id'), 'credit_transactions', ['user_id'], unique=False)
-    op.create_index(op.f('ix_credit_transactions_created_at'), 'credit_transactions', ['created_at'], unique=False)
+    op.create_index(
+        op.f('ix_credit_transactions_user_id'),
+        'credit_transactions', ['user_id'], unique=False,
+    )
+    op.create_index(
+        op.f('ix_credit_transactions_created_at'),
+        'credit_transactions', ['created_at'], unique=False,
+    )
     # Composite index for efficient paginated queries
-    op.create_index('ix_credit_transactions_user_created', 'credit_transactions', ['user_id', sa.text('created_at DESC')], unique=False)
+    op.create_index(
+        'ix_credit_transactions_user_created',
+        'credit_transactions',
+        ['user_id', sa.text('created_at DESC')],
+        unique=False,
+    )
 
 
 def downgrade() -> None:

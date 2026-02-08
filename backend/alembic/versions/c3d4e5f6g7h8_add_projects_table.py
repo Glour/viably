@@ -7,9 +7,10 @@ Create Date: 2026-02-05 12:00:00.000000
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = 'c3d4e5f6g7h8'
@@ -35,8 +36,14 @@ def upgrade() -> None:
         sa.Column('deployed_url', sa.Text(), nullable=True),
         sa.Column('deploy_platform', sa.String(length=50), nullable=True),
         sa.Column('is_public', sa.Boolean(), nullable=False, server_default='false'),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-        sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+        sa.Column(
+            'created_at', sa.DateTime(timezone=True),
+            server_default=sa.text('now()'), nullable=True,
+        ),
+        sa.Column(
+            'updated_at', sa.DateTime(timezone=True),
+            server_default=sa.text('now()'), nullable=True,
+        ),
         sa.Column('generated_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('deployed_at', sa.DateTime(timezone=True), nullable=True),
         sa.ForeignKeyConstraint(['template_id'], ['templates.id'], ondelete='RESTRICT'),
@@ -46,7 +53,10 @@ def upgrade() -> None:
     op.create_index('projects_user_id_idx', 'projects', ['user_id'], unique=False)
     op.create_index('projects_status_idx', 'projects', ['status'], unique=False)
     op.create_index('projects_template_id_idx', 'projects', ['template_id'], unique=False)
-    op.create_index('projects_created_at_idx', 'projects', [sa.text('created_at DESC')], unique=False)
+    op.create_index(
+        'projects_created_at_idx', 'projects',
+        [sa.text('created_at DESC')], unique=False,
+    )
 
 
 def downgrade() -> None:

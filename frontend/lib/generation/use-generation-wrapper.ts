@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useMemo, useEffect } from "react"
+import { useState, useCallback, useMemo } from "react"
 import { useGeneration as useWebSocketGeneration } from "@/lib/hooks/use-generation"
 import { useProject } from "@/lib/hooks/use-projects"
 import { useTemplate } from "@/lib/hooks/use-templates"
@@ -155,7 +155,7 @@ export function useGenerationWrapper(projectId: string) {
   }, [wsGeneration.generatedCode])
 
   // Deployment stubs (Phase 6)
-  const startDeployment = useCallback(async (config: DeployConfig) => {
+  const startDeployment = useCallback(async (_config: DeployConfig) => {
     console.warn("Deployment not implemented yet (Phase 6)")
   }, [])
 

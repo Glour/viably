@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { useProjectsStore } from "@/stores/projects"
 import { useDebounce } from "@/hooks/use-debounce"
-import type { ProjectFilter, ProjectSort, ViewMode } from "@/types"
+import type { ProjectFilter, ProjectSort } from "@/types"
 
 export function ProjectToolbar() {
   const searchQuery = useProjectsStore((s) => s.searchQuery)

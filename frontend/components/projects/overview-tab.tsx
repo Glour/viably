@@ -1,7 +1,6 @@
 "use client"
 
 import { ExternalLink } from "lucide-react"
-import { StatusBadge } from "@/components/projects/project-list-row"
 import type { Project } from "@/types"
 
 /* ------------------------------------------------------------------ */
