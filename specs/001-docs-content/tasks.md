@@ -73,13 +73,20 @@ This is a **web application** with:
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T007 Create database migration /home/alex/PycharmProjects/viably/backend/alembic/versions/001_create_email_logs.py [EXECUTOR: api-builder] [SEQUENTIAL]
-- [ ] T008 Run alembic migration to create email_logs table in PostgreSQL [EXECUTOR: MAIN] [SEQUENTIAL]
-- [ ] T009 Create EmailLog SQLAlchemy model in /home/alex/PycharmProjects/viably/backend/src/models/email_log.py [EXECUTOR: api-builder] [PARALLEL-GROUP-2]
-- [ ] T010 Create EmailService class in /home/alex/PycharmProjects/viably/backend/src/services/email_service.py [EXECUTOR: api-builder] [PARALLEL-GROUP-2]
-- [ ] T011 Add RESEND_API_KEY to /home/alex/PycharmProjects/viably/backend/.env and settings [EXECUTOR: MAIN] [PARALLEL-GROUP-2]
-- [ ] T012 Create email API endpoints in /home/alex/PycharmProjects/viably/backend/src/api/v1/emails.py [EXECUTOR: api-builder] [PARALLEL-GROUP-2]
-- [ ] T013 Create Celery task for async email sending in /home/alex/PycharmProjects/viably/backend/src/celery_tasks/email_tasks.py [EXECUTOR: api-builder] [PARALLEL-GROUP-2]
+- [X] T007 Create database migration /home/alex/PycharmProjects/viably/backend/alembic/versions/001_create_email_logs.py [EXECUTOR: api-builder] [SEQUENTIAL]
+→ Artifacts: [f6g7h8i9j0k1_add_email_logs_table.py](../../backend/alembic/versions/f6g7h8i9j0k1_add_email_logs_table.py)
+- [X] T008 Run alembic migration to create email_logs table in PostgreSQL [EXECUTOR: MAIN] [SEQUENTIAL]
+→ Artifacts: Fixed alembic/env.py import, started viably-postgres container, ran migration successfully
+- [X] T009 Create EmailLog SQLAlchemy model in /home/alex/PycharmProjects/viably/backend/src/models/email_log.py [EXECUTOR: api-builder] [PARALLEL-GROUP-2]
+→ Artifacts: [models.py](../../backend/app/emails/models.py), [__init__.py](../../backend/app/emails/__init__.py) - EmailLog model with UUID, user FK, JSONB, indexes
+- [X] T010 Create EmailService class in /home/alex/PycharmProjects/viably/backend/src/services/email_service.py [EXECUTOR: api-builder] [PARALLEL-GROUP-2]
+→ Artifacts: [service.py](../../backend/app/emails/service.py) - send_email, get_email_logs, retry_failed_email methods with Resend integration
+- [X] T011 Add RESEND_API_KEY to /home/alex/PycharmProjects/viably/backend/.env and settings [EXECUTOR: MAIN] [PARALLEL-GROUP-2]
+→ Artifacts: [.env](../../backend/.env), [.env.example](../../backend/.env.example), [config.py](../../backend/app/core/config.py) - added RESEND_API_KEY
+- [X] T012 Create email API endpoints in /home/alex/PycharmProjects/viably/backend/src/api/v1/emails.py [EXECUTOR: api-builder] [PARALLEL-GROUP-2]
+→ Artifacts: [routes.py](../../backend/app/emails/routes.py), [schemas.py](../../backend/app/emails/schemas.py), [main.py](../../backend/app/main.py) - 3 endpoints with rate limiting
+- [X] T013 Create Celery task for async email sending in /home/alex/PycharmProjects/viably/backend/src/celery_tasks/email_tasks.py [EXECUTOR: api-builder] [PARALLEL-GROUP-2]
+→ Artifacts: [email_tasks.py](../../backend/app/celery_tasks/email_tasks.py), [__init__.py](../../backend/app/celery_tasks/__init__.py) - send_email_task, retry_failed_emails_task
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 

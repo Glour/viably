@@ -22,6 +22,7 @@ from app.core.redis import close_redis, get_redis
 from app.credits.cron import start_scheduler, stop_scheduler
 from app.credits.routes import router as credits_router
 from app.deploy.routes import router as deploy_router
+from app.emails.routes import router as emails_router
 from app.projects.routes import router as projects_router
 from app.templates.routes import router as templates_router
 from app.users.routes import router as users_router
@@ -116,6 +117,7 @@ app.include_router(ai_router, prefix="/api/ai", tags=["ai"])
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(credits_router, prefix="/api/credits", tags=["credits"])
 app.include_router(deploy_router, prefix="/api", tags=["deployments"])
+app.include_router(emails_router, prefix="/api/emails", tags=["emails"])
 app.include_router(projects_router, prefix="/api/projects", tags=["projects"])
 app.include_router(templates_router, prefix="/api/templates", tags=["templates"])
 app.include_router(users_router, prefix="/api/users", tags=["users"])

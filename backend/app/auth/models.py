@@ -64,3 +64,9 @@ class User(Base):
         back_populates="user",
         lazy="dynamic",
     )
+    email_logs = relationship(
+        "EmailLog",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="dynamic",
+    )
