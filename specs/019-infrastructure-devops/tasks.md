@@ -59,11 +59,11 @@
 
 **Purpose**: Docker containerization and CI/CD — MUST be complete before production deployment stories.
 
-- [ ] T006 [P] Create multi-stage backend Dockerfile in `backend/Dockerfile` using python:3.12-slim (builder stage: install poetry + deps, runtime stage: copy wheels + app, CMD uvicorn, expose 8000)
-- [ ] T007 [P] Create Celery worker Dockerfile in `backend/Dockerfile.worker` (same base as T006, CMD celery -A app.ai.worker worker --loglevel=info)
-- [ ] T008 [P] Create `backend/.dockerignore` (exclude .git, __pycache__, .env, tests/, .venv, *.pyc, .mypy_cache, .ruff_cache)
-- [ ] T009 Update `docker-compose.yml` to add Redis service (redis:7-alpine, port 6379, healthcheck), backend service (build from backend/Dockerfile, depends_on postgres+redis, env_file backend/.env), worker service (build from backend/Dockerfile.worker, depends_on postgres+redis, env_file backend/.env)
-- [ ] T010 Create `.github/workflows/ci.yml` with: trigger on push/PR to main, jobs: backend (ruff check, mypy, pytest with SQLite), frontend (eslint, tsc --noEmit, next build), use matrix strategy, cache pip and node_modules, fail-fast on any check failure
+- [x] T006 [P] Create multi-stage backend Dockerfile in `backend/Dockerfile` using python:3.12-slim (builder stage: install poetry + deps, runtime stage: copy wheels + app, CMD uvicorn, expose 8000)
+- [x] T007 [P] Create Celery worker Dockerfile in `backend/Dockerfile.worker` (same base as T006, CMD celery -A app.ai.worker worker --loglevel=info)
+- [x] T008 [P] Create `backend/.dockerignore` (exclude .git, __pycache__, .env, tests/, .venv, *.pyc, .mypy_cache, .ruff_cache)
+- [x] T009 Update `docker-compose.yml` to add Redis service (redis:7-alpine, port 6379, healthcheck), backend service (build from backend/Dockerfile, depends_on postgres+redis, env_file backend/.env), worker service (build from backend/Dockerfile.worker, depends_on postgres+redis, env_file backend/.env)
+- [x] T010 Create `.github/workflows/ci.yml` with: trigger on push/PR to main, jobs: backend (ruff check, mypy, pytest with SQLite), frontend (eslint, tsc --noEmit, next build), use matrix strategy, cache pip and node_modules, fail-fast on any check failure
 
 **Checkpoint**: Docker builds work locally (`docker compose up`), CI pipeline runs on push. Foundation ready for production deployment.
 
