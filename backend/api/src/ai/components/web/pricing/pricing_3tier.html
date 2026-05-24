@@ -1,0 +1,111 @@
+<section class="pricing" id="pricing">
+    <div class="container">
+        <h2 class="section-title">Тарифы</h2>
+        <p class="section-sub">Выберите подходящий план</p>
+        <div class="pricing-grid">
+            <div class="price-card">
+                <h3>Старт</h3>
+                <div class="price-amount">990 ₽</div>
+                <div class="price-period">в месяц</div>
+                <ul class="price-features">
+                    <li>Базовые возможности</li>
+                    <li>Email поддержка</li>
+                    <li>1 пользователь</li>
+                </ul>
+                <a href="#" class="btn">Выбрать</a>
+            </div>
+            <div class="price-card popular">
+                <h3>Бизнес</h3>
+                <div class="price-amount">2 490 ₽</div>
+                <div class="price-period">в месяц</div>
+                <ul class="price-features">
+                    <li>Все возможности</li>
+                    <li>Приоритетная поддержка</li>
+                    <li>До 5 пользователей</li>
+                    <li>Аналитика</li>
+                </ul>
+                <a href="#" class="btn">Выбрать</a>
+            </div>
+            <div class="price-card">
+                <h3>Премиум</h3>
+                <div class="price-amount">5 990 ₽</div>
+                <div class="price-period">в месяц</div>
+                <ul class="price-features">
+                    <li>Все из «Бизнес»</li>
+                    <li>Персональный менеджер</li>
+                    <li>Безлимит пользователей</li>
+                    <li>API доступ</li>
+                </ul>
+                <a href="#" class="btn">Выбрать</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.pricing {
+    padding: 100px 0;
+}
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+}
+.price-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 40px 32px;
+    text-align: center;
+    transition: all 0.2s;
+}
+.price-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+}
+.price-card.popular {
+    border-color: var(--primary, #6366f1);
+    position: relative;
+    box-shadow: 0 20px 60px rgba(99,102,241,0.15);
+}
+.price-card.popular::before {
+    content: 'Популярный';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary, #6366f1);
+    color: #fff;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.price-amount {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 20px 0 8px;
+}
+.price-period {
+    color: var(--gray, #64748b);
+    margin-bottom: 32px;
+}
+.price-features {
+    list-style: none;
+    margin-bottom: 32px;
+    text-align: left;
+    padding: 0;
+}
+.price-features li {
+    padding: 8px 0;
+    color: #334155;
+}
+.price-features li::before {
+    content: '✓';
+    color: var(--emerald, #10b981);
+    font-weight: 700;
+    margin-right: 8px;
+}
+@media (max-width: 768px) {
+    .pricing-grid { grid-template-columns: 1fr; }
+}
+</style>

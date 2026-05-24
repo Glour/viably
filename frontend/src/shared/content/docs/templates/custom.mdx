@@ -1,0 +1,1186 @@
+---
+title: "Custom Bot Template Guide"
+description: "Build fully custom bots with your own API endpoints and integrations. Complete flexibility for advanced use cases."
+date: "2024-02-08"
+author: "Viably Team"
+---
+
+# Custom Bot Template Guide
+
+The Custom Bot template is designed for developers who need complete control over their bot's architecture, behavior, and integrations. Unlike pre-configured templates, Custom Bot gives you a blank slate to build sophisticated bots with custom API endpoints, webhook handling, third-party integrations, and complex business logic.
+
+## When to Use the Custom Template
+
+The Custom Bot template is ideal when:
+
+- **You need platform-agnostic bots** that work across multiple messaging platforms simultaneously
+- **Your bot requires custom API endpoints** beyond standard webhook receivers
+- **You're integrating with proprietary systems** or internal enterprise services
+- **Complex business logic** requires custom middleware, data processing, or workflows
+- **You want to combine multiple bot capabilities** in a single deployment (e.g., Discord + Telegram + REST API)
+- **Your use case doesn't fit** pre-built templates and requires architectural flexibility
+
+If you're building a standard Discord, Telegram, or Slack bot without custom integrations, consider using the pre-configured templates instead. They're faster to set up and include best practices out of the box.
+
+---
+
+## Prerequisites
+
+Before starting with the Custom Bot template, you should have:
+
+### Technical Knowledge
+
+- **Programming Proficiency**: Comfortable with TypeScript or Python
+- **API Development**: Experience building RESTful APIs or webhook handlers
+- **HTTP/HTTPS**: Understanding of request/response cycles, status codes, headers
+- **Authentication**: Knowledge of API keys, OAuth, JWT, or other auth mechanisms
+- **Async Programming**: Familiarity with promises, async/await, or coroutines
+
+### Infrastructure Understanding
+
+- **Hosting**: Basic knowledge of cloud platforms (Viably Cloud, AWS, GCP, etc.)
+- **Environment Variables**: How to manage secrets and configuration
+- **Networking**: DNS, HTTPS, CORS, and firewall basics
+- **Databases** (optional): SQL or NoSQL if your bot persists data
+- **Rate Limiting**: Preventing abuse and managing API quotas
+
+### Development Tools
+
+- **Code Editor**: VS Code, WebStorm, or similar with TypeScript/Python support
+- **API Testing**: Postman, Insomnia, or cURL for testing endpoints
+- **Version Control**: Git and GitHub/GitLab for code management
+
+If you're missing some prerequisites, consider starting with a pre-built template and gradually adding custom features as you learn.
+
+---
+
+## Getting Started
+
+### Step 1: Select the Custom Template
+
+1. Navigate to the **Templates Gallery** in your Viably dashboard
+2. Select **Custom Bot** from the template list
+3. Click **Use Template** to open the customization interface
+
+You'll see the bot editor with three panels:
+- **Configuration** (left): Project settings and metadata
+- **Code Editor** (center): Your bot's implementation
+- **Preview** (right): Live testing environment
+
+### Step 2: Project Structure
+
+The Custom Bot template generates a clean, modular project structure:
+
+```
+custom-bot/
+├── src/
+│   ├── api/              # API route handlers
+│   │   ├── webhooks.ts   # Webhook endpoints
+│   │   ├── rest.ts       # REST API routes
+│   │   └── health.ts     # Health check endpoint
+│   ├── services/         # Business logic layer
+│   │   ├── bot.service.ts
+│   │   └── integrations/
+│   │       ├── discord.ts
+│   │       ├── telegram.ts
+│   │       └── custom.ts
+│   ├── middleware/       # Express/FastAPI middleware
+│   │   ├── auth.ts
+│   │   ├── rateLimit.ts
+│   │   └── errorHandler.ts
+│   ├── config/           # Configuration files
+│   │   ├── environment.ts
+│   │   └── constants.ts
+│   ├── types/            # TypeScript types/interfaces
+│   └── main.ts           # Application entry point
+├── tests/
+├── .env.example
+├── package.json / requirements.txt
+└── README.md
+```
+
+### Step 3: Basic Configuration
+
+In the left panel, configure your bot's metadata:
+
+```typescript
+{
+  "name": "MyCustomBot",
+  "platform": "custom",
+  "language": "typescript", // or "python"
+  "framework": "express",   // or "fastapi"
+  "features": [
+    "webhooks",
+    "rest-api",
+    "authentication",
+    "rate-limiting"
+  ],
+  "integrations": [
+    "discord",
+    "telegram",
+    "custom-api"
+  ]
+}
+```
+
+**Key Configuration Options**:
+
+- **name**: Your bot's identifier (used in logs and monitoring)
+- **platform**: Keep as "custom" for multi-platform bots
+- **language**: Choose TypeScript (Node.js) or Python based on your expertise
+- **framework**: Express (TypeScript) or FastAPI (Python)
+- **features**: Enable built-in capabilities like auth, rate limiting, CORS
+- **integrations**: Specify which platforms or APIs you're connecting to
+
+---
+
+## Custom Bot Capabilities
+
+### 1. Custom API Endpoints
+
+Create custom REST API endpoints for your bot's functionality.
+
+**TypeScript Example (Express)**:
+
+```typescript
+import express from 'express';
+import { Router } from 'express';
+
+const router = Router();
+
+// Custom endpoint for bot commands
+router.post('/api/command', async (req, res) => {
+  const { command, userId, platform } = req.body;
+
+  try {
+    // Your custom logic here
+    const response = await processCommand(command, userId);
+
+    res.json({
+      success: true,
+      response: response,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Query endpoint for bot data
+router.get('/api/status/:botId', async (req, res) => {
+  const { botId } = req.params;
+
+  const status = await getBotStatus(botId);
+  res.json(status);
+});
+
+export default router;
+```
+
+**Python Example (FastAPI)**:
+
+```python
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from datetime import datetime
+
+router = APIRouter()
+
+class CommandRequest(BaseModel):
+    command: str
+    user_id: str
+    platform: str
+
+@router.post("/api/command")
+async def handle_command(request: CommandRequest):
+    try:
+        response = await process_command(
+            request.command,
+            request.user_id
+        )
+
+        return {
+            "success": True,
+            "response": response,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+@router.get("/api/status/{bot_id}")
+async def get_bot_status(bot_id: str):
+    status = await get_bot_status_from_db(bot_id)
+    return status
+```
+
+### 2. Webhook Handling
+
+Receive real-time events from messaging platforms or external services.
+
+**Multi-Platform Webhook Router**:
+
+```typescript
+import { Router } from 'express';
+import { verifyDiscordSignature } from './middleware/verify';
+import { verifyTelegramWebhook } from './middleware/telegram';
+
+const webhookRouter = Router();
+
+// Discord webhook
+webhookRouter.post('/webhook/discord',
+  verifyDiscordSignature,
+  async (req, res) => {
+    const { type, data } = req.body;
+
+    if (type === 'MESSAGE_CREATE') {
+      await handleDiscordMessage(data);
+    }
+
+    res.status(200).send('OK');
+  }
+);
+
+// Telegram webhook
+webhookRouter.post('/webhook/telegram',
+  verifyTelegramWebhook,
+  async (req, res) => {
+    const update = req.body;
+
+    if (update.message) {
+      await handleTelegramMessage(update.message);
+    }
+
+    res.sendStatus(200);
+  }
+);
+
+// Generic custom webhook
+webhookRouter.post('/webhook/custom/:source',
+  async (req, res) => {
+    const { source } = req.params;
+    const payload = req.body;
+
+    await processCustomWebhook(source, payload);
+    res.json({ received: true });
+  }
+);
+
+export default webhookRouter;
+```
+
+**Webhook Verification** (Security Critical):
+
+```typescript
+import crypto from 'crypto';
+
+export function verifyDiscordSignature(req, res, next) {
+  const signature = req.headers['x-signature-ed25519'];
+  const timestamp = req.headers['x-signature-timestamp'];
+  const body = JSON.stringify(req.body);
+
+  const isValid = crypto.verify(
+    'ed25519',
+    Buffer.from(timestamp + body),
+    {
+      key: process.env.DISCORD_PUBLIC_KEY,
+      format: 'hex'
+    },
+    Buffer.from(signature, 'hex')
+  );
+
+  if (!isValid) {
+    return res.status(401).send('Invalid signature');
+  }
+
+  next();
+}
+```
+
+### 3. External API Integrations
+
+Connect your bot to third-party services and APIs.
+
+**Integration Service Pattern**:
+
+```typescript
+import axios from 'axios';
+
+class ExternalAPIService {
+  private apiKey: string;
+  private baseURL: string;
+
+  constructor() {
+    this.apiKey = process.env.EXTERNAL_API_KEY;
+    this.baseURL = 'https://api.external-service.com';
+  }
+
+  async fetchData(query: string) {
+    try {
+      const response = await axios.get(`${this.baseURL}/search`, {
+        params: { q: query },
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 5000 // 5 second timeout
+      });
+
+      return response.data;
+    } catch (error) {
+      if (error.response?.status === 429) {
+        throw new Error('Rate limit exceeded');
+      }
+      throw error;
+    }
+  }
+
+  async postData(payload: any) {
+    const response = await axios.post(
+      `${this.baseURL}/webhook`,
+      payload,
+      {
+        headers: { 'Authorization': `Bearer ${this.apiKey}` }
+      }
+    );
+
+    return response.data;
+  }
+}
+
+export default new ExternalAPIService();
+```
+
+### 4. Database Connections
+
+Persist bot data with your preferred database.
+
+**PostgreSQL Example**:
+
+```typescript
+import { Pool } from 'pg';
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
+
+export async function saveUserMessage(userId: string, message: string) {
+  const query = `
+    INSERT INTO user_messages (user_id, message, created_at)
+    VALUES ($1, $2, NOW())
+    RETURNING id
+  `;
+
+  const result = await pool.query(query, [userId, message]);
+  return result.rows[0].id;
+}
+
+export async function getUserHistory(userId: string, limit: number = 10) {
+  const query = `
+    SELECT message, created_at
+    FROM user_messages
+    WHERE user_id = $1
+    ORDER BY created_at DESC
+    LIMIT $2
+  `;
+
+  const result = await pool.query(query, [userId, limit]);
+  return result.rows;
+}
+```
+
+**MongoDB Example**:
+
+```typescript
+import { MongoClient } from 'mongodb';
+
+const client = new MongoClient(process.env.MONGODB_URI);
+let db;
+
+export async function connectDB() {
+  await client.connect();
+  db = client.db('custom-bot');
+}
+
+export async function saveConversation(userId: string, messages: any[]) {
+  return await db.collection('conversations').insertOne({
+    userId,
+    messages,
+    createdAt: new Date()
+  });
+}
+
+export async function getConversation(userId: string) {
+  return await db.collection('conversations').findOne({ userId });
+}
+```
+
+---
+
+## Architecture Patterns
+
+### 1. REST API Design
+
+Structure your custom bot as a RESTful API for maximum flexibility.
+
+**Resource-Based Routing**:
+
+```typescript
+// Bot management endpoints
+GET    /api/bots              - List all bots
+POST   /api/bots              - Create new bot
+GET    /api/bots/:id          - Get bot details
+PUT    /api/bots/:id          - Update bot
+DELETE /api/bots/:id          - Delete bot
+
+// Message endpoints
+POST   /api/bots/:id/message  - Send message
+GET    /api/bots/:id/messages - Get message history
+
+// Webhook endpoints
+POST   /webhook/discord       - Discord events
+POST   /webhook/telegram      - Telegram updates
+POST   /webhook/custom/:source - Custom webhooks
+```
+
+### 2. Webhook vs Polling
+
+**Choose Webhooks When**:
+- Platform supports real-time webhooks (Discord, Telegram, Slack)
+- You need instant responses (< 1 second)
+- You want to minimize API calls and costs
+- Your hosting supports public HTTPS endpoints
+
+**Choose Polling When**:
+- Platform doesn't support webhooks
+- You're behind a firewall or NAT
+- Development/testing on localhost
+- Simpler deployment requirements
+
+**Hybrid Approach**:
+
+```typescript
+class BotAdapter {
+  private mode: 'webhook' | 'polling';
+
+  constructor(config) {
+    this.mode = config.useWebhooks ? 'webhook' : 'polling';
+  }
+
+  async start() {
+    if (this.mode === 'webhook') {
+      await this.setupWebhooks();
+    } else {
+      this.startPolling();
+    }
+  }
+
+  private async setupWebhooks() {
+    // Register webhook URLs with platforms
+    await this.registerDiscordWebhook();
+    await this.registerTelegramWebhook();
+  }
+
+  private startPolling() {
+    // Poll platforms every N seconds
+    setInterval(() => this.pollForUpdates(), 2000);
+  }
+}
+```
+
+### 3. Authentication Strategies
+
+**API Key Authentication**:
+
+```typescript
+import { Request, Response, NextFunction } from 'express';
+
+export function apiKeyAuth(req: Request, res: Response, next: NextFunction) {
+  const apiKey = req.headers['x-api-key'];
+
+  if (!apiKey) {
+    return res.status(401).json({ error: 'API key required' });
+  }
+
+  if (apiKey !== process.env.API_KEY) {
+    return res.status(403).json({ error: 'Invalid API key' });
+  }
+
+  next();
+}
+
+// Usage
+app.use('/api', apiKeyAuth);
+```
+
+**JWT Authentication**:
+
+```typescript
+import jwt from 'jsonwebtoken';
+
+export function jwtAuth(req: Request, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token required' });
+  }
+
+  const token = authHeader.substring(7);
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    res.status(403).json({ error: 'Invalid token' });
+  }
+}
+```
+
+**OAuth 2.0 Integration**:
+
+```typescript
+import { OAuth2Client } from 'google-auth-library';
+
+const oauth2Client = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.REDIRECT_URI
+);
+
+app.get('/auth/google', (req, res) => {
+  const url = oauth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: ['profile', 'email']
+  });
+  res.redirect(url);
+});
+
+app.get('/auth/google/callback', async (req, res) => {
+  const { code } = req.query;
+  const { tokens } = await oauth2Client.getToken(code);
+
+  // Store tokens and authenticate user
+  req.session.tokens = tokens;
+  res.redirect('/dashboard');
+});
+```
+
+### 4. Rate Limiting
+
+Protect your bot from abuse with rate limiting.
+
+**Express Rate Limit**:
+
+```typescript
+import rateLimit from 'express-rate-limit';
+
+// General API rate limit
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // 100 requests per window
+  message: 'Too many requests from this IP',
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// Strict rate limit for expensive operations
+const strictLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // 10 requests per minute
+  message: 'Rate limit exceeded'
+});
+
+app.use('/api', apiLimiter);
+app.use('/api/generate', strictLimiter);
+```
+
+**User-Based Rate Limiting**:
+
+```typescript
+import Redis from 'ioredis';
+
+const redis = new Redis(process.env.REDIS_URL);
+
+async function userRateLimit(userId: string, limit: number, windowSeconds: number) {
+  const key = `ratelimit:${userId}`;
+  const current = await redis.incr(key);
+
+  if (current === 1) {
+    await redis.expire(key, windowSeconds);
+  }
+
+  if (current > limit) {
+    throw new Error('Rate limit exceeded');
+  }
+}
+
+// Usage in endpoint
+app.post('/api/command', async (req, res) => {
+  try {
+    await userRateLimit(req.user.id, 30, 60); // 30 req/min
+    // Process command
+  } catch (error) {
+    res.status(429).json({ error: error.message });
+  }
+});
+```
+
+### 5. Error Handling
+
+Implement robust error handling for production reliability.
+
+**Centralized Error Handler**:
+
+```typescript
+import { Request, Response, NextFunction } from 'express';
+
+class AppError extends Error {
+  statusCode: number;
+  isOperational: boolean;
+
+  constructor(message: string, statusCode: number) {
+    super(message);
+    this.statusCode = statusCode;
+    this.isOperational = true;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export function errorHandler(
+  err: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  if (err instanceof AppError) {
+    return res.status(err.statusCode).json({
+      error: err.message,
+      requestId: req.id
+    });
+  }
+
+  // Log unexpected errors
+  console.error('Unexpected error:', err);
+
+  res.status(500).json({
+    error: 'Internal server error',
+    requestId: req.id
+  });
+}
+
+// Usage
+app.use(errorHandler);
+```
+
+---
+
+## Customization Guide
+
+### Creating Custom Endpoints
+
+Define your own API routes for specific functionality.
+
+```typescript
+import { Router } from 'express';
+
+const customRouter = Router();
+
+// Analytics endpoint
+customRouter.get('/analytics/summary', async (req, res) => {
+  const { startDate, endDate } = req.query;
+
+  const analytics = await getAnalytics(
+    new Date(startDate),
+    new Date(endDate)
+  );
+
+  res.json(analytics);
+});
+
+// Bulk operations
+customRouter.post('/bulk/send', async (req, res) => {
+  const { recipients, message } = req.body;
+
+  const results = await Promise.allSettled(
+    recipients.map(r => sendMessage(r, message))
+  );
+
+  res.json({
+    success: results.filter(r => r.status === 'fulfilled').length,
+    failed: results.filter(r => r.status === 'rejected').length
+  });
+});
+
+export default customRouter;
+```
+
+### Defining Custom Routes
+
+Organize routes by feature or domain.
+
+```typescript
+// main.ts
+import express from 'express';
+import botRoutes from './api/bot.routes';
+import webhookRoutes from './api/webhook.routes';
+import analyticsRoutes from './api/analytics.routes';
+
+const app = express();
+
+app.use('/api/bot', botRoutes);
+app.use('/webhook', webhookRoutes);
+app.use('/api/analytics', analyticsRoutes);
+
+export default app;
+```
+
+### Middleware Setup
+
+Create custom middleware for cross-cutting concerns.
+
+```typescript
+// middleware/logging.ts
+export function requestLogger(req, res, next) {
+  const start = Date.now();
+
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`);
+  });
+
+  next();
+}
+
+// middleware/cors.ts
+import cors from 'cors';
+
+export const corsOptions = cors({
+  origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key']
+});
+
+// Apply middleware
+app.use(requestLogger);
+app.use(corsOptions);
+```
+
+### Environment Variables
+
+Manage configuration securely with environment variables.
+
+```typescript
+// config/environment.ts
+import { z } from 'zod';
+
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']),
+  PORT: z.coerce.number().default(3000),
+  DATABASE_URL: z.string().url(),
+  REDIS_URL: z.string().url().optional(),
+  API_KEY: z.string().min(32),
+  DISCORD_TOKEN: z.string().optional(),
+  TELEGRAM_TOKEN: z.string().optional(),
+  ANTHROPIC_API_KEY: z.string().optional()
+});
+
+export const env = envSchema.parse(process.env);
+
+// Usage
+import { env } from './config/environment';
+console.log(`Starting on port ${env.PORT}`);
+```
+
+---
+
+## Deployment
+
+### Custom Domain Setup
+
+Configure your bot with a custom domain. By default, your bot is available at `your-bot.viably.dev` with automatic SSL via Certbot.
+
+**Using a Custom Domain**:
+
+**1. Configure DNS**:
+```
+Type: CNAME
+Name: bot
+Value: your-bot.viably.dev
+TTL: 300
+```
+
+**2. Contact Support**:
+Email support@viably.dev to configure your custom domain on our Nginx servers.
+
+**3. HTTPS**:
+SSL certificates are automatically provisioned via Certbot (Let's Encrypt).
+
+### Environment Configuration
+
+Set production environment variables:
+
+```bash
+# Required
+DATABASE_URL=postgresql://...
+API_KEY=your-secure-api-key-here
+JWT_SECRET=your-jwt-secret-here
+
+# Platform tokens (if using)
+DISCORD_TOKEN=...
+TELEGRAM_TOKEN=...
+
+# Third-party services
+ANTHROPIC_API_KEY=...
+SENTRY_DSN=...
+
+# Optional
+REDIS_URL=redis://...
+LOG_LEVEL=info
+NODE_ENV=production
+```
+
+### Scaling Considerations
+
+**Horizontal Scaling**:
+- Use stateless design (no in-memory sessions)
+- Store sessions in Redis or database
+- Use message queues for async tasks
+
+**Vertical Scaling**:
+Contact support to upgrade your instance resources on our servers.
+
+**Load Balancing**:
+Nginx handles load balancing across multiple container instances on our servers.
+
+### Monitoring
+
+**Health Check Endpoint**:
+
+```typescript
+app.get('/health', async (req, res) => {
+  const checks = {
+    status: 'healthy',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    database: await checkDatabase(),
+    redis: await checkRedis()
+  };
+
+  const isHealthy = Object.values(checks).every(v => v !== 'unhealthy');
+  res.status(isHealthy ? 200 : 503).json(checks);
+});
+
+async function checkDatabase() {
+  try {
+    await pool.query('SELECT 1');
+    return 'connected';
+  } catch {
+    return 'unhealthy';
+  }
+}
+```
+
+**Logging**:
+
+```typescript
+import winston from 'winston';
+
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' })
+  ]
+});
+
+export default logger;
+```
+
+---
+
+## Use Cases
+
+### 1. Multi-Platform Customer Support Bot
+
+A unified bot that handles support requests across Discord, Telegram, and WhatsApp.
+
+```typescript
+class MultiPlatformBot {
+  async handleMessage(platform: string, message: any) {
+    const normalized = this.normalizeMessage(platform, message);
+    const response = await this.generateResponse(normalized);
+
+    return this.sendPlatformSpecificResponse(platform, response);
+  }
+
+  private normalizeMessage(platform: string, message: any) {
+    // Convert platform-specific message to common format
+    return {
+      text: this.extractText(platform, message),
+      userId: this.extractUserId(platform, message),
+      platform
+    };
+  }
+}
+```
+
+### 2. Complex Business Logic Integration
+
+Bot that integrates with CRM, billing, and inventory systems.
+
+```typescript
+class BusinessBot {
+  async processOrder(orderId: string) {
+    // Check inventory
+    const available = await inventoryAPI.checkStock(orderId);
+
+    if (!available) {
+      return { error: 'Out of stock' };
+    }
+
+    // Process payment
+    const payment = await billingAPI.charge(orderId);
+
+    // Update CRM
+    await crmAPI.updateCustomer(payment.customerId, {
+      lastPurchase: new Date(),
+      totalSpent: payment.amount
+    });
+
+    return { success: true, orderId };
+  }
+}
+```
+
+### 3. Enterprise Chatbot with SSO
+
+Bot with Single Sign-On integration for enterprise users.
+
+```typescript
+import passport from 'passport';
+import { Strategy as SamlStrategy } from 'passport-saml';
+
+passport.use(new SamlStrategy({
+  entryPoint: process.env.SSO_ENTRY_POINT,
+  issuer: 'viably-bot',
+  callbackUrl: process.env.SSO_CALLBACK_URL,
+  cert: process.env.SSO_CERTIFICATE
+}, async (profile, done) => {
+  const user = await findOrCreateUser(profile);
+  done(null, user);
+}));
+
+app.get('/auth/sso', passport.authenticate('saml'));
+app.post('/auth/sso/callback',
+  passport.authenticate('saml'),
+  (req, res) => {
+    res.redirect('/dashboard');
+  }
+);
+```
+
+### 4. AI-Powered Analytics Bot
+
+Bot that analyzes data and provides insights via natural language.
+
+```typescript
+import Anthropic from '@anthropic-ai/sdk';
+
+class AnalyticsBot {
+  private anthropic = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY
+  });
+
+  async analyzeQuery(query: string, data: any[]) {
+    const prompt = `
+      Given this dataset: ${JSON.stringify(data)}
+
+      User question: ${query}
+
+      Provide a clear, concise answer with relevant metrics.
+    `;
+
+    const response = await this.anthropic.messages.create({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: prompt }]
+    });
+
+    return response.content[0].text;
+  }
+}
+```
+
+---
+
+## Troubleshooting
+
+### CORS Issues
+
+**Problem**: Browser requests fail with CORS errors.
+
+**Solution**:
+
+```typescript
+import cors from 'cors';
+
+app.use(cors({
+  origin: [
+    'https://yourdomain.com',
+    'http://localhost:3000'
+  ],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+```
+
+### Authentication Errors
+
+**Problem**: Webhook signature verification fails.
+
+**Solution**:
+- Verify environment variables are set correctly
+- Check that raw body is used for signature verification
+- Ensure timestamp tolerance (5 minutes)
+
+```typescript
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf.toString('utf8');
+  }
+}));
+```
+
+### Webhook Failures
+
+**Problem**: Webhooks not receiving events.
+
+**Checklist**:
+1. Verify webhook URL is publicly accessible (HTTPS)
+2. Check webhook is registered with platform
+3. Confirm endpoint returns 200 status within timeout (3-5 seconds)
+4. Review platform-specific webhook requirements
+
+**Debug Webhook**:
+
+```typescript
+app.post('/webhook/debug/:platform', (req, res) => {
+  console.log('Webhook received:', {
+    platform: req.params.platform,
+    headers: req.headers,
+    body: req.body
+  });
+  res.sendStatus(200);
+});
+```
+
+### Performance Issues
+
+**Problem**: Slow response times or timeouts.
+
+**Solutions**:
+
+**1. Add Request Timeout**:
+```typescript
+import timeout from 'connect-timeout';
+
+app.use(timeout('10s'));
+app.use((req, res, next) => {
+  if (!req.timedout) next();
+});
+```
+
+**2. Implement Caching**:
+```typescript
+import NodeCache from 'node-cache';
+
+const cache = new NodeCache({ stdTTL: 300 }); // 5 min
+
+app.get('/api/data', async (req, res) => {
+  const cached = cache.get('data');
+  if (cached) return res.json(cached);
+
+  const data = await fetchExpensiveData();
+  cache.set('data', data);
+  res.json(data);
+});
+```
+
+**3. Use Background Jobs**:
+```typescript
+import Bull from 'bull';
+
+const queue = new Bull('tasks', process.env.REDIS_URL);
+
+queue.process(async (job) => {
+  await performLongRunningTask(job.data);
+});
+
+// In endpoint
+app.post('/api/task', async (req, res) => {
+  await queue.add(req.body);
+  res.json({ status: 'queued' });
+});
+```
+
+---
+
+## Next Steps
+
+### API Best Practices
+
+- **Versioning**: Use `/api/v1/` prefix for API routes
+- **Pagination**: Implement limit/offset for list endpoints
+- **Filtering**: Support query parameters for filtering results
+- **Documentation**: Use OpenAPI/Swagger for API docs
+
+### Security Considerations
+
+- **Input Validation**: Validate all user input with schemas (Zod, Joi)
+- **SQL Injection**: Use parameterized queries or ORM
+- **XSS Prevention**: Sanitize HTML and use Content Security Policy
+- **Rate Limiting**: Implement per-user and per-IP rate limits
+- **Secrets Management**: Never commit API keys; use environment variables
+
+### Performance Optimization
+
+- **Database Indexing**: Add indexes on frequently queried columns
+- **Connection Pooling**: Reuse database connections
+- **Caching Strategy**: Cache frequently accessed data (Redis)
+- **Async Operations**: Use background jobs for long-running tasks
+- **CDN**: Serve static assets via CDN (CloudFlare, AWS CloudFront)
+
+---
+
+## Additional Resources
+
+- **Express.js Documentation**: [expressjs.com](https://expressjs.com)
+- **FastAPI Documentation**: [fastapi.tiangolo.com](https://fastapi.tiangolo.com)
+- **TypeScript Handbook**: [typescriptlang.org/docs](https://www.typescriptlang.org/docs/)
+- **Python asyncio**: [docs.python.org/3/library/asyncio](https://docs.python.org/3/library/asyncio.html)
+- **Docker Docs**: [docs.docker.com](https://docs.docker.com)
+
+---
+
+## Need Help?
+
+Building custom bots can be complex. We're here to help:
+
+- **Documentation**: Browse our [complete documentation](/docs)
+- **Community**: Join our [Discord community](https://discord.gg/viably)
+- **Support**: Email us at [support@viably.dev](mailto:support@viably.dev)
+- **GitHub**: Open an issue at [github.com/viably/platform](https://github.com/viably/platform)
+
+---
+
+**Ready to build?** Select the Custom Bot template in your dashboard and start creating your unique bot architecture today.

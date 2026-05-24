@@ -1,0 +1,261 @@
+networks:
+  viably-network:
+    name: viably-network
+    driver: bridge
+services:
+  backend-dev:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: uvicorn api.src.main:app --host 0.0.0.0 --port 8000 --reload
+    container_name: viably-backend
+    cpus: '1.0'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+    - ./backend/.env
+    environment:
+    - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/viably
+    - CELERY_BROKER_URL=redis://redis:6379/0
+    - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    mem_limit: 400m
+    mem_reservation: 200m
+    networks:
+    - viably-network
+    ports:
+    - 127.0.0.1:8000:8000
+    profiles:
+    - dev
+    restart: always
+    volumes:
+    - ./backend:/app
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /opt/viably-deploys:/opt/viably-deploys
+    - /opt/viably-sites:/opt/viably-sites
+    - /etc/nginx/sites-enabled:/etc/nginx/sites-enabled
+  backend-prod:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: viably-backend
+    cpus: '1.0'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+    - ./backend/.env
+    environment:
+    - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/viably
+    - CELERY_BROKER_URL=redis://redis:6379/0
+    - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    mem_limit: 512m
+    mem_reservation: 256m
+    networks:
+    - viably-network
+    ports:
+    - 127.0.0.1:8000:8000
+    profiles:
+    - prod
+    restart: always
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /opt/viably-deploys:/opt/viably-deploys
+    - /opt/viably-sites:/opt/viably-sites
+    - /etc/nginx/sites-enabled:/etc/nginx/sites-enabled
+  dozzle:
+    container_name: viably-dozzle
+    environment:
+    - DOZZLE_LEVEL=info
+    - DOZZLE_TAILSIZE=300
+    - DOZZLE_FILTER=name=viably-*
+    image: amir20/dozzle:latest
+    mem_limit: 128m
+    mem_reservation: 64m
+    networks:
+    - viably-network
+    ports:
+    - 9999:8080
+    restart: always
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+  frontend-dev:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: runner
+    container_name: viably-frontend
+    cpus: '1.0'
+    depends_on:
+    - backend-dev
+    env_file:
+    - ./frontend/.env.local
+    environment:
+    - NEXT_TELEMETRY_DISABLED=1
+    - INTERNAL_API_URL=http://backend-dev:8000
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 60s
+      test:
+      - CMD
+      - wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1:3000
+      timeout: 10s
+    mem_limit: 1g
+    mem_reservation: 512m
+    networks:
+    - viably-network
+    ports:
+    - 127.0.0.1:3000:3000
+    profiles:
+    - dev
+    restart: always
+  frontend-prod:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: runner
+    container_name: viably-frontend
+    cpus: 0.7
+    depends_on:
+    - backend-prod
+    env_file:
+    - ./frontend/.env.local
+    environment:
+    - NEXT_TELEMETRY_DISABLED=1
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 30s
+      test:
+      - CMD
+      - wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1:3000
+      timeout: 10s
+    mem_limit: 1g
+    mem_reservation: 512m
+    networks:
+    - viably-network
+    ports:
+    - 127.0.0.1:3000:3000
+    profiles:
+    - prod
+    restart: always
+  postgres:
+    container_name: viably-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-viably}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+    healthcheck:
+      interval: 5s
+      retries: 5
+      test:
+      - CMD-SHELL
+      - bash /healthcheck.sh
+      timeout: 5s
+    image: postgres:16-alpine
+    mem_limit: 256m
+    mem_reservation: 128m
+    networks:
+    - viably-network
+    ports:
+    - 127.0.0.1:5432:5432
+    restart: always
+    volumes:
+    - postgres_data:/var/lib/postgresql/data
+    - ./docker/postgres/init.sh:/docker-entrypoint-initdb.d/init.sh
+    - ./docker/postgres/healthcheck.sh:/healthcheck.sh
+  redis:
+    container_name: viably-redis
+    healthcheck:
+      interval: 5s
+      retries: 5
+      test:
+      - CMD
+      - redis-cli
+      - ping
+      timeout: 5s
+    image: redis:7-alpine
+    mem_limit: 64m
+    mem_reservation: 32m
+    networks:
+    - viably-network
+    ports:
+    - 127.0.0.1:6379:6379
+    restart: always
+    volumes:
+    - redis_data:/data
+  worker-dev:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.worker
+    container_name: viably-worker
+    cpus: '1.0'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+    - ./backend/.env
+    environment:
+    - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/viably
+    - CELERY_BROKER_URL=redis://redis:6379/0
+    - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    mem_limit: 400m
+    mem_reservation: 200m
+    networks:
+    - viably-network
+    profiles:
+    - dev
+    restart: always
+    volumes:
+    - ./backend:/app
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /opt/viably-deploys:/opt/viably-deploys
+    - /opt/viably-sites:/opt/viably-sites
+    - /etc/nginx/sites-enabled:/etc/nginx/sites-enabled
+  worker-prod:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.worker
+    container_name: viably-worker
+    cpus: '1.0'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+    - ./backend/.env
+    environment:
+    - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/viably
+    - CELERY_BROKER_URL=redis://redis:6379/0
+    - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    mem_limit: 512m
+    mem_reservation: 256m
+    networks:
+    - viably-network
+    profiles:
+    - prod
+    restart: always
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /opt/viably-deploys:/opt/viably-deploys
+    - /opt/viably-sites:/opt/viably-sites
+    - /etc/nginx/sites-enabled:/etc/nginx/sites-enabled
+volumes:
+  postgres_data: null
+  redis_data: null

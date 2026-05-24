@@ -1,0 +1,1597 @@
+---
+title: "WhatsApp Bot Template Guide"
+description: "Create WhatsApp Business bots with message templates and media support. Perfect for customer support."
+date: "2024-02-08"
+author: "Viably Team"
+---
+
+# WhatsApp Bot Template Guide
+
+Build powerful WhatsApp Business bots that handle customer support, send notifications, process orders, and automate conversations at scale. This guide covers everything you need to create, customize, and deploy WhatsApp bots using Viably.
+
+## What You'll Learn
+
+By the end of this guide, you'll be able to:
+
+- Set up a WhatsApp Business API account
+- Create and customize WhatsApp message templates
+- Build conversational flows with quick replies and interactive lists
+- Send rich media messages (images, videos, documents)
+- Deploy your bot and handle webhook events
+- Troubleshoot common issues
+
+---
+
+## Introduction
+
+WhatsApp is the world's most popular messaging platform, with over 2 billion active users. WhatsApp Business API lets you build bots that communicate directly with customers on their preferred platform.
+
+### Why Build WhatsApp Bots?
+
+**For Customer Support**
+- Instant responses 24/7 without human agents
+- Handle common questions automatically
+- Escalate complex issues to human support seamlessly
+
+**For Business Notifications**
+- Order confirmations and shipping updates
+- Appointment reminders with confirmation buttons
+- Payment notifications and receipts
+
+**For Sales & Marketing**
+- Product catalog browsing
+- Automated lead qualification
+- Personalized product recommendations
+
+### WhatsApp Business API Overview
+
+WhatsApp offers two distinct products:
+
+**WhatsApp Business App** (Not for bots)
+- Free mobile app for small businesses
+- Manual messaging only
+- Limited to 5 devices
+
+**WhatsApp Business API** (What we'll use)
+- Programmatic access for automation
+- Unlimited scale
+- Requires Meta approval
+- Works with Viably
+
+This guide focuses on the **WhatsApp Business API**, which enables bot automation.
+
+### Use Cases
+
+**E-commerce**
+- Order tracking and status updates
+- Product recommendations based on browsing history
+- Cart abandonment reminders
+
+**Healthcare**
+- Appointment scheduling and reminders
+- Prescription refill notifications
+- Test result delivery
+
+**Financial Services**
+- Account balance inquiries
+- Transaction alerts and confirmations
+- Fraud detection warnings
+
+**Travel & Hospitality**
+- Booking confirmations
+- Check-in reminders
+- Real-time flight status updates
+
+### Limitations and Requirements
+
+Before you begin, understand these WhatsApp API constraints:
+
+**Message Templates Required**
+- Proactive messages (bot-initiated) must use pre-approved templates
+- Templates must be submitted to Meta for review
+- Approval takes 1-3 business days
+
+**24-Hour Messaging Window**
+- Once a user messages your bot, you have 24 hours to respond freely
+- After 24 hours, you can only send approved template messages
+- Users can re-open the window by messaging again
+
+**Business Verification**
+- Your business must be verified by Meta
+- Requires legal documentation
+- Verification process takes 1-2 weeks
+
+**Quality Rating**
+- Meta monitors your bot's message quality
+- High block/report rates can limit your access
+- Maintain quality by respecting user preferences
+
+---
+
+## Prerequisites
+
+Before creating your WhatsApp bot, you'll need:
+
+### 1. WhatsApp Business Account
+
+**What You Need**:
+- A Meta Business Account
+- A phone number dedicated to WhatsApp Business API
+- The phone number cannot be used with WhatsApp personal or Business App
+
+**Setup Steps**:
+1. Go to [Meta Business Suite](https://business.facebook.com)
+2. Create a Business Account (or use existing)
+3. Navigate to **WhatsApp Manager**
+4. Follow the setup wizard
+
+**Phone Number Requirements**:
+- Must have SMS or voice call capability
+- Can be mobile or landline
+- Cannot already be registered with WhatsApp
+- One number per WhatsApp Business Account
+
+### 2. Meta Developer Account
+
+**Why You Need This**:
+- Access to WhatsApp Cloud API
+- Webhook configuration
+- App credentials (API keys)
+
+**Setup Steps**:
+1. Go to [Meta for Developers](https://developers.facebook.com)
+2. Create a developer account
+3. Create a new app
+4. Add WhatsApp product to your app
+
+### 3. Verified Business Profile
+
+Meta requires business verification for production access.
+
+**Documents Needed**:
+- Business registration certificate
+- Tax identification number
+- Business address verification
+- Website (optional but recommended)
+
+**Verification Timeline**:
+- Submission: 10 minutes
+- Review: 1-2 weeks
+- Appeals (if rejected): 3-5 business days
+
+**Verification Tips**:
+- Ensure all documents are clear and legible
+- Business name must match across all documents
+- Use a professional email address
+- Provide accurate contact information
+
+### 4. Development Environment
+
+**Required Tools**:
+- Viably account (sign up at [viably.dev](https://viably.dev))
+- Text editor for webhook configuration
+- ngrok or similar tool for local webhook testing
+
+**Optional but Recommended**:
+- Postman for API testing
+- WhatsApp mobile app for testing bot responses
+
+---
+
+## Getting Started
+
+Let's create your first WhatsApp bot with Viably.
+
+### Step 1: Select WhatsApp Template
+
+1. Log in to your Viably dashboard
+2. Click **Templates** in the sidebar
+3. Find **WhatsApp Bot** template
+4. Click **Use Template**
+
+![WhatsApp template selection](/docs/templates/whatsapp-select.png)
+
+### Step 2: Configure Basic Settings
+
+In the configuration panel, set up your bot's identity:
+
+```json
+{
+  "name": "CustomerSupportBot",
+  "platform": "whatsapp",
+  "phoneNumber": "+1234567890",
+  "businessProfile": {
+    "name": "Your Business Name",
+    "category": "CUSTOMER_SUPPORT",
+    "description": "24/7 automated customer support",
+    "website": "https://yourbusiness.com",
+    "email": "support@yourbusiness.com"
+  }
+}
+```
+
+**Configuration Fields**:
+
+- **name**: Internal identifier for your bot
+- **phoneNumber**: Your WhatsApp Business phone number (E.164 format)
+- **category**: Business category (affects template approval)
+- **description**: Shown in WhatsApp Business Profile
+- **website**: Optional, builds trust with users
+- **email**: Support contact email
+
+### Step 3: Connect WhatsApp API
+
+Get your API credentials from Meta:
+
+1. Go to your [Meta App Dashboard](https://developers.facebook.com/apps)
+2. Select your WhatsApp app
+3. Navigate to **WhatsApp > API Setup**
+4. Copy these values:
+
+```bash
+WHATSAPP_API_TOKEN=your_access_token_here
+WHATSAPP_PHONE_NUMBER_ID=your_phone_number_id
+WHATSAPP_BUSINESS_ACCOUNT_ID=your_business_account_id
+VERIFY_TOKEN=your_custom_webhook_token
+```
+
+Add these to your Viably project configuration.
+
+### Step 4: Set Up Webhook
+
+WhatsApp sends incoming messages to your webhook URL.
+
+**In Meta Dashboard**:
+1. Go to **WhatsApp > Configuration**
+2. Click **Edit** next to Webhook
+3. Enter your webhook URL: `https://your-bot.viably.dev/webhook/whatsapp`
+4. Enter your verify token (from configuration above)
+5. Subscribe to these webhook fields:
+   - `messages`
+   - `message_status`
+
+**Verify Webhook**:
+Click **Verify and Save**. Meta will send a GET request to verify your endpoint.
+
+**For Local Testing**:
+Use ngrok to expose your local server:
+
+```bash
+ngrok http 8000
+# Use the ngrok URL as your webhook
+https://abc123.ngrok.io/webhook/whatsapp
+```
+
+---
+
+## WhatsApp Bot Features
+
+WhatsApp Business API offers rich messaging capabilities beyond simple text.
+
+### Message Templates
+
+Templates are pre-approved messages you can send proactively (outside the 24-hour window).
+
+**Template Structure**:
+```json
+{
+  "name": "order_confirmation",
+  "language": "en",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "Order Confirmed!"
+    },
+    {
+      "type": "BODY",
+      "text": "Hi {{1}}, your order #{{2}} has been confirmed. Estimated delivery: {{3}}."
+    },
+    {
+      "type": "FOOTER",
+      "text": "Thank you for your purchase"
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {
+          "type": "QUICK_REPLY",
+          "text": "Track Order"
+        },
+        {
+          "type": "QUICK_REPLY",
+          "text": "Contact Support"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Template Components**:
+- **HEADER**: Optional. Text, image, video, or document
+- **BODY**: Required. Main message text with variables
+- **FOOTER**: Optional. Small text at bottom
+- **BUTTONS**: Optional. Up to 3 quick reply or call-to-action buttons
+
+**Creating Templates**:
+1. Go to [WhatsApp Manager](https://business.facebook.com/wa/manage/message-templates)
+2. Click **Create Template**
+3. Design your template with placeholders
+4. Submit for approval
+5. Wait 1-3 business days for review
+
+**Template Best Practices**:
+- Keep messages concise and valuable
+- Use variables for personalization
+- Avoid promotional language (unless template category is Marketing)
+- Include opt-out instructions
+- Test on multiple devices
+
+### Quick Replies
+
+Quick replies let users respond with predefined options.
+
+**Example Code**:
+```python
+def send_quick_reply(phone_number):
+    return {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": phone_number,
+        "type": "interactive",
+        "interactive": {
+            "type": "button",
+            "body": {
+                "text": "How can I help you today?"
+            },
+            "action": {
+                "buttons": [
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": "support_inquiry",
+                            "title": "Get Support"
+                        }
+                    },
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": "track_order",
+                            "title": "Track Order"
+                        }
+                    },
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": "product_info",
+                            "title": "Product Info"
+                        }
+                    }
+                ]
+            }
+        }
+    }
+```
+
+**Handling Quick Reply Responses**:
+```python
+def handle_quick_reply(message):
+    button_id = message['interactive']['button_reply']['id']
+
+    if button_id == "support_inquiry":
+        return "Our support team is here to help. What's your question?"
+    elif button_id == "track_order":
+        return "Please provide your order number (e.g., #12345)"
+    elif button_id == "product_info":
+        return "Which product would you like to learn about?"
+```
+
+### Media Messages
+
+Send rich media to enhance conversations.
+
+**Supported Media Types**:
+- **Images**: JPEG, PNG (max 5MB)
+- **Videos**: MP4 (max 16MB)
+- **Documents**: PDF, DOCX, etc. (max 100MB)
+- **Audio**: MP3, OGG (max 16MB)
+
+**Sending an Image**:
+```python
+def send_image(phone_number, image_url, caption=None):
+    return {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": phone_number,
+        "type": "image",
+        "image": {
+            "link": image_url,
+            "caption": caption
+        }
+    }
+```
+
+**Sending a Document**:
+```python
+def send_document(phone_number, document_url, filename):
+    return {
+        "messaging_product": "whatsapp",
+        "to": phone_number,
+        "type": "document",
+        "document": {
+            "link": document_url,
+            "filename": filename,
+            "caption": "Here's your invoice"
+        }
+    }
+```
+
+**Media Best Practices**:
+- Host media on HTTPS URLs
+- Optimize file sizes for faster delivery
+- Provide descriptive captions
+- Use compressed formats when possible
+
+### Interactive Lists
+
+Lists let users choose from up to 10 options in a structured menu.
+
+**Example Code**:
+```python
+def send_product_list(phone_number):
+    return {
+        "messaging_product": "whatsapp",
+        "to": phone_number,
+        "type": "interactive",
+        "interactive": {
+            "type": "list",
+            "header": {
+                "type": "text",
+                "text": "Our Products"
+            },
+            "body": {
+                "text": "Browse our product categories"
+            },
+            "footer": {
+                "text": "Select a category to view products"
+            },
+            "action": {
+                "button": "View Categories",
+                "sections": [
+                    {
+                        "title": "Electronics",
+                        "rows": [
+                            {
+                                "id": "phones",
+                                "title": "Smartphones",
+                                "description": "Latest mobile phones"
+                            },
+                            {
+                                "id": "laptops",
+                                "title": "Laptops",
+                                "description": "Business and gaming laptops"
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Accessories",
+                        "rows": [
+                            {
+                                "id": "cases",
+                                "title": "Phone Cases",
+                                "description": "Protective cases"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+```
+
+**List Limitations**:
+- Maximum 10 rows total across all sections
+- Maximum 3 sections
+- Row title: 24 characters max
+- Row description: 72 characters max
+
+### Business Profile
+
+Your business profile appears when users view your bot's info.
+
+**Profile Configuration**:
+```python
+business_profile = {
+    "about": "24/7 automated customer support for Your Business",
+    "address": "123 Main St, San Francisco, CA 94105",
+    "description": "We help you with orders, products, and support inquiries",
+    "email": "support@yourbusiness.com",
+    "websites": ["https://yourbusiness.com"],
+    "vertical": "PROFESSIONAL_SERVICES"
+}
+```
+
+**Profile Setup**:
+1. Go to WhatsApp Manager
+2. Click **Phone Numbers**
+3. Select your number
+4. Click **Edit Profile**
+5. Fill in all fields
+6. Upload a profile picture (square, min 640x640px)
+
+**Profile Best Practices**:
+- Use a recognizable brand logo
+- Keep description clear and concise
+- Add your website for credibility
+- Include business hours in description
+- Update profile picture during campaigns (seasonal, promos)
+
+---
+
+## Code Examples
+
+Let's build practical WhatsApp bot functionality.
+
+### Basic Message Handler
+
+```python
+from fastapi import FastAPI, Request
+from pydantic import BaseModel
+import httpx
+
+app = FastAPI()
+
+# WhatsApp API configuration
+WHATSAPP_API_URL = "https://graph.facebook.com/v18.0"
+PHONE_NUMBER_ID = "your_phone_number_id"
+ACCESS_TOKEN = "your_access_token"
+
+@app.post("/webhook/whatsapp")
+async def whatsapp_webhook(request: Request):
+    """Handle incoming WhatsApp messages"""
+    body = await request.json()
+
+    # Extract message data
+    if body.get("object") == "whatsapp_business_account":
+        for entry in body.get("entry", []):
+            for change in entry.get("changes", []):
+                value = change.get("value", {})
+
+                if "messages" in value:
+                    for message in value["messages"]:
+                        await handle_message(message)
+
+    return {"status": "ok"}
+
+async def handle_message(message: dict):
+    """Process incoming message and send response"""
+    from_number = message["from"]
+    message_type = message["type"]
+
+    # Handle text messages
+    if message_type == "text":
+        user_message = message["text"]["body"].lower()
+        response = generate_response(user_message)
+        await send_text_message(from_number, response)
+
+    # Handle interactive messages (button clicks)
+    elif message_type == "interactive":
+        await handle_interactive_message(message, from_number)
+
+def generate_response(user_message: str) -> str:
+    """Generate bot response based on user input"""
+    if "hello" in user_message or "hi" in user_message:
+        return "Hello! Welcome to our support bot. How can I help you today?"
+
+    elif "order" in user_message:
+        return "I can help you track your order. Please provide your order number."
+
+    elif "hours" in user_message:
+        return "We're available 24/7 through this bot. Our human support team is available Mon-Fri, 9am-6pm EST."
+
+    else:
+        return "I'm not sure I understand. Can you rephrase your question, or type 'help' to see what I can do?"
+```
+
+### Sending Text Messages
+
+```python
+async def send_text_message(to: str, message: str):
+    """Send a text message via WhatsApp API"""
+    url = f"{WHATSAPP_API_URL}/{PHONE_NUMBER_ID}/messages"
+
+    headers = {
+        "Authorization": f"Bearer {ACCESS_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": to,
+        "type": "text",
+        "text": {
+            "preview_url": False,
+            "body": message
+        }
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, json=payload, headers=headers)
+        return response.json()
+```
+
+### Quick Reply Buttons
+
+```python
+async def send_support_menu(to: str):
+    """Send interactive quick reply buttons"""
+    url = f"{WHATSAPP_API_URL}/{PHONE_NUMBER_ID}/messages"
+
+    headers = {
+        "Authorization": f"Bearer {ACCESS_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": to,
+        "type": "interactive",
+        "interactive": {
+            "type": "button",
+            "body": {
+                "text": "How can I assist you today? Choose an option below:"
+            },
+            "action": {
+                "buttons": [
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": "btn_order_status",
+                            "title": "Track Order"
+                        }
+                    },
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": "btn_support",
+                            "title": "Get Support"
+                        }
+                    },
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": "btn_products",
+                            "title": "View Products"
+                        }
+                    }
+                ]
+            }
+        }
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, json=payload, headers=headers)
+        return response.json()
+
+async def handle_interactive_message(message: dict, from_number: str):
+    """Handle button click responses"""
+    button_reply = message["interactive"]["button_reply"]
+    button_id = button_reply["id"]
+
+    if button_id == "btn_order_status":
+        await send_text_message(
+            from_number,
+            "Please provide your order number (e.g., #12345) and I'll check the status for you."
+        )
+
+    elif button_id == "btn_support":
+        await send_text_message(
+            from_number,
+            "I'm here to help! What do you need assistance with?"
+        )
+
+    elif button_id == "btn_products":
+        await send_product_list(from_number)
+```
+
+### Media Message Handling
+
+```python
+async def send_invoice(to: str, order_id: str):
+    """Send PDF invoice as document"""
+    invoice_url = f"https://yourbusiness.com/invoices/{order_id}.pdf"
+
+    url = f"{WHATSAPP_API_URL}/{PHONE_NUMBER_ID}/messages"
+
+    headers = {
+        "Authorization": f"Bearer {ACCESS_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": to,
+        "type": "document",
+        "document": {
+            "link": invoice_url,
+            "filename": f"invoice_{order_id}.pdf",
+            "caption": f"Your invoice for order {order_id}"
+        }
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, json=payload, headers=headers)
+        return response.json()
+
+async def send_product_image(to: str, product_id: str):
+    """Send product image with caption"""
+    image_url = f"https://yourbusiness.com/products/{product_id}.jpg"
+
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": to,
+        "type": "image",
+        "image": {
+            "link": image_url,
+            "caption": "Here's the product you asked about. Reply with 'buy' to purchase."
+        }
+    }
+
+    url = f"{WHATSAPP_API_URL}/{PHONE_NUMBER_ID}/messages"
+    headers = {
+        "Authorization": f"Bearer {ACCESS_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, json=payload, headers=headers)
+        return response.json()
+```
+
+---
+
+## Customization
+
+Tailor your WhatsApp bot to your specific business needs.
+
+### Creating Message Templates
+
+Design templates that users actually want to receive.
+
+**Template Categories**:
+- **UTILITY**: Transactional, account updates (high approval rate)
+- **AUTHENTICATION**: OTP codes, login verification (high approval rate)
+- **MARKETING**: Promotional content (requires opt-in, lower approval rate)
+
+**Template Creation Workflow**:
+
+1. **Draft Template**:
+```text
+Name: order_shipped
+Category: UTILITY
+Language: English
+
+Header: Package on the way!
+
+Body: Hi {{1}}, great news! Your order {{2}} has shipped and will arrive by {{3}}. Track your package: {{4}}
+
+Footer: Questions? Reply to this message.
+
+Buttons:
+- Quick Reply: "Track Package"
+- Quick Reply: "Contact Support"
+```
+
+2. **Submit for Approval**:
+   - Go to WhatsApp Manager > Message Templates
+   - Click Create Template
+   - Fill in all fields
+   - Add variables with {{1}}, {{2}}, etc.
+   - Submit
+
+3. **Wait for Review**:
+   - Typical approval: 1-3 business days
+   - Check status in WhatsApp Manager
+   - Templates auto-expire after 90 days of no use
+
+**Template Approval Tips**:
+- Use clear, professional language
+- Avoid excessive punctuation (!!!)
+- Don't include promotional content in UTILITY templates
+- Include opt-out language for MARKETING templates
+- Test variables before submitting
+
+### Designing Conversation Flows
+
+Map out user journeys to create intuitive experiences.
+
+**Example: Order Tracking Flow**
+
+```
+User: "Track my order"
+  ↓
+Bot: "Please provide your order number"
+  ↓
+User: "#12345"
+  ↓
+Bot: [Looks up order]
+  ↓
+Bot: "Order #12345 - Status: Shipped
+      Estimated delivery: March 15
+      Tracking: 1Z999AA10123456784"
+      [Button: Track Package] [Button: Contact Support]
+  ↓
+User clicks: [Track Package]
+  ↓
+Bot: [Sends tracking link]
+```
+
+**Implementation**:
+
+```python
+# Conversation state management
+user_states = {}
+
+async def handle_conversation(message: dict):
+    from_number = message["from"]
+    user_text = message["text"]["body"].lower()
+
+    # Check if user is in a conversation flow
+    current_state = user_states.get(from_number, "idle")
+
+    if current_state == "idle":
+        if "track" in user_text or "order" in user_text:
+            user_states[from_number] = "awaiting_order_number"
+            await send_text_message(
+                from_number,
+                "Please provide your order number (e.g., #12345)"
+            )
+
+    elif current_state == "awaiting_order_number":
+        order_number = extract_order_number(user_text)
+        if order_number:
+            order_info = await lookup_order(order_number)
+            await send_order_status(from_number, order_info)
+            user_states[from_number] = "idle"
+        else:
+            await send_text_message(
+                from_number,
+                "I didn't recognize that order number. Please try again (format: #12345)"
+            )
+
+def extract_order_number(text: str) -> str:
+    """Extract order number from user message"""
+    import re
+    match = re.search(r'#?\d{5}', text)
+    return match.group(0) if match else None
+```
+
+### Handling User Responses
+
+Process various input types and edge cases.
+
+**Text Input Validation**:
+```python
+def validate_email(email: str) -> bool:
+    """Validate email format"""
+    import re
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return bool(re.match(pattern, email))
+
+def validate_phone(phone: str) -> bool:
+    """Validate phone number"""
+    import re
+    # Remove common separators
+    clean = re.sub(r'[\s\-\(\)]', '', phone)
+    # Check if valid E.164 format
+    return bool(re.match(r'^\+?1?\d{10,15}$', clean))
+
+async def handle_email_input(from_number: str, email: str):
+    """Process email input with validation"""
+    if validate_email(email):
+        await save_user_email(from_number, email)
+        await send_text_message(
+            from_number,
+            "Thanks! I've saved your email address."
+        )
+    else:
+        await send_text_message(
+            from_number,
+            "That doesn't look like a valid email. Please try again."
+        )
+```
+
+**Error Handling**:
+```python
+async def safe_send_message(to: str, message: str):
+    """Send message with error handling"""
+    try:
+        response = await send_text_message(to, message)
+        return response
+    except httpx.HTTPError as e:
+        # Log error
+        print(f"Failed to send message: {e}")
+        # Retry logic
+        await retry_send_message(to, message)
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        # Alert admin
+        await notify_admin(f"WhatsApp send failed: {e}")
+```
+
+### Media Handling
+
+Process images, videos, and documents from users.
+
+**Receiving Media**:
+```python
+async def handle_media_message(message: dict):
+    """Process incoming media from users"""
+    from_number = message["from"]
+    media_type = message["type"]
+
+    if media_type == "image":
+        image_id = message["image"]["id"]
+        image_url = await get_media_url(image_id)
+        await process_image(from_number, image_url)
+
+    elif media_type == "document":
+        doc_id = message["document"]["id"]
+        doc_url = await get_media_url(doc_id)
+        await process_document(from_number, doc_url)
+
+async def get_media_url(media_id: str) -> str:
+    """Get download URL for media"""
+    url = f"{WHATSAPP_API_URL}/{media_id}"
+    headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
+        media_data = response.json()
+        return media_data["url"]
+
+async def process_image(from_number: str, image_url: str):
+    """Download and process user-sent image"""
+    # Download image
+    async with httpx.AsyncClient() as client:
+        response = await client.get(image_url)
+        image_bytes = response.content
+
+    # Process (e.g., OCR, image recognition)
+    # ... your processing logic ...
+
+    await send_text_message(
+        from_number,
+        "Thanks for the image! I've processed it."
+    )
+```
+
+---
+
+## Deployment
+
+Get your WhatsApp bot running in production.
+
+### Webhook Configuration
+
+Set up your webhook to receive messages.
+
+**Webhook Endpoint**:
+```python
+@app.get("/webhook/whatsapp")
+async def webhook_verify(request: Request):
+    """Verify webhook with Meta"""
+    mode = request.query_params.get("hub.mode")
+    token = request.query_params.get("hub.verify_token")
+    challenge = request.query_params.get("hub.challenge")
+
+    if mode == "subscribe" and token == VERIFY_TOKEN:
+        return int(challenge)
+    else:
+        return {"error": "Invalid verification token"}, 403
+
+@app.post("/webhook/whatsapp")
+async def webhook_receive(request: Request):
+    """Receive incoming messages"""
+    body = await request.json()
+    # Process message (shown in previous examples)
+    return {"status": "ok"}
+```
+
+**Webhook Requirements**:
+- Must be HTTPS (not HTTP)
+- Must respond to GET requests for verification
+- Must respond to POST within 20 seconds
+- Must return 200 status code
+
+### Template Submission Process
+
+Get your message templates approved by Meta.
+
+**Step-by-Step**:
+
+1. **Create Template in WhatsApp Manager**:
+   - Navigate to Message Templates
+   - Click Create Template
+   - Choose category (UTILITY recommended)
+   - Enter template name (lowercase, underscores only)
+   - Add language
+
+2. **Design Template Components**:
+   - **Header** (optional): Text, image, video, or document
+   - **Body** (required): Main message with variables {{1}}, {{2}}
+   - **Footer** (optional): Small text disclaimer
+   - **Buttons** (optional): Up to 2 Call-to-Action or 3 Quick Reply
+
+3. **Add Sample Content**:
+   - Provide example values for all variables
+   - This helps reviewers understand your template
+
+4. **Submit for Review**:
+   - Review all fields
+   - Click Submit
+   - Wait 1-3 business days
+
+5. **Handle Rejection**:
+   - Read rejection reason carefully
+   - Common issues: promotional language, unclear purpose
+   - Edit and resubmit
+
+**Approval Timeline**:
+- Typical: 1-3 business days
+- Fast-track: Some AUTHENTICATION templates in hours
+- Appeals: 3-5 business days if rejected
+
+### Phone Number Setup
+
+Configure your WhatsApp Business phone number.
+
+**In WhatsApp Manager**:
+
+1. **Add Phone Number**:
+   - Click Phone Numbers > Add Phone Number
+   - Enter phone number (must have SMS capability)
+   - Choose verification method (SMS or Voice)
+   - Enter verification code
+
+2. **Configure Display Name**:
+   - This appears in user chats
+   - Maximum 25 characters
+   - Must match your business name
+
+3. **Set Business Profile**:
+   - Add profile photo (640x640px minimum)
+   - Add business description
+   - Add website and email
+   - Set business category
+
+4. **Enable Two-Factor Authentication**:
+   - Recommended for security
+   - Set 6-digit PIN
+   - Store PIN securely
+
+**Number Migration**:
+If moving from WhatsApp Business App:
+- Backup chat history first
+- Number will be disconnected from app
+- Cannot be reversed
+- Takes 5-10 minutes
+
+### Testing in Sandbox
+
+Test your bot before going live.
+
+**Meta Test Numbers**:
+Meta provides test phone numbers for development.
+
+1. Go to WhatsApp > API Setup
+2. Find "Test numbers" section
+3. Add your personal WhatsApp number
+4. You'll receive a verification message
+5. Reply to verify
+
+**Sandbox Limitations**:
+- Only verified numbers can message your bot
+- Template approval not required
+- Rate limits are lower
+- No business verification needed
+
+**Testing Checklist**:
+- [ ] Text message sending and receiving
+- [ ] Quick reply buttons
+- [ ] Interactive lists
+- [ ] Image messages
+- [ ] Document messages
+- [ ] Error handling
+- [ ] 24-hour message window expiration
+- [ ] Template messages
+
+**Local Development**:
+```bash
+# Use ngrok to expose localhost
+ngrok http 8000
+
+# Update webhook URL in Meta Dashboard
+https://abc123.ngrok.io/webhook/whatsapp
+
+# Run your bot locally
+uvicorn main:app --reload
+
+# Test with your WhatsApp account
+```
+
+---
+
+## Use Cases
+
+Real-world applications of WhatsApp bots.
+
+### Customer Support Automation
+
+**Scenario**: E-commerce company handling 1000+ support tickets daily.
+
+**Implementation**:
+```python
+async def handle_support_inquiry(from_number: str, issue: str):
+    """Automated support triage"""
+
+    # Classify issue type
+    if "order" in issue.lower():
+        await send_text_message(
+            from_number,
+            "I can help with order-related questions. Please provide your order number."
+        )
+        user_states[from_number] = "awaiting_order_number"
+
+    elif "refund" in issue.lower():
+        await send_refund_policy(from_number)
+        await send_text_message(
+            from_number,
+            "Would you like to start a refund request? Reply 'yes' to proceed."
+        )
+
+    elif "product" in issue.lower():
+        await send_product_search(from_number)
+
+    else:
+        # Escalate to human agent
+        await escalate_to_agent(from_number, issue)
+        await send_text_message(
+            from_number,
+            "I've connected you with a human agent. They'll respond within 5 minutes."
+        )
+```
+
+**Benefits**:
+- 70% of inquiries resolved automatically
+- 24/7 availability
+- Instant responses
+- Reduced support costs
+
+### Order Notifications
+
+**Scenario**: Send automated order status updates.
+
+**Implementation**:
+```python
+async def send_order_update(phone_number: str, order_id: str, status: str):
+    """Send order status notification using template"""
+
+    # Use pre-approved template
+    template_name = "order_status_update"
+
+    # Template variables
+    variables = [
+        {"type": "text", "text": order_id},
+        {"type": "text", "text": status},
+        {"type": "text", "text": get_estimated_delivery(order_id)}
+    ]
+
+    await send_template_message(
+        phone_number,
+        template_name,
+        variables
+    )
+
+async def send_template_message(to: str, template_name: str, variables: list):
+    """Send pre-approved template message"""
+    url = f"{WHATSAPP_API_URL}/{PHONE_NUMBER_ID}/messages"
+
+    headers = {
+        "Authorization": f"Bearer {ACCESS_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": to,
+        "type": "template",
+        "template": {
+            "name": template_name,
+            "language": {"code": "en"},
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": variables
+                }
+            ]
+        }
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, json=payload, headers=headers)
+        return response.json()
+```
+
+**Trigger Events**:
+- Order confirmed
+- Order shipped
+- Out for delivery
+- Delivered
+- Delivery failed
+
+### Appointment Reminders
+
+**Scenario**: Healthcare provider sending appointment reminders.
+
+**Implementation**:
+```python
+async def send_appointment_reminder(
+    phone_number: str,
+    patient_name: str,
+    appointment_date: str,
+    doctor_name: str
+):
+    """Send appointment reminder with confirmation buttons"""
+
+    template_variables = [
+        {"type": "text", "text": patient_name},
+        {"type": "text", "text": appointment_date},
+        {"type": "text", "text": doctor_name}
+    ]
+
+    # Use template with buttons
+    await send_template_with_buttons(
+        phone_number,
+        "appointment_reminder",
+        template_variables
+    )
+
+async def handle_appointment_confirmation(message: dict):
+    """Process appointment confirmation button click"""
+    from_number = message["from"]
+    button_id = message["interactive"]["button_reply"]["id"]
+
+    if button_id == "confirm_appointment":
+        await confirm_appointment(from_number)
+        await send_text_message(
+            from_number,
+            "Your appointment is confirmed. See you then!"
+        )
+
+    elif button_id == "reschedule_appointment":
+        await send_available_slots(from_number)
+```
+
+**Template Example**:
+```
+Hi {{1}}, this is a reminder about your appointment on {{2}} with Dr. {{3}}.
+
+[Button: Confirm] [Button: Reschedule]
+```
+
+### FAQ Automation
+
+**Scenario**: Answer frequently asked questions automatically.
+
+**Implementation**:
+```python
+FAQ_DATABASE = {
+    "hours": "We're open Monday-Friday, 9am-6pm EST. This bot is available 24/7.",
+    "shipping": "Standard shipping takes 5-7 business days. Express shipping takes 2-3 days.",
+    "returns": "We accept returns within 30 days of purchase. Items must be unused and in original packaging.",
+    "payment": "We accept credit cards, PayPal, and Apple Pay.",
+    "discount": "Sign up for our newsletter to get a 10% discount on your first order."
+}
+
+def search_faq(query: str) -> str:
+    """Search FAQ database using keyword matching"""
+    query_lower = query.lower()
+
+    for keyword, answer in FAQ_DATABASE.items():
+        if keyword in query_lower:
+            return answer
+
+    return None
+
+async def handle_faq_query(from_number: str, query: str):
+    """Respond to FAQ or escalate to human"""
+    answer = search_faq(query)
+
+    if answer:
+        await send_text_message(from_number, answer)
+        await send_text_message(
+            from_number,
+            "Did that answer your question? Reply 'yes' or 'no'."
+        )
+    else:
+        await send_text_message(
+            from_number,
+            "I couldn't find an answer to that. Let me connect you with a human agent."
+        )
+        await escalate_to_agent(from_number, query)
+```
+
+---
+
+## Troubleshooting
+
+Common issues and solutions.
+
+### Template Rejection Reasons
+
+**Problem**: Your template was rejected by Meta.
+
+**Common Rejection Reasons**:
+
+1. **Promotional Language in Non-Marketing Template**:
+   - ❌ "Buy now and save 50%!"
+   - ✅ "Your order has been confirmed"
+
+2. **Unclear Purpose**:
+   - ❌ "Hi {{1}}, here's an update"
+   - ✅ "Hi {{1}}, your order {{2}} has shipped"
+
+3. **Excessive Punctuation**:
+   - ❌ "Amazing offer!!!"
+   - ✅ "Special offer available"
+
+4. **Missing Context**:
+   - ❌ Variables without explanation
+   - ✅ Clear variable context in sample
+
+5. **Policy Violations**:
+   - Misleading content
+   - Inappropriate language
+   - Prohibited products
+
+**Solution**:
+- Read rejection reason carefully
+- Review WhatsApp template guidelines
+- Edit template to address issues
+- Resubmit for review
+
+### Rate Limits
+
+**Problem**: Messages failing due to rate limits.
+
+**WhatsApp Rate Limits**:
+- **Tier 1**: 1,000 messages per 24 hours
+- **Tier 2**: 10,000 messages per 24 hours
+- **Tier 3**: 100,000 messages per 24 hours
+- **Tier 4**: Unlimited (custom limits)
+
+**Increasing Your Tier**:
+- Maintain high quality rating
+- Avoid user blocks and reports
+- Gradually increase message volume
+- Automatic tier upgrades after 7 days
+
+**Handling Rate Limits**:
+```python
+from redis import Redis
+import time
+
+redis_client = Redis()
+
+async def send_with_rate_limit(to: str, message: str):
+    """Send message with rate limiting"""
+
+    # Check rate limit
+    key = f"whatsapp_rate_limit:{time.strftime('%Y-%m-%d')}"
+    current_count = redis_client.get(key)
+
+    if current_count and int(current_count) >= DAILY_LIMIT:
+        # Queue for later
+        await queue_message(to, message)
+        return {"status": "queued", "reason": "rate_limit"}
+
+    # Send message
+    response = await send_text_message(to, message)
+
+    # Increment counter
+    redis_client.incr(key)
+    redis_client.expire(key, 86400)  # 24 hours
+
+    return response
+```
+
+### Message Delivery Issues
+
+**Problem**: Messages not being delivered to users.
+
+**Common Causes**:
+
+1. **24-Hour Window Expired**:
+   - User hasn't messaged in 24 hours
+   - Can only send template messages
+   - **Solution**: Use approved templates
+
+2. **User Blocked Your Number**:
+   - User blocked your business
+   - Messages fail silently
+   - **Solution**: Respect user preferences, reduce frequency
+
+3. **Invalid Phone Number**:
+   - Number not registered with WhatsApp
+   - Wrong format (not E.164)
+   - **Solution**: Validate numbers before sending
+
+4. **Webhook Not Receiving Messages**:
+   - Firewall blocking requests
+   - Webhook URL incorrect
+   - **Solution**: Check webhook configuration
+
+**Debugging Steps**:
+```python
+async def debug_message_delivery(message_id: str):
+    """Check message delivery status"""
+    url = f"{WHATSAPP_API_URL}/{message_id}"
+    headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
+        status = response.json()
+
+        print(f"Message Status: {status['status']}")
+        # Possible statuses: sent, delivered, read, failed
+
+        if status['status'] == 'failed':
+            print(f"Failure Reason: {status['errors']}")
+```
+
+**Message Status Tracking**:
+```python
+@app.post("/webhook/whatsapp")
+async def webhook_receive(request: Request):
+    """Track message status updates"""
+    body = await request.json()
+
+    for entry in body.get("entry", []):
+        for change in entry.get("changes", []):
+            value = change.get("value", {})
+
+            # Handle status updates
+            if "statuses" in value:
+                for status in value["statuses"]:
+                    message_id = status["id"]
+                    status_type = status["status"]
+
+                    print(f"Message {message_id}: {status_type}")
+
+                    if status_type == "failed":
+                        error = status.get("errors", [{}])[0]
+                        print(f"Error: {error.get('title')}")
+
+    return {"status": "ok"}
+```
+
+**Quality Rating Issues**:
+
+WhatsApp monitors your bot's quality based on:
+- User blocks
+- User reports
+- Delivery failures
+
+**Maintaining High Quality**:
+- Only send valuable, expected messages
+- Respect user preferences
+- Provide easy opt-out
+- Respond promptly to user messages
+- Don't spam users
+
+---
+
+## Next Steps
+
+Continue building with these resources.
+
+### WhatsApp Business API Documentation
+
+**Official Resources**:
+- [WhatsApp Cloud API Docs](https://developers.facebook.com/docs/whatsapp/cloud-api) - Complete API reference
+- [WhatsApp Business Platform](https://business.whatsapp.com) - Business resources
+- [Meta for Developers](https://developers.facebook.com) - Developer portal
+
+**Helpful Guides**:
+- [Message Templates Guide](https://developers.facebook.com/docs/whatsapp/message-templates)
+- [Webhooks Setup](https://developers.facebook.com/docs/whatsapp/webhooks)
+- [Interactive Messages](https://developers.facebook.com/docs/whatsapp/interactive-messages)
+
+### Template Guidelines
+
+**Best Practices**:
+- [WhatsApp Business Policy](https://www.whatsapp.com/legal/business-policy) - Read before creating templates
+- [Commerce Policy](https://www.whatsapp.com/legal/commerce-policy) - For e-commerce bots
+- [Template Examples](https://business.whatsapp.com/resources) - Inspiration gallery
+
+**Template Design Tips**:
+- Keep messages concise (under 1024 characters)
+- Use personalization variables
+- Include clear call-to-action
+- Test on multiple devices
+- A/B test different versions
+
+### Viably Resources
+
+**Platform Guides**:
+- [Quick Start Guide](/docs/quickstart) - Get started with Viably
+- [Discord Bot Template](/docs/templates/discord) - Build Discord bots
+- [Telegram Bot Template](/docs/templates/telegram) - Build Telegram bots
+- [Slack Bot Template](/docs/templates/slack) - Build Slack bots
+
+**Advanced Topics**:
+- [API Reference](/docs/api) - Automate bot creation
+- [Webhooks Guide](/docs/webhooks) - Custom integrations
+- [Deployment Guide](/docs/deployment) - Self-hosting options
+
+### Community and Support
+
+**Get Help**:
+- [Viably Discord](https://discord.gg/viably) - Join our community
+- [GitHub Issues](https://github.com/viably/viably/issues) - Report bugs
+- [Email Support](mailto:support@viably.dev) - Direct support
+
+**Stay Updated**:
+- [Blog](https://viably.dev/blog) - Platform updates and tutorials
+- [Twitter](https://twitter.com/viablydev) - Follow for news
+- [Newsletter](https://viably.dev/newsletter) - Monthly tips
+
+---
+
+## Frequently Asked Questions
+
+**How much does WhatsApp Business API cost?**
+
+WhatsApp charges per conversation:
+- Business-initiated: $0.005 - $0.20 per conversation (varies by country)
+- User-initiated: First 1,000 conversations free per month
+- Conversation = 24-hour window
+
+**Can I use my existing WhatsApp number?**
+
+No. WhatsApp Business API requires a new phone number that isn't registered with WhatsApp personal or Business App.
+
+**How long does template approval take?**
+
+Typically 1-3 business days. AUTHENTICATION templates may be approved faster.
+
+**What's the 24-hour messaging window?**
+
+After a user messages your bot, you have 24 hours to respond freely. After that, you can only send pre-approved template messages until the user messages again.
+
+**Can I send promotional messages?**
+
+Yes, but only with MARKETING templates and explicit user opt-in. Users must consent to receive marketing messages.
+
+**What happens if my quality rating drops?**
+
+WhatsApp may limit your messaging capacity or suspend your account. Maintain quality by sending valuable messages and respecting user preferences.
+
+**How do I migrate from WhatsApp Business App?**
+
+Backup your chats, then register your number with WhatsApp Business API. The number will be disconnected from the app permanently.
+
+**Can I use WhatsApp bots in any country?**
+
+WhatsApp Business API is available in most countries, but pricing and regulations vary. Check Meta's documentation for country-specific details.
+
+---
+
+**Ready to build your WhatsApp bot?** Head to the [Viably dashboard](https://viably.dev/dashboard) and select the WhatsApp Bot template to get started. Your bot can be live in under an hour.
+
+Need help? Join our [Discord community](https://discord.gg/viably) or email [support@viably.dev](mailto:support@viably.dev).
+
+Happy building! 🚀

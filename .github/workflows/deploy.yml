@@ -1,0 +1,189 @@
+name: Deploy (Fast & Optimized)
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch: # Manual trigger
+
+env:
+  PROFILE: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server (FAST with BuildKit cache)
+        run: |
+          PROFILE="${{ env.PROFILE }}"
+          ssh root@${{ secrets.SSH_HOST }} << ENDSSH
+            set -e
+
+            PROFILE="${PROFILE}"
+            echo "🚀 Starting FAST deployment to /home/${{ secrets.SSH_DIR_PATH }}"
+            echo "📌 Environment: ${{ github.ref_name == 'main' && 'Production' || 'Dev' }}"
+            echo "📌 Branch: ${{ github.ref_name }}"
+            echo "📌 Profile: \$PROFILE"
+
+            # Navigate to project directory
+            cd /home/${{ secrets.SSH_DIR_PATH }}
+
+            # Pull latest code from the branch that triggered the workflow
+            BRANCH="${{ github.ref_name }}"
+            echo "📥 Pulling latest code from \$BRANCH..."
+            git fetch origin
+            git checkout \$BRANCH
+            git reset --hard origin/\$BRANCH
+
+            # ============================================
+            # Enable BuildKit for faster builds
+            # ============================================
+            export DOCKER_BUILDKIT=1
+            export COMPOSE_DOCKER_CLI_BUILD=1
+            echo "🔧 BuildKit enabled for faster builds"
+
+            # ============================================
+            # Docker Compose Deployment with Cache
+            # ============================================
+            echo "🐳 Deploying with Docker Compose (with cache)..."
+
+            # Stop ALL containers — graceful stop first (prevents restart:always race), then remove
+            echo "🛑 Stopping old containers..."
+            # Stop first so Docker won't auto-restart them (restart:always race condition)
+            docker stop viably-backend viably-worker viably-frontend viably-redis viably-postgres viably-dozzle 2>/dev/null || true
+            # Now force remove — containers are stopped so no race
+            docker rm -f viably-backend viably-worker viably-frontend viably-redis viably-postgres viably-dozzle 2>/dev/null || true
+            # Compose down to clean up networks and any remaining orphans
+            docker compose --profile dev --profile prod down --remove-orphans 2>/dev/null || true
+            # Remove network explicitly to avoid "already exists" errors
+            docker network rm viably-network 2>/dev/null || true
+
+            # Clean up containers
+            echo "🧹 Cleaning up old containers..."
+            docker container prune -f || true
+
+            # Build images WITH CACHE (much faster!)
+            # If cache is corrupted, prune and retry
+            echo "🏗️  Building Docker images with BuildKit cache..."
+            if ! BUILDKIT_PROGRESS=plain docker compose --profile \$PROFILE build 2>&1; then
+              echo "⚠️  Build failed, clearing corrupted cache and retrying..."
+              docker builder prune -af || true
+              docker image prune -af || true
+              BUILDKIT_PROGRESS=plain docker compose --profile \$PROFILE build
+            fi
+
+            # Start services in detached mode
+            echo "🚀 Starting services..."
+            docker compose --profile \$PROFILE up -d
+
+            # Wait for services to be ready
+            echo "⏳ Waiting for services to start..."
+            sleep 15
+
+            # ============================================
+            # Database Migrations (REQUIRED)
+            # ============================================
+            echo "🗄️  Running database migrations..."
+
+            # Wait until backend container is ready to accept exec commands
+            MIGRATION_ATTEMPTS=0
+            MAX_MIGRATION_WAIT=10
+            while [ \$MIGRATION_ATTEMPTS -lt \$MAX_MIGRATION_WAIT ]; do
+              if docker compose --profile \$PROFILE exec -T backend-\$PROFILE echo "ready" > /dev/null 2>&1; then
+                break
+              fi
+              echo "⏳ Waiting for backend container to be ready for migrations... (\$MIGRATION_ATTEMPTS/\$MAX_MIGRATION_WAIT)"
+              sleep 2
+              MIGRATION_ATTEMPTS=\$((MIGRATION_ATTEMPTS + 1))
+            done
+
+            # Run alembic migrations — fail deploy if migrations fail
+            docker compose --profile \$PROFILE exec -T backend-\$PROFILE alembic -c alembic.ini upgrade head
+            if [ \$? -ne 0 ]; then
+              echo "❌ Database migration failed! Aborting deployment."
+              docker compose --profile \$PROFILE logs backend-\$PROFILE --tail=30
+              exit 1
+            fi
+            echo "✅ Database migrations applied successfully"
+
+            # ============================================
+            # Health Checks
+            # ============================================
+            echo "🏥 Running health checks..."
+            sleep 5
+
+            # Check backend health
+            MAX_ATTEMPTS=30
+            ATTEMPT=1
+            while [ \$ATTEMPT -le \$MAX_ATTEMPTS ]; do
+              if curl -f http://localhost:8000/health > /dev/null 2>&1; then
+                echo "✅ Backend is healthy (attempt \$ATTEMPT/\$MAX_ATTEMPTS)"
+                break
+              fi
+              if [ \$ATTEMPT -eq \$MAX_ATTEMPTS ]; then
+                echo "❌ Backend health check failed after \$MAX_ATTEMPTS attempts"
+                docker compose --profile \$PROFILE logs backend-\$PROFILE --tail=50
+                exit 1
+              fi
+              echo "⏳ Waiting for backend... (attempt \$ATTEMPT/\$MAX_ATTEMPTS)"
+              sleep 2
+              ATTEMPT=\$((ATTEMPT + 1))
+            done
+
+            # Check frontend
+            ATTEMPT=1
+            while [ \$ATTEMPT -le \$MAX_ATTEMPTS ]; do
+              if curl -f http://localhost:3000 > /dev/null 2>&1; then
+                echo "✅ Frontend is healthy (attempt \$ATTEMPT/\$MAX_ATTEMPTS)"
+                break
+              fi
+              if [ \$ATTEMPT -eq \$MAX_ATTEMPTS ]; then
+                echo "❌ Frontend health check failed after \$MAX_ATTEMPTS attempts"
+                docker compose --profile \$PROFILE logs frontend-\$PROFILE --tail=50
+                exit 1
+              fi
+              echo "⏳ Waiting for frontend... (attempt \$ATTEMPT/\$MAX_ATTEMPTS)"
+              sleep 2
+              ATTEMPT=\$((ATTEMPT + 1))
+            done
+
+            # Show running containers
+            echo "📊 Running containers:"
+            docker compose --profile \$PROFILE ps
+
+            # Clean up old dangling images (not build cache!)
+            echo "🧹 Cleaning up dangling images..."
+            docker image prune -f || true
+
+            echo "✅ FAST Deployment completed successfully!"
+            echo "⚡ Time saved by BuildKit cache: ~3-5 minutes"
+            echo "⚡ Time saved by preserved node_modules: ~1-2 minutes"
+          ENDSSH
+
+      - name: Notify deployment status
+        if: always()
+        run: |
+          ENV="${{ github.ref_name == 'main' && 'prod' || 'dev' }}"
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ Deployment to $ENV environment succeeded!"
+          else
+            echo "❌ Deployment to $ENV environment failed!"
+            exit 1
+          fi

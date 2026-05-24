@@ -1,0 +1,75 @@
+[project]
+name = "viably-backend"
+version = "0.1.0"
+description = "Viably Backend API"
+readme = "README.md"
+requires-python = ">=3.12,<4.0"
+dependencies = [
+    # Core
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.0.0",
+    "email-validator>=2.0.0",
+    # Database
+    "sqlalchemy[asyncio]>=2.0.0",
+    "asyncpg>=0.29.0",
+    "alembic>=1.13.0",
+    # Authentication
+    "PyJWT[crypto]>=2.11.0",
+    "bcrypt>=4.0.0",
+    "python-multipart>=0.0.6",
+    # Validation
+    "jsonschema>=4.20.0",
+    # Scheduling
+    "apscheduler>=3.10.0",
+    # AI Generation
+    "anthropic>=0.20.0",
+    "openai>=1.0.0",
+    "celery>=5.3.0",
+    "redis>=5.0.0",
+    "yookassa>=3.0.0",
+    "stripe>=8.0.0",
+    # Rate Limiting
+    "fastapi-limiter>=0.1.6",
+    # HTTP Client
+    "httpx>=0.26.0",
+    # System Monitoring
+    "psutil>=5.9.0",
+    # Observability
+    "sentry-sdk[fastapi]>=2.0.0",
+    "structlog>=24.1.0",
+    # Email
+    "resend>=0.7.0",
+    "tenacity (>=9.1.4,<10.0.0)",
+]
+
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.0.0"
+pytest-asyncio = ">=0.23.0"
+mypy = ">=1.8.0"
+ruff = ">=0.3.0"
+aiosqlite = ">=0.19.0"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.12"
+# TODO: Enable strict mode after fixing existing type errors (tech debt)
+# strict = true
+ignore_missing_imports = true
+warn_return_any = false
+warn_unused_ignores = false
+no_implicit_optional = false
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]

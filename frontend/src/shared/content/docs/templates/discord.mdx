@@ -1,0 +1,854 @@
+---
+title: "Discord Bot Template Guide"
+description: "Build custom Discord bots with slash commands, events, and rich embeds. Complete guide for beginners."
+date: "2024-02-08"
+author: "Viably Team"
+---
+
+# Discord Bot Template Guide
+
+Discord bots are powerful tools that bring automation, moderation, and fun to your server. Whether you're managing a gaming community, running a study group, or building a fan server, a custom Discord bot can transform how your members interact.
+
+This guide will walk you through building a fully functional Discord bot using Viably's Discord template. You'll learn how to create slash commands, handle events, design rich embeds, and deploy your bot to the cloud—all in under 30 minutes.
+
+By the end of this guide, you'll have a live Discord bot that responds to commands, welcomes new members, and can be customized to fit your community's unique needs.
+
+---
+
+## Why Discord Bots Matter
+
+Discord has over 150 million monthly active users across millions of servers. Bots have become essential for:
+
+**Community Management**
+- Automatically welcome new members with custom messages
+- Assign roles based on reactions or commands
+- Moderate conversations and filter inappropriate content
+
+**Engagement & Fun**
+- Create games and trivia competitions
+- Generate memes or random quotes
+- Track user stats and leaderboards
+
+**Utility & Productivity**
+- Send reminders and scheduled announcements
+- Integrate with external APIs (weather, news, crypto prices)
+- Manage polls and surveys
+
+**Custom Workflows**
+- Connect Discord to your app or service
+- Notify users about important events
+- Build automation unique to your server
+
+The Viably Discord template gives you a production-ready foundation to build any of these use cases without dealing with infrastructure, authentication, or deployment complexities.
+
+---
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+### 1. Discord Developer Account
+
+You'll need access to the Discord Developer Portal to create your bot application:
+
+1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
+2. Log in with your Discord account
+3. You're ready to create a bot application (we'll do this in Step 3)
+
+### 2. Discord Server for Testing
+
+Create a test server where you can safely test your bot:
+
+1. Open Discord
+2. Click the **+** icon in the server list
+3. Select "Create My Own"
+4. Choose "For me and my friends"
+5. Name your server (e.g., "Bot Testing")
+
+### 3. Viably Account with Credits
+
+You'll need a Viably account to generate your bot:
+
+- Sign up at [viably.dev](https://viably.dev)
+- You get **100 free credits** on signup
+- Each bot generation costs **10 credits**
+
+### 4. Basic Understanding of Discord
+
+You should know:
+- How to navigate Discord servers
+- What channels and roles are
+- How to send messages and use slash commands
+
+No coding experience is required. The template handles all the technical implementation for you.
+
+---
+
+## Getting Started with Discord Template
+
+Let's create your Discord bot using Viably's template.
+
+### Step 1: Select the Discord Template
+
+1. Log in to your Viably dashboard
+2. Click **Templates** in the sidebar
+3. Find the **Discord Bot** template card
+4. Click **Use Template**
+
+![Discord template selection](/docs/templates/discord/select-template.png)
+
+You'll be taken to the customization interface with three panels:
+- **Left**: Configuration options
+- **Center**: Code editor (Monaco)
+- **Right**: Preview and testing
+
+### Step 2: Review Template Features
+
+The Discord template comes pre-configured with:
+
+**Slash Commands**
+- `/help` - Display available commands
+- `/ping` - Check bot response time
+- `/about` - Show bot information
+- `/stats` - Display server statistics
+
+**Event Handlers**
+- **Member Join**: Welcome new users with a custom message
+- **Member Leave**: Log departures
+- **Message Events**: Respond to specific keywords or patterns
+
+**Rich Embeds**
+- Beautiful formatted messages with colors, images, and fields
+- Branded responses that match your server's style
+
+**Role Management**
+- Assign roles automatically based on user actions
+- Create reaction roles for self-service role assignment
+
+**Permissions System**
+- Admin-only commands
+- Moderator commands
+- Public commands
+
+All of these features are customizable through the Viably editor.
+
+---
+
+## Discord Bot Features Deep Dive
+
+Let's explore what makes Discord bots powerful and how to customize them.
+
+### Slash Commands
+
+Slash commands are Discord's modern way of interacting with bots. They provide autocomplete, validation, and a clean user experience.
+
+**Example: Creating a Custom Slash Command**
+
+Here's how a simple greeting command works:
+
+```typescript
+// Slash command definition
+{
+  name: "greet",
+  description: "Get a personalized greeting from the bot",
+  options: [
+    {
+      name: "user",
+      description: "User to greet",
+      type: "USER",
+      required: false
+    }
+  ],
+  execute: async (interaction) => {
+    const user = interaction.options.getUser("user") || interaction.user;
+    await interaction.reply(`Hello ${user}! Welcome to the server! 👋`);
+  }
+}
+```
+
+**How it works:**
+1. User types `/greet` in Discord
+2. Discord shows the command with an optional `@user` parameter
+3. When executed, the bot sends a personalized greeting
+4. If no user is mentioned, it greets the command author
+
+**Customization Tips:**
+- Keep command names short and memorable
+- Use descriptive descriptions (shown in autocomplete)
+- Validate user input before responding
+- Provide helpful error messages
+
+### Event Handlers
+
+Events allow your bot to react to things happening in your server automatically.
+
+**Example: Welcome New Members**
+
+```python
+# Member join event handler
+@bot.event
+async def on_member_join(member):
+    # Find the welcome channel
+    welcome_channel = member.guild.system_channel
+
+    if welcome_channel:
+        # Create a rich embed
+        embed = discord.Embed(
+            title=f"Welcome to {member.guild.name}!",
+            description=f"Hey {member.mention}, glad you're here!",
+            color=discord.Color.green()
+        )
+        embed.set_thumbnail(url=member.avatar.url)
+        embed.add_field(
+            name="Get Started",
+            value="Check out #rules and introduce yourself in #introductions!",
+            inline=False
+        )
+        embed.set_footer(text=f"Member #{member.guild.member_count}")
+
+        await welcome_channel.send(embed=embed)
+```
+
+**What this does:**
+1. Detects when a new member joins your server
+2. Creates a beautiful welcome message with their avatar
+3. Provides helpful guidance on what to do next
+4. Shows the total member count
+
+**Common Events to Handle:**
+- `on_member_join` - Welcome new members
+- `on_member_remove` - Log when members leave
+- `on_message` - Respond to specific keywords
+- `on_reaction_add` - Create reaction roles
+- `on_guild_channel_create` - Log channel changes
+
+### Rich Embeds
+
+Embeds are Discord's way of displaying formatted, visually appealing messages.
+
+**Example: Server Stats Embed**
+
+```python
+# Create a stats embed
+embed = discord.Embed(
+    title="📊 Server Statistics",
+    description=f"Stats for {guild.name}",
+    color=discord.Color.blue(),
+    timestamp=datetime.now()
+)
+
+# Add fields
+embed.add_field(
+    name="👥 Total Members",
+    value=str(guild.member_count),
+    inline=True
+)
+embed.add_field(
+    name="💬 Channels",
+    value=str(len(guild.channels)),
+    inline=True
+)
+embed.add_field(
+    name="🎭 Roles",
+    value=str(len(guild.roles)),
+    inline=True
+)
+
+# Add thumbnail and footer
+embed.set_thumbnail(url=guild.icon.url)
+embed.set_footer(
+    text=f"Requested by {interaction.user.name}",
+    icon_url=interaction.user.avatar.url
+)
+
+await interaction.reply(embed=embed)
+```
+
+**Embed Customization:**
+- **Color**: Use hex codes or predefined colors (`Color.red()`, `Color.green()`)
+- **Thumbnail**: Small image in the top right
+- **Image**: Large image in the embed body
+- **Fields**: Up to 25 fields with `inline` for side-by-side layout
+- **Footer**: Small text at the bottom with optional icon
+- **Timestamp**: Adds "Today at X:XX PM"
+
+### Role Management
+
+Assign roles automatically based on user actions or commands.
+
+**Example: Self-Service Role Assignment**
+
+```python
+# Role assignment command
+@bot.tree.command(name="role", description="Assign yourself a role")
+async def assign_role(interaction: discord.Interaction, role_name: str):
+    # Define allowed roles
+    allowed_roles = {
+        "gamer": "Gamer",
+        "artist": "Artist",
+        "developer": "Developer"
+    }
+
+    if role_name.lower() not in allowed_roles:
+        await interaction.reply(
+            "❌ Invalid role. Choose: gamer, artist, or developer",
+            ephemeral=True
+        )
+        return
+
+    # Get the role object
+    role = discord.utils.get(interaction.guild.roles, name=allowed_roles[role_name.lower()])
+
+    if role in interaction.user.roles:
+        await interaction.reply(f"You already have the {role.name} role!", ephemeral=True)
+    else:
+        await interaction.user.add_roles(role)
+        await interaction.reply(f"✅ Assigned you the {role.name} role!", ephemeral=True)
+```
+
+**Best Practices:**
+- Only allow self-assignment for non-privileged roles
+- Use `ephemeral=True` to keep role commands private
+- Validate role permissions before assignment
+- Log role changes for moderation
+
+### Permissions System
+
+Control who can use specific commands with permission checks.
+
+**Example: Admin-Only Command**
+
+```python
+from discord import app_commands
+from discord.ext import commands
+
+@bot.tree.command(name="announce", description="Send an announcement")
+@app_commands.checks.has_permissions(administrator=True)
+async def announce(interaction: discord.Interaction, message: str):
+    announcement_channel = interaction.guild.system_channel
+
+    embed = discord.Embed(
+        title="📢 Announcement",
+        description=message,
+        color=discord.Color.gold()
+    )
+
+    await announcement_channel.send(embed=embed)
+    await interaction.reply("✅ Announcement sent!", ephemeral=True)
+
+# Error handler for permission errors
+@announce.error
+async def announce_error(interaction: discord.Interaction, error):
+    if isinstance(error, app_commands.MissingPermissions):
+        await interaction.reply("❌ You need administrator permissions to use this command.", ephemeral=True)
+```
+
+**Permission Levels:**
+- `administrator=True` - Only server admins
+- `manage_messages=True` - Moderators
+- `manage_roles=True` - Role managers
+- No decorator - Available to everyone
+
+---
+
+## Customization Guide
+
+Make your bot unique to your community.
+
+### 1. Edit Bot Personality
+
+In the Viably editor, configure your bot's tone and style:
+
+```json
+{
+  "botName": "ServerGuardian",
+  "personality": "friendly and helpful",
+  "emoji_style": "moderate",
+  "response_tone": "casual",
+  "language": "en"
+}
+```
+
+**Personality Options:**
+- **Friendly**: Warm, welcoming, uses emojis
+- **Professional**: Formal, concise, minimal emojis
+- **Playful**: Fun, uses puns and jokes
+- **Technical**: Precise, informative, developer-focused
+
+### 2. Add Custom Commands
+
+Add commands specific to your community:
+
+**Example: Custom Trivia Command**
+
+```python
+trivia_questions = [
+    {
+        "question": "What year was Discord founded?",
+        "answer": "2015"
+    },
+    {
+        "question": "What is Discord's mascot called?",
+        "answer": "Wumpus"
+    }
+]
+
+@bot.tree.command(name="trivia", description="Answer a random trivia question")
+async def trivia(interaction: discord.Interaction):
+    import random
+    question = random.choice(trivia_questions)
+
+    await interaction.reply(f"🎯 **Trivia Time!**\n\n{question['question']}\n\n*Use /answer to submit your response*")
+```
+
+### 3. Configure Permissions
+
+Set which commands are available to which roles:
+
+```json
+{
+  "commands": {
+    "kick": {
+      "required_permission": "kick_members",
+      "roles": ["Moderator", "Admin"]
+    },
+    "play": {
+      "required_permission": null,
+      "roles": ["@everyone"]
+    }
+  }
+}
+```
+
+### 4. Set Up Auto-Responses
+
+Create automatic replies to specific keywords:
+
+```python
+# Auto-response to common questions
+@bot.event
+async def on_message(message):
+    # Ignore bot messages
+    if message.author.bot:
+        return
+
+    # Check for keywords
+    if "how to get started" in message.content.lower():
+        await message.channel.send("👋 Check out our #getting-started channel for help!")
+
+    # Don't forget to process commands
+    await bot.process_commands(message)
+```
+
+---
+
+## Deployment
+
+Let's get your bot live and running in your Discord server.
+
+### Step 1: Generate Your Bot Code
+
+1. In the Viably editor, review your customizations
+2. Click the **Generate** button (costs 10 credits)
+3. Wait 30-60 seconds for generation to complete
+4. Review the generated code and configuration files
+
+### Step 2: Get Your Discord Bot Token
+
+1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
+2. Click **New Application**
+3. Name your application (e.g., "MyAwesomeBot")
+4. Navigate to the **Bot** tab in the left sidebar
+5. Click **Add Bot** → **Yes, do it!**
+6. Under the bot's username, click **Reset Token**
+7. Copy your bot token (you'll need this for deployment)
+
+**⚠️ Important**: Never share your bot token publicly. Treat it like a password.
+
+### Step 3: Configure Bot Permissions
+
+In the Discord Developer Portal:
+
+1. Go to **OAuth2** → **URL Generator**
+2. Select scopes:
+   - ✅ `bot`
+   - ✅ `applications.commands`
+3. Select bot permissions:
+   - ✅ `Send Messages`
+   - ✅ `Embed Links`
+   - ✅ `Manage Roles`
+   - ✅ `Manage Messages` (for moderation)
+   - ✅ `Read Message History`
+4. Copy the generated URL at the bottom
+
+### Step 4: Invite Bot to Your Server
+
+1. Paste the OAuth2 URL into your browser
+2. Select your test server from the dropdown
+3. Click **Authorize**
+4. Complete the CAPTCHA
+5. Your bot will appear in your server (offline until deployed)
+
+### Step 5: Deploy to Production
+
+1. In Viably, click **Deploy**
+2. Configure environment variables:
+   - `DISCORD_TOKEN`: Your bot token from Step 2
+   - `DISCORD_CLIENT_ID`: Your application ID (from Developer Portal)
+3. Click **Deploy**
+
+Your bot will be live in 2-3 minutes!
+
+### Step 6: Verify It Works
+
+1. Go to your Discord server
+2. Type `/` to see your bot's slash commands
+3. Try `/ping` or `/help`
+4. Your bot should respond within 1-2 seconds
+
+**Troubleshooting**: If commands don't appear, wait 5 minutes (Discord caches commands) or restart your Discord client.
+
+---
+
+## Common Use Cases
+
+Here are popular ways to use your Discord bot.
+
+### 1. Moderation Bot
+
+Automatically moderate your server:
+
+```python
+# Auto-delete messages with banned words
+banned_words = ["spam", "scam", "hack"]
+
+@bot.event
+async def on_message(message):
+    if any(word in message.content.lower() for word in banned_words):
+        await message.delete()
+        await message.channel.send(
+            f"{message.author.mention}, your message was removed for violating server rules.",
+            delete_after=5
+        )
+```
+
+### 2. Welcome Bot
+
+Greet new members with style:
+
+```python
+@bot.event
+async def on_member_join(member):
+    channel = discord.utils.get(member.guild.channels, name="welcome")
+
+    embed = discord.Embed(
+        title=f"Welcome {member.name}!",
+        description="We're excited to have you here!",
+        color=discord.Color.purple()
+    )
+    embed.add_field(name="📜 Rules", value="Read #rules first!", inline=True)
+    embed.add_field(name="👋 Introduce Yourself", value="Say hi in #introductions", inline=True)
+
+    await channel.send(embed=embed)
+```
+
+### 3. Utility Bot
+
+Provide useful information:
+
+```python
+@bot.tree.command(name="weather", description="Get current weather")
+async def weather(interaction: discord.Interaction, city: str):
+    # Call weather API (example)
+    weather_data = fetch_weather(city)
+
+    embed = discord.Embed(
+        title=f"🌤️ Weather in {city}",
+        description=f"Temperature: {weather_data['temp']}°C\nConditions: {weather_data['conditions']}",
+        color=discord.Color.blue()
+    )
+
+    await interaction.reply(embed=embed)
+```
+
+### 4. Gaming Bot
+
+Track stats or create mini-games:
+
+```python
+# Simple coin flip game
+@bot.tree.command(name="coinflip", description="Flip a coin")
+async def coinflip(interaction: discord.Interaction, bet: str):
+    import random
+    result = random.choice(["Heads", "Tails"])
+
+    if bet.lower() == result.lower():
+        await interaction.reply(f"🎉 It's {result}! You win!")
+    else:
+        await interaction.reply(f"💔 It's {result}. Better luck next time!")
+```
+
+---
+
+## Troubleshooting
+
+Common issues and how to fix them.
+
+### Bot Doesn't Respond to Commands
+
+**Possible Causes:**
+- Bot token is incorrect
+- Bot lacks necessary permissions
+- Commands haven't synced to Discord yet
+
+**Solutions:**
+1. Verify your token in the deployment environment variables
+2. Re-invite bot with correct OAuth2 URL
+3. Wait 5-10 minutes for Discord to sync commands
+4. Restart your Discord client
+
+### Permission Errors
+
+**Error**: "The application did not respond"
+
+**Solution:**
+1. Check that your bot has `applications.commands` scope
+2. Ensure bot has `Send Messages` permission in the channel
+3. Verify bot role is higher than roles it's trying to manage
+
+### Rate Limiting
+
+**Error**: "You are being rate limited"
+
+**Cause:** Sending too many requests to Discord API
+
+**Solution:**
+```python
+import asyncio
+
+# Add delays between bulk operations
+for member in members:
+    await member.add_roles(role)
+    await asyncio.sleep(1)  # 1 second delay
+```
+
+### Bot Goes Offline Randomly
+
+**Possible Causes:**
+- Deployment crashed
+- Memory limit exceeded
+- Unhandled exception
+
+**Solutions:**
+1. Check deployment logs in the Viably dashboard for errors
+2. Add error handling to all events
+3. Contact support if hitting resource limits
+
+### Commands Don't Autocomplete
+
+**Cause:** Commands not synced to Discord
+
+**Solution:**
+```python
+# Sync commands on bot startup
+@bot.event
+async def on_ready():
+    await bot.tree.sync()
+    print(f"Synced commands for {bot.user}")
+```
+
+---
+
+## Next Steps
+
+Your Discord bot is live! Here's how to level it up:
+
+### Expand Functionality
+
+**Add More Commands**
+- Custom trivia or quiz games
+- Poll creation with reactions
+- Server statistics and analytics
+- Music playback (with Discord voice)
+
+**Integrate External APIs**
+- Weather forecasts
+- Crypto prices
+- News headlines
+- Random memes or GIFs
+
+**Create Advanced Features**
+- Leveling system with XP
+- Economy system with virtual currency
+- Custom server backups
+- Automated event scheduling
+
+### Learn More About Discord API
+
+**Official Resources:**
+- [Discord Developer Documentation](https://discord.com/developers/docs)
+- [discord.py Documentation](https://discordpy.readthedocs.io/)
+- [Discord.js Guide](https://discordjs.guide/) (for JavaScript bots)
+
+**Community Resources:**
+- [Discord API Community Server](https://discord.gg/discord-api)
+- [r/discordapp Subreddit](https://reddit.com/r/discordapp)
+- [Discord Bots Subreddit](https://reddit.com/r/discordbots)
+
+### Monitor Your Bot
+
+**Viably Dashboard:**
+- View real-time deployment logs
+- Monitor resource usage
+- Check uptime and errors
+
+**Add Analytics:**
+```python
+# Track command usage
+command_stats = {}
+
+@bot.event
+async def on_interaction(interaction):
+    cmd = interaction.command.name
+    command_stats[cmd] = command_stats.get(cmd, 0) + 1
+```
+
+### Join the Community
+
+- **Viably Discord**: [discord.gg/viably](https://discord.gg/viably)
+- **Support Email**: support@viably.dev
+- **GitHub**: Report bugs or request features
+
+---
+
+## Advanced Customization
+
+Take your bot to the next level with these advanced techniques.
+
+### Database Integration
+
+Store persistent data like user preferences or server settings:
+
+```python
+import sqlite3
+
+# Connect to database
+conn = sqlite3.connect('bot_data.db')
+cursor = conn.cursor()
+
+# Create table
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS user_levels (
+        user_id INTEGER PRIMARY KEY,
+        level INTEGER DEFAULT 1,
+        xp INTEGER DEFAULT 0
+    )
+''')
+
+# Add XP on message
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+
+    # Add XP
+    cursor.execute('''
+        INSERT INTO user_levels (user_id, xp)
+        VALUES (?, 1)
+        ON CONFLICT(user_id) DO UPDATE SET xp = xp + 1
+    ''', (message.author.id,))
+    conn.commit()
+```
+
+### Background Tasks
+
+Run periodic tasks like reminders or cleanup:
+
+```python
+from discord.ext import tasks
+
+@tasks.loop(hours=24)
+async def daily_reminder():
+    channel = bot.get_channel(CHANNEL_ID)
+    await channel.send("🎉 Daily reminder: Claim your free credits on Viably!")
+
+@bot.event
+async def on_ready():
+    daily_reminder.start()
+```
+
+### Button and Select Menus
+
+Create interactive messages:
+
+```python
+from discord.ui import Button, View
+
+class RoleView(View):
+    @discord.ui.button(label="Get Gamer Role", style=discord.ButtonStyle.green)
+    async def gamer_button(self, interaction: discord.Interaction, button: Button):
+        role = discord.utils.get(interaction.guild.roles, name="Gamer")
+        await interaction.user.add_roles(role)
+        await interaction.response.send_message("✅ Gamer role assigned!", ephemeral=True)
+
+@bot.tree.command(name="roles", description="Get self-assignable roles")
+async def roles(interaction: discord.Interaction):
+    view = RoleView()
+    await interaction.reply("Choose your roles:", view=view)
+```
+
+---
+
+## Best Practices
+
+Follow these guidelines for a professional, reliable bot.
+
+### Security
+
+- **Never hardcode tokens**: Always use environment variables
+- **Validate user input**: Prevent injection attacks
+- **Rate limit commands**: Prevent abuse
+- **Use ephemeral replies**: Keep sensitive info private
+
+### Performance
+
+- **Cache data**: Don't fetch the same data repeatedly
+- **Use async/await**: Keep bot responsive
+- **Batch operations**: Group API calls when possible
+- **Monitor memory**: Avoid memory leaks
+
+### User Experience
+
+- **Clear command descriptions**: Users should understand what commands do
+- **Helpful error messages**: Guide users when something goes wrong
+- **Consistent formatting**: Use embeds for important messages
+- **Fast responses**: Aim for <1 second response time
+
+### Maintenance
+
+- **Log errors**: Track issues for debugging
+- **Version your bot**: Use semantic versioning
+- **Test before deploying**: Use a test server
+- **Document changes**: Keep a changelog
+
+---
+
+## Conclusion
+
+You've successfully created, customized, and deployed a Discord bot using Viably! Your bot can now handle slash commands, respond to events, create rich embeds, and provide value to your community.
+
+**What you've learned:**
+- How to use Viably's Discord template
+- Discord bot features and capabilities
+- Customizing commands, events, and permissions
+- Deploying to production and inviting to servers
+- Common use cases and troubleshooting
+
+**Next steps:**
+- Experiment with additional features
+- Join the Viably community for support
+- Build more bots for different platforms
+
+Need help or have questions? Join our [Discord community](https://discord.gg/viably) or email [support@viably.dev](mailto:support@viably.dev).
+
+Happy bot building! 🤖

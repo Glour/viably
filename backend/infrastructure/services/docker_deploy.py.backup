@@ -1,0 +1,353 @@
+"""Docker-based deployment service for self-hosted bot deployments."""
+
+import asyncio
+import logging
+import os
+import shutil
+import tempfile
+from pathlib import Path
+from typing import Optional
+
+logger = logging.getLogger(__name__)
+
+# Base directory for deployed projects
+DEPLOY_BASE_DIR = Path("/opt/viably-deploys")
+# Port range for deployed containers
+PORT_RANGE_START = 10000
+PORT_RANGE_END = 11000
+
+
+class DockerDeployClient:
+    """Client for managing Docker-based deployments."""
+
+    def __init__(self) -> None:
+        self.deploy_dir = DEPLOY_BASE_DIR
+        self.deploy_dir.mkdir(parents=True, exist_ok=True)
+
+    async def _run_command(self, cmd: list[str], cwd: Optional[str] = None, timeout: int = 300) -> tuple[int, str, str]:
+        """Run a shell command asynchronously."""
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            cwd=cwd,
+        )
+        try:
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+            return proc.returncode or 0, stdout.decode(), stderr.decode()
+        except asyncio.TimeoutError:
+            proc.kill()
+            return 1, "", "Command timed out"
+
+    def _get_project_dir(self, project_id: str) -> Path:
+        """Get deployment directory for a project."""
+        return self.deploy_dir / project_id
+
+    def _detect_entry_point(self, files: dict[str, str]) -> str:
+        """Detect the Python entry point from project files.
+
+        Checks for common entry points in order of priority.
+        Returns a shell command string for CMD.
+        """
+        # Priority order for entry point detection
+        candidates = [
+            "apps/bot/main.py",
+            "app/main.py",
+            "bot/main.py",
+            "src/main.py",
+            "main.py",
+            "bot.py",
+            "app.py",
+            "run.py",
+        ]
+        for candidate in candidates:
+            if candidate in files:
+                # Convert path to module notation for nested paths
+                if "/" in candidate:
+                    module = candidate.replace("/", ".").removesuffix(".py")
+                    return f"python -m {module}"
+                return f"python {candidate}"
+        # Fallback: find any main.py
+        for filepath in files:
+            if filepath.endswith("main.py"):
+                module = filepath.replace("/", ".").removesuffix(".py")
+                return f"python -m {module}"
+        return "python main.py"
+
+    def _generate_dockerfile(self, runtime: str, entry_cmd: str = "python main.py") -> str:
+        """Generate Dockerfile based on runtime."""
+        if runtime in ("static", "html", "website"):
+            return """FROM nginx:alpine
+COPY . /usr/share/nginx/html/
+EXPOSE 8080
+RUN sed -i 's/listen       80;/listen       8080;/' /etc/nginx/conf.d/default.conf
+CMD ["nginx", "-g", "daemon off;"]
+"""
+        if runtime in ("python", "python3", ""):
+            return f"""FROM python:3.12-slim AS builder
+WORKDIR /app
+RUN pip install --no-cache-dir poetry
+COPY . /tmp/src/
+RUN if [ -f /tmp/src/pyproject.toml ]; then cp /tmp/src/pyproject.toml ./ && (cp /tmp/src/poetry.lock ./ 2>/dev/null || true) && poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi --only main; fi
+RUN if [ -f /tmp/src/requirements.txt ] && [ ! -f /tmp/src/pyproject.toml ]; then pip install --no-cache-dir -r /tmp/src/requirements.txt; fi
+
+FROM python:3.12-slim
+WORKDIR /app
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+COPY . .
+ENV PYTHONPATH=/app
+CMD ["sh", "-c", "if [ -f alembic.ini ] && command -v alembic > /dev/null 2>&1 && alembic heads > /dev/null 2>&1; then alembic upgrade head; fi && {entry_cmd}"]
+"""
+        elif runtime in ("node", "nodejs"):
+            return """FROM node:20-alpine
+WORKDIR /app
+COPY . .
+RUN if [ -f package.json ]; then npm install --production; fi
+CMD ["node", "index.js"]
+"""
+        else:
+            return f"""FROM python:3.12-slim AS builder
+WORKDIR /app
+RUN pip install --no-cache-dir poetry
+COPY . /tmp/src/
+RUN if [ -f /tmp/src/pyproject.toml ]; then cp /tmp/src/pyproject.toml ./ && (cp /tmp/src/poetry.lock ./ 2>/dev/null || true) && poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi --only main; fi
+RUN if [ -f /tmp/src/requirements.txt ] && [ ! -f /tmp/src/pyproject.toml ]; then pip install --no-cache-dir -r /tmp/src/requirements.txt; fi
+
+FROM python:3.12-slim
+WORKDIR /app
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+COPY . .
+ENV PYTHONPATH=/app
+CMD ["sh", "-c", "if [ -f alembic.ini ] && command -v alembic > /dev/null 2>&1 && alembic heads > /dev/null 2>&1; then alembic upgrade head; fi && {entry_cmd}"]
+"""
+
+    @staticmethod
+    def _ensure_init_files(project_dir: Path, files: dict[str, str]) -> None:
+        """Create __init__.py in all directories that contain .py files.
+
+        AI-generated code often forgets __init__.py, which makes Python unable
+        to import modules from nested packages.
+        """
+        dirs_with_py = set()
+        for filepath in files:
+            if filepath.endswith(".py"):
+                parts = Path(filepath).parts
+                # Collect all parent directories (e.g. apps/bot/handlers/user/start.py
+                # -> apps, apps/bot, apps/bot/handlers, apps/bot/handlers/user)
+                for i in range(1, len(parts)):
+                    dirs_with_py.add(Path(*parts[:i]))
+
+        created = 0
+        for pkg_dir in sorted(dirs_with_py):
+            init_path = project_dir / pkg_dir / "__init__.py"
+            if not init_path.exists():
+                init_path.write_text("")
+                created += 1
+
+        if created:
+            logger.info("Auto-created %d __init__.py files for Python packages", created)
+
+    async def _find_free_port(self) -> int:
+        """Find a free port in the deployment range."""
+        # Get list of used ports
+        code, stdout, _ = await self._run_command([
+            "docker", "ps", "--format", "{{.Ports}}",
+            "--filter", "name=viably-deploy-"
+        ])
+        used_ports = set()
+        if stdout:
+            for line in stdout.strip().split("\n"):
+                # Parse port mappings like "0.0.0.0:10001->8080/tcp"
+                if "->" in line:
+                    try:
+                        port = int(line.split(":")[1].split("->")[0])
+                        used_ports.add(port)
+                    except (IndexError, ValueError):
+                        pass
+
+        for port in range(PORT_RANGE_START, PORT_RANGE_END):
+            if port not in used_ports:
+                return port
+
+        raise RuntimeError("No free ports available for deployment")
+
+    async def deploy(
+        self,
+        project_id: str,
+        files: dict[str, str],
+        runtime: str = "python",
+        entry_point: str = "main.py",
+        env_vars: Optional[dict[str, str]] = None,
+    ) -> dict:
+        """Deploy a project as a Docker container.
+        
+        Args:
+            project_id: Unique project identifier
+            files: Dict of filename -> content
+            runtime: Runtime type (python, node)
+            entry_point: Entry point file
+            env_vars: Environment variables
+            
+        Returns:
+            Dict with deployment info (container_id, port, url)
+        """
+        container_name = f"viably-deploy-{project_id[:8]}"
+        project_dir = self._get_project_dir(project_id)
+        
+        # Clean up existing deployment
+        await self.stop(project_id)
+        
+        # Create project directory and write files
+        if project_dir.exists():
+            shutil.rmtree(project_dir)
+        project_dir.mkdir(parents=True)
+        
+        for filepath, content in files.items():
+            file_path = project_dir / filepath
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            file_path.write_text(content)
+
+        # Auto-create __init__.py in all Python package directories
+        if runtime in ("python", "python3", ""):
+            self._ensure_init_files(project_dir, files)
+
+        # Detect entry point and generate Dockerfile
+        entry_cmd = self._detect_entry_point(files)
+        logger.info("Detected entry point: %s", entry_cmd)
+        dockerfile_content = self._generate_dockerfile(runtime, entry_cmd)
+        (project_dir / "Dockerfile").write_text(dockerfile_content)
+        
+        # Find free port
+        port = await self._find_free_port()
+        
+        # Build Docker image
+        image_name = f"viably-bot-{project_id[:8]}"
+        code, stdout, stderr = await self._run_command(
+            ["docker", "build", "-t", image_name, "."],
+            cwd=str(project_dir),
+            timeout=180,
+        )
+        
+        if code != 0:
+            logger.error("Docker build failed: %s", stderr)
+            return {
+                "status": "failed",
+                "error": f"Build failed: {stderr[:500]}",
+                "logs": stdout + "\n" + stderr,
+            }
+        
+        # Prepare env vars for docker run
+        env_args = []
+        if env_vars is None:
+            env_vars = {}
+        # Add token aliases for compatibility with generated bot code
+        if "TELEGRAM_BOT_TOKEN" in env_vars:
+            token = env_vars["TELEGRAM_BOT_TOKEN"]
+            if "BOT_TOKEN" not in env_vars:
+                env_vars["BOT_TOKEN"] = token
+            # pydantic-settings with env_prefix="BOT__" expects BOT__TOKEN
+            if "BOT__TOKEN" not in env_vars:
+                env_vars["BOT__TOKEN"] = token
+        # DATABASE_URL is provided by the user (e.g. Supabase connection string)
+        for key, value in env_vars.items():
+            env_args.extend(["-e", f"{key}={value}"])
+        
+        # Run container (connect to viably-network so bots can reach postgres/redis)
+        run_cmd = [
+            "docker", "run", "-d",
+            "--name", container_name,
+            "--restart", "unless-stopped",
+            "--network", "viably_viably-network",
+            "--memory", "256m",
+            "--cpus", "0.25",
+            "-p", f"{port}:8080",
+            *env_args,
+            image_name,
+        ]
+        
+        code, stdout, stderr = await self._run_command(run_cmd)
+        
+        if code != 0:
+            logger.error("Docker run failed: %s", stderr)
+            return {
+                "status": "failed",
+                "error": f"Run failed: {stderr[:500]}",
+                "logs": stderr,
+            }
+        
+        container_id = stdout.strip()[:12]
+        
+        return {
+            "status": "active",
+            "container_id": container_id,
+            "container_name": container_name,
+            "port": port,
+            "image": image_name,
+        }
+
+    async def stop(self, project_id: str) -> bool:
+        """Stop and remove a deployed container."""
+        container_name = f"viably-deploy-{project_id[:8]}"
+        
+        # Stop container
+        await self._run_command(["docker", "stop", container_name], timeout=30)
+        # Remove container
+        await self._run_command(["docker", "rm", "-f", container_name], timeout=15)
+        # Remove image
+        image_name = f"viably-bot-{project_id[:8]}"
+        await self._run_command(["docker", "rmi", "-f", image_name], timeout=15)
+        
+        return True
+
+    async def get_status(self, project_id: str) -> dict:
+        """Get deployment status."""
+        container_name = f"viably-deploy-{project_id[:8]}"
+        
+        code, stdout, _ = await self._run_command([
+            "docker", "inspect",
+            "--format", "{{.State.Status}}:{{.State.StartedAt}}",
+            container_name,
+        ])
+        
+        if code != 0:
+            return {"status": "not_found"}
+        
+        parts = stdout.strip().split(":", 1)
+        return {
+            "status": parts[0] if parts else "unknown",
+            "started_at": parts[1] if len(parts) > 1 else None,
+        }
+
+    async def get_logs(self, project_id: str, tail: int = 100) -> str:
+        """Get container logs."""
+        container_name = f"viably-deploy-{project_id[:8]}"
+        
+        code, stdout, stderr = await self._run_command([
+            "docker", "logs", "--tail", str(tail), container_name,
+        ])
+        
+        return stdout + stderr if code == 0 else f"Error fetching logs: {stderr}"
+
+    async def list_deployments(self) -> list[dict]:
+        """List all active deployments."""
+        code, stdout, _ = await self._run_command([
+            "docker", "ps",
+            "--filter", "name=viably-deploy-",
+            "--format", "{{.Names}}\t{{.Status}}\t{{.Ports}}",
+        ])
+        
+        if code != 0 or not stdout.strip():
+            return []
+        
+        deployments = []
+        for line in stdout.strip().split("\n"):
+            parts = line.split("\t")
+            if len(parts) >= 2:
+                deployments.append({
+                    "name": parts[0],
+                    "status": parts[1],
+                    "ports": parts[2] if len(parts) > 2 else "",
+                })
+        return deployments

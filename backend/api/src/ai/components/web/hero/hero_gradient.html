@@ -1,0 +1,61 @@
+<section class="hero">
+    <div class="container">
+        <h1>Заголовок вашего проекта</h1>
+        <p>Краткое описание продукта или услуги для вашей целевой аудитории</p>
+        <a href="#pricing" class="btn">Начать сейчас →</a>
+    </div>
+</section>
+
+<style>
+.hero {
+    padding: 160px 0 100px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+    color: #fff;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 50%);
+}
+.hero h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    position: relative;
+}
+.hero p {
+    font-size: 1.25rem;
+    color: #94a3b8;
+    max-width: 600px;
+    margin: 0 auto 40px;
+    position: relative;
+}
+.btn {
+    display: inline-block;
+    padding: 14px 32px;
+    background: linear-gradient(135deg, var(--primary, #6366f1), var(--primary-light, #8b5cf6));
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+}
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 40px rgba(99,102,241,0.4);
+}
+@media (max-width: 768px) {
+    .hero h1 { font-size: 2.25rem; }
+}
+</style>

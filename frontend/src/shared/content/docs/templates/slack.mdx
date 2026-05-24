@@ -1,0 +1,903 @@
+---
+title: "Slack Bot Template Guide"
+description: "Build Slack apps with interactive messages, slash commands, and workflows. Automate your workplace."
+date: "2024-02-08"
+author: "Viably Team"
+---
+
+# Slack Bot Template Guide
+
+Build powerful workplace automation with a Slack bot that responds to slash commands, sends interactive messages, and integrates seamlessly with your team's workflow. This guide walks you through creating a production-ready Slack bot using Viably's Slack template.
+
+## What You'll Build
+
+By the end of this guide, you'll have:
+
+- A fully functional Slack bot deployed to your workspace
+- Slash commands for quick actions
+- Interactive messages with buttons and menus
+- Event subscriptions for real-time responses
+- OAuth setup for secure installation
+
+Your bot will be production-ready, hosted on Viably Cloud, and ready to automate your team's daily tasks.
+
+---
+
+## Why Build a Slack Bot?
+
+Slack bots transform how teams work by automating repetitive tasks and bringing critical information directly into conversations.
+
+### Common Use Cases
+
+**Team Notifications**
+- Deploy alerts from CI/CD pipelines
+- Customer support ticket notifications
+- Sales pipeline updates
+
+**Approval Workflows**
+- Expense approval with interactive buttons
+- Code review reminders
+- Time-off requests
+
+**Productivity Tools**
+- Standup bots for async daily updates
+- Poll creation and voting
+- Meeting scheduling assistants
+
+**Integration Bots**
+- Connect Slack with external APIs
+- Database queries via slash commands
+- Custom reporting dashboards
+
+---
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+### 1. Slack Workspace Access
+
+You need admin access to a Slack workspace to create and install apps. If you don't have one:
+
+1. Create a free Slack workspace at [slack.com/create](https://slack.com/create)
+2. Invite at least 2-3 team members for testing
+
+### 2. Slack App Credentials
+
+You'll need to create a Slack App to get credentials:
+
+1. Go to [api.slack.com/apps](https://api.slack.com/apps)
+2. Click **Create New App**
+3. Choose **From an app manifest** (we'll provide one)
+4. Select your workspace
+5. Copy the app manifest from this guide (shown later)
+
+### 3. Viably Account
+
+- Sign up at [viably.dev](https://viably.dev)
+- Claim your **100 free credits**
+- Each bot generation costs **10 credits**
+
+**Ready?** Let's build your Slack bot.
+
+---
+
+## Step 1: Choose the Slack Template
+
+Start by selecting Viably's pre-built Slack bot template.
+
+### Navigate to Templates
+
+1. Log in to your Viably dashboard
+2. Click **Templates** in the left sidebar
+3. Find the **Slack Bot** template card
+4. Click **View Details**
+
+![Slack template in gallery](/docs/templates/slack-template-card.png)
+
+### What's Included in the Template
+
+The Slack template comes pre-configured with:
+
+**Core Features**:
+- Slash command handlers (`/hello`, `/help`, `/status`)
+- Interactive message components (buttons, select menus)
+- Event subscriptions (mentions, reactions, messages)
+- OAuth 2.0 installation flow
+- Request verification for security
+
+**Technical Setup**:
+- Bolt for Python framework (or Bolt for JavaScript)
+- Environment variable management
+- Docker deployment configuration
+- Webhook endpoint routing
+- Error handling and logging
+
+**Best Practices**:
+- Rate limiting compliance
+- Graceful error messages
+- User-friendly response formatting
+- Secure token storage
+
+### Start Customization
+
+Click **Use Template** to open the bot editor.
+
+---
+
+## Step 2: Configure Your Slack Bot
+
+Now you'll customize your bot's behavior, commands, and personality.
+
+### Basic Configuration
+
+In the left panel, fill in your bot details:
+
+```typescript
+{
+  "name": "TeamBot",
+  "platform": "slack",
+  "personality": "helpful and professional",
+  "language": "en",
+  "timezone": "America/New_York"
+}
+```
+
+**Name**: Choose a name that reflects your bot's purpose (e.g., "DeployBot", "StandupBot", "SupportBot")
+
+**Personality**: Define your bot's tone:
+- "helpful and professional" - workplace standard
+- "friendly and casual" - team-oriented
+- "technical and precise" - developer-focused
+- "enthusiastic and motivating" - team morale
+
+### Define Slash Commands
+
+Slash commands are the primary way users interact with your bot. Define them in the editor:
+
+```python
+# Slash command configuration
+commands = {
+    "/hello": {
+        "description": "Greet the bot",
+        "usage": "/hello",
+        "response": "Hi there! I'm {bot_name}, your team assistant. How can I help?"
+    },
+    "/standup": {
+        "description": "Start your daily standup",
+        "usage": "/standup",
+        "response": "interactive_form"
+    },
+    "/deploy": {
+        "description": "Trigger a deployment",
+        "usage": "/deploy [environment]",
+        "response": "approval_workflow"
+    }
+}
+```
+
+Each command should have:
+- **Description**: Shows in Slack's command autocomplete
+- **Usage**: Example syntax for users
+- **Response**: Text response or interactive component
+
+### Create Interactive Messages
+
+Interactive messages let users take actions directly in Slack:
+
+```python
+# Interactive message with buttons
+interactive_messages = {
+    "approval_request": {
+        "text": "Deployment to production requested",
+        "blocks": [
+            {
+                "type": "section",
+                "text": "Deploy version 2.1.0 to production?"
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": "Approve",
+                        "style": "primary",
+                        "action_id": "approve_deploy"
+                    },
+                    {
+                        "type": "button",
+                        "text": "Reject",
+                        "style": "danger",
+                        "action_id": "reject_deploy"
+                    }
+                ]
+            }
+        ]
+    }
+}
+```
+
+**Interactive Components**:
+- **Buttons**: Single-click actions (Approve/Reject, Yes/No)
+- **Select Menus**: Dropdown choices (environments, priorities)
+- **Date Pickers**: Schedule actions
+- **Text Inputs**: Collect user data in modals
+
+### Configure Event Subscriptions
+
+Events let your bot respond to workspace activity:
+
+```python
+# Event subscriptions
+events = {
+    "app_mention": {
+        "description": "Bot is @mentioned in a channel",
+        "handler": "on_mention",
+        "response": "I heard you! How can I assist?"
+    },
+    "message.channels": {
+        "description": "Message posted in a channel where bot is member",
+        "handler": "on_channel_message",
+        "response": "conditional"  # Only respond to certain patterns
+    },
+    "reaction_added": {
+        "description": "Emoji reaction added to a message",
+        "handler": "on_reaction",
+        "response": "track_sentiment"
+    }
+}
+```
+
+Common events:
+- `app_mention` - Bot is mentioned with @
+- `message.channels` - Messages in channels
+- `reaction_added` - Emoji reactions
+- `team_join` - New member joins workspace
+
+### Set Bot Scopes
+
+Scopes define what your bot can access. The template includes:
+
+```python
+# OAuth scopes
+required_scopes = [
+    "chat:write",        # Send messages
+    "commands",          # Respond to slash commands
+    "channels:read",     # View public channels
+    "users:read",        # View workspace users
+    "reactions:read"     # View emoji reactions
+]
+
+optional_scopes = [
+    "channels:manage",   # Create/archive channels
+    "files:write",       # Upload files
+    "im:write"          # Send DMs
+]
+```
+
+**Important**: Only request scopes you actually need. Users are wary of overprivileged apps.
+
+---
+
+## Step 3: Create Slack App Manifest
+
+To deploy your bot, you'll need to create a Slack App. The easiest way is using an app manifest.
+
+### Generate Manifest
+
+Viably automatically generates a Slack app manifest based on your configuration. In the editor, click **Generate App Manifest**.
+
+You'll see:
+
+```yaml
+display_information:
+  name: TeamBot
+  description: Your team assistant for automation and workflows
+  background_color: "#2c2d30"
+features:
+  bot_user:
+    display_name: TeamBot
+    always_online: true
+  slash_commands:
+    - command: /hello
+      description: Greet the bot
+      usage_hint: /hello
+    - command: /standup
+      description: Start your daily standup
+      usage_hint: /standup
+    - command: /deploy
+      description: Trigger a deployment
+      usage_hint: /deploy [environment]
+oauth_config:
+  scopes:
+    bot:
+      - chat:write
+      - commands
+      - channels:read
+      - users:read
+      - reactions:read
+settings:
+  event_subscriptions:
+    request_url: https://your-bot.viably.dev/slack/events
+    bot_events:
+      - app_mention
+      - message.channels
+      - reaction_added
+  interactivity:
+    is_enabled: true
+    request_url: https://your-bot.viably.dev/slack/interactions
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false
+```
+
+### Create Slack App
+
+1. Copy the generated manifest
+2. Go to [api.slack.com/apps](https://api.slack.com/apps)
+3. Click **Create New App**
+4. Select **From an app manifest**
+5. Choose your workspace
+6. Paste the manifest
+7. Click **Create**
+
+![Creating Slack app from manifest](/docs/templates/slack-app-create.png)
+
+### Copy Credentials
+
+After creating your app, you'll need three pieces of information:
+
+**1. Bot Token** (`xoxb-...`):
+- Go to **OAuth & Permissions** in the left sidebar
+- Copy **Bot User OAuth Token**
+
+**2. Signing Secret**:
+- Go to **Basic Information**
+- Scroll to **App Credentials**
+- Copy **Signing Secret**
+
+**3. App-Level Token** (for Socket Mode, optional):
+- Go to **Basic Information**
+- Scroll to **App-Level Tokens**
+- Generate token with `connections:write` scope
+
+Keep these credentials safe - you'll need them for deployment.
+
+---
+
+## Step 4: Customize Bot Behavior
+
+Now let's add the actual logic that makes your bot useful.
+
+### Slash Command Handlers
+
+Define what happens when users invoke your commands:
+
+```python
+# Slash command: /standup
+def handle_standup(ack, command, client):
+    ack()  # Acknowledge command immediately
+
+    # Open a modal for standup form
+    client.views_open(
+        trigger_id=command["trigger_id"],
+        view={
+            "type": "modal",
+            "callback_id": "standup_modal",
+            "title": {"type": "plain_text", "text": "Daily Standup"},
+            "submit": {"type": "plain_text", "text": "Submit"},
+            "blocks": [
+                {
+                    "type": "input",
+                    "block_id": "yesterday",
+                    "label": {"type": "plain_text", "text": "What did you do yesterday?"},
+                    "element": {"type": "plain_text_input", "action_id": "yesterday_input"}
+                },
+                {
+                    "type": "input",
+                    "block_id": "today",
+                    "label": {"type": "plain_text", "text": "What will you do today?"},
+                    "element": {"type": "plain_text_input", "action_id": "today_input"}
+                },
+                {
+                    "type": "input",
+                    "block_id": "blockers",
+                    "label": {"type": "plain_text", "text": "Any blockers?"},
+                    "element": {"type": "plain_text_input", "action_id": "blockers_input"},
+                    "optional": true
+                }
+            ]
+        }
+    )
+```
+
+**Best Practices**:
+- Always `ack()` within 3 seconds to avoid timeout
+- Use ephemeral messages for user-specific info
+- Provide helpful error messages
+- Include usage examples
+
+### Interactive Component Handlers
+
+Respond to button clicks and menu selections:
+
+```python
+# Button interaction handler
+def handle_approve_deploy(ack, body, client):
+    ack()
+
+    user_id = body["user"]["id"]
+    channel_id = body["channel"]["id"]
+
+    # Update the original message
+    client.chat_update(
+        channel=channel_id,
+        ts=body["message"]["ts"],
+        text="Deployment approved by <@{}>".format(user_id),
+        blocks=[
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "✅ Deployment to production *approved* by <@{}>".format(user_id)
+                }
+            }
+        ]
+    )
+
+    # Trigger actual deployment
+    trigger_deployment("production", approved_by=user_id)
+
+    # Send confirmation DM
+    client.chat_postMessage(
+        channel=user_id,
+        text="Your deployment approval has been processed. Check #deployments for status."
+    )
+```
+
+**Key Points**:
+- Update the original message to show the action taken
+- Send confirmations to users
+- Use `chat.postEphemeral` for private responses
+
+### Event Handlers
+
+React to workspace events:
+
+```python
+# App mention handler
+def handle_mention(event, say):
+    user = event["user"]
+    text = event["text"]
+
+    # Remove bot mention from text
+    clean_text = re.sub(r'<@[A-Z0-9]+>', '', text).strip()
+
+    # Check for keywords
+    if "help" in clean_text.lower():
+        say(
+            text=f"Hi <@{user}>! Here's what I can do:",
+            blocks=[
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "*Available Commands:*\n• `/standup` - Daily standup\n• `/deploy` - Trigger deployment\n• `/status` - Check system status"
+                    }
+                }
+            ]
+        )
+    else:
+        # Generic AI response
+        response = generate_ai_response(clean_text)
+        say(f"<@{user}> {response}")
+```
+
+---
+
+## Step 5: Generate Your Bot
+
+With your configuration complete, let's generate the production code.
+
+### Start Generation
+
+1. Review your configuration in the preview panel
+2. Test commands in the preview chat
+3. Click **Generate** when ready
+4. Confirm **10 credits** usage
+
+### Generation Progress
+
+Watch real-time updates:
+
+```bash
+[1/6] Analyzing Slack configuration... ✓
+[2/6] Generating Bolt framework code... ✓
+[3/6] Creating slash command handlers... ✓
+[4/6] Setting up event subscriptions... ✓
+[5/6] Configuring OAuth flow... ✓
+[6/6] Preparing deployment files... ✓
+
+Generation complete! Your Slack bot is ready to deploy.
+```
+
+### Review Generated Code
+
+You'll receive a complete project:
+
+```
+slack-bot/
+├── app.py                  # Main Bolt app
+├── handlers/
+│   ├── commands.py         # Slash command handlers
+│   ├── events.py           # Event handlers
+│   └── interactions.py     # Button/menu handlers
+├── config/
+│   └── app_manifest.yaml   # Slack app manifest
+├── .env.example            # Environment variables template
+├── requirements.txt        # Python dependencies
+├── Dockerfile              # Docker deployment
+└── README.md               # Setup instructions
+```
+
+**Download the code** if you want to review or modify it locally.
+
+---
+
+## Step 6: Deploy to Production
+
+Deploy your bot with one click.
+
+### One-Click Deployment
+
+1. Click **Deploy** in the Viably dashboard
+2. Wait for the build to complete (1-2 minutes)
+
+### Configure Environment Variables
+
+Set your Slack credentials in the Viably deployment settings:
+
+```bash
+SLACK_BOT_TOKEN=xoxb-your-bot-token
+SLACK_SIGNING_SECRET=your-signing-secret
+SLACK_APP_TOKEN=xapp-your-app-token  # Optional, for Socket Mode
+```
+
+Click **Redeploy** to apply changes.
+
+### Get Your Bot URL
+
+Viably provides a public URL for your bot:
+
+```
+https://your-slack-bot.viably.dev
+```
+
+Copy this URL - you'll need it to configure Slack.
+
+---
+
+## Step 7: Configure Slack App
+
+Connect your deployed bot to your Slack app.
+
+### Set Request URLs
+
+1. Go to your Slack app settings at [api.slack.com/apps](https://api.slack.com/apps)
+2. Select your app
+
+**Event Subscriptions**:
+1. Click **Event Subscriptions** in the sidebar
+2. Toggle **Enable Events** to ON
+3. Set **Request URL** to:
+   ```
+   https://your-bot.viably.dev/slack/events
+   ```
+4. Wait for the green "Verified" checkmark
+5. Click **Save Changes**
+
+**Interactivity & Shortcuts**:
+1. Click **Interactivity & Shortcuts**
+2. Toggle **Interactivity** to ON
+3. Set **Request URL** to:
+   ```
+   https://your-bot.viably.dev/slack/interactions
+   ```
+4. Click **Save Changes**
+
+**Slash Commands**:
+1. Click **Slash Commands**
+2. For each command (`/hello`, `/standup`, etc.):
+   - Click **Edit**
+   - Set **Request URL** to:
+     ```
+     https://your-bot.viably.dev/slack/commands
+     ```
+   - Click **Save**
+
+### Install to Workspace
+
+1. Click **Install App** in the sidebar
+2. Click **Install to Workspace**
+3. Review permissions
+4. Click **Allow**
+
+Your bot is now live in your workspace!
+
+---
+
+## Step 8: Test Your Bot
+
+Verify everything works correctly.
+
+### Test Slash Commands
+
+In any Slack channel:
+
+```
+/hello
+```
+
+You should see:
+```
+Hi there! I'm TeamBot, your team assistant. How can I help?
+```
+
+### Test Interactive Messages
+
+Trigger an interactive message:
+
+```
+/deploy production
+```
+
+You should see approval buttons. Click **Approve** or **Reject**.
+
+### Test Event Subscriptions
+
+Mention your bot in a channel:
+
+```
+@TeamBot help
+```
+
+Your bot should respond with available commands.
+
+### Check Logs
+
+If something doesn't work:
+
+1. Go to the Viably dashboard
+2. Click **Deployments**
+3. Click **View Logs**
+4. Look for errors or request logs
+
+Common issues:
+- **Request URL not verified**: Check your environment variables
+- **Command not found**: Reinstall app to workspace
+- **No response**: Check deployment logs for errors
+
+---
+
+## Customization Ideas
+
+Make your Slack bot uniquely useful for your team.
+
+### 1. Standup Bot
+
+Automate daily standups:
+
+```python
+# Schedule daily standup reminder
+@app.event("message")
+def daily_standup_reminder():
+    # Send at 9 AM every weekday
+    client.chat_postMessage(
+        channel="#general",
+        text="Good morning! Time for standup. Use `/standup` to submit yours."
+    )
+```
+
+### 2. Approval Workflows
+
+Create approval processes:
+
+```python
+# Expense approval
+@app.command("/expense")
+def expense_request(ack, command, client):
+    # Show modal to collect expense details
+    # Post to #finance-approvals
+    # Track approval status
+```
+
+### 3. Integration Bot
+
+Connect to external APIs:
+
+```python
+# GitHub integration
+@app.command("/pr-status")
+def pr_status(ack, command, say):
+    repo = command["text"]
+    prs = fetch_github_prs(repo)
+
+    say(blocks=format_pr_list(prs))
+```
+
+### 4. Custom Notifications
+
+Send alerts from CI/CD:
+
+```python
+# Webhook endpoint for deploy notifications
+@app.post("/webhook/deploy")
+def deploy_notification(request):
+    data = request.json()
+
+    client.chat_postMessage(
+        channel="#deployments",
+        text=f"🚀 Deploy to {data['environment']} completed"
+    )
+```
+
+---
+
+## Troubleshooting
+
+Common issues and solutions.
+
+### Bot Doesn't Respond to Commands
+
+**Symptoms**: Typing `/hello` shows "dispatch_failed" error
+
+**Solution**:
+1. Check Request URL is correctly set in Slash Commands settings
+2. Verify SLACK_SIGNING_SECRET matches your app credentials
+3. Check deployment logs for incoming requests
+
+### Event Subscriptions Not Working
+
+**Symptoms**: Mentioning bot doesn't trigger response
+
+**Solution**:
+1. Verify Request URL shows "Verified" checkmark
+2. Check bot is invited to the channel (`/invite @YourBot`)
+3. Ensure required event scopes are granted
+
+### OAuth Installation Fails
+
+**Symptoms**: Can't install app to workspace
+
+**Solution**:
+1. Verify all required scopes are listed in OAuth settings
+2. Check redirect URLs match your deployment URL
+3. Ensure workspace allows app installations
+
+### Interactive Messages Don't Update
+
+**Symptoms**: Clicking button shows error
+
+**Solution**:
+1. Check Interactivity Request URL is set correctly
+2. Verify button `action_id` matches handler code
+3. Ensure you call `ack()` within 3 seconds
+
+### Rate Limiting Errors
+
+**Symptoms**: "rate_limited" error in logs
+
+**Solution**:
+1. Implement exponential backoff in your code
+2. Cache frequently accessed data
+3. Batch API calls when possible
+
+---
+
+## Best Practices
+
+Build production-ready Slack bots.
+
+### Security
+
+**Verify Requests**: Always verify requests come from Slack
+```python
+from slack_sdk.signature import SignatureVerifier
+
+verifier = SignatureVerifier(SLACK_SIGNING_SECRET)
+if not verifier.is_valid_request(body, headers):
+    return {"statusCode": 403}
+```
+
+**Secure Token Storage**: Never commit tokens to git
+- Use environment variables
+- Rotate tokens regularly
+- Use separate tokens for dev/prod
+
+### Performance
+
+**Acknowledge Quickly**: Respond to interactions within 3 seconds
+```python
+@app.command("/slow-command")
+def handle_slow(ack, command, client):
+    ack()  # Acknowledge immediately
+    # Do slow work after
+    result = slow_operation()
+    client.chat_postMessage(...)
+```
+
+**Use Async Operations**: For long-running tasks
+```python
+from celery import Celery
+
+@app.command("/generate-report")
+def generate_report(ack, command):
+    ack()
+    task = generate_report_async.delay(command["user_id"])
+    # Notify user when complete
+```
+
+### User Experience
+
+**Provide Feedback**: Always confirm actions
+```python
+# Good
+say("✅ Deployment started. I'll notify you when complete.")
+
+# Bad
+# (silence after user action)
+```
+
+**Handle Errors Gracefully**: Show helpful error messages
+```python
+try:
+    result = risky_operation()
+except Exception as e:
+    say("❌ Something went wrong. Please try again or contact support.")
+    log_error(e)
+```
+
+**Use Ephemeral Messages**: For user-specific or sensitive info
+```python
+client.chat_postEphemeral(
+    channel=channel_id,
+    user=user_id,
+    text="This message is only visible to you."
+)
+```
+
+---
+
+## Next Steps
+
+Take your Slack bot to the next level.
+
+### Learn More
+
+**Slack API Documentation**:
+- [Bolt for Python](https://slack.dev/bolt-python/)
+- [Block Kit Builder](https://app.slack.com/block-kit-builder)
+- [API Methods](https://api.slack.com/methods)
+
+**Viably Resources**:
+- [Advanced Customization](/docs/advanced)
+- [API Integration Guide](/docs/api-integration)
+- [Deployment Options](/docs/deployment)
+
+### Explore Other Templates
+
+- [Discord Bot](/docs/templates/discord) - Gaming communities
+- [Telegram Bot](/docs/templates/telegram) - Customer support
+- [WhatsApp Bot](/docs/templates/whatsapp) - Direct engagement
+
+### Join the Community
+
+- **Discord**: [discord.gg/viably](https://discord.gg/viably)
+- **GitHub**: [github.com/viably/platform](https://github.com/viably/platform)
+- **Support**: [support@viably.dev](mailto:support@viably.dev)
+
+---
+
+**Ready to automate your workplace?** Head back to the [Templates Gallery](/templates) and start building your Slack bot today.
+
+Happy automating! 🚀

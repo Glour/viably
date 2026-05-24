@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --primary: 263.4 70% 50.4%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 263.4 70% 50.4%;
+  --radius: 0.5rem;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: hsl(var(--background)); color: hsl(var(--foreground)); }
+</style>
+</head>
+<body>
+<div id="root"><p>Loading...</p></div>
+
+<script>
+window.onerror = function(msg, src, line, col, err) {
+  document.getElementById('root').innerHTML = '<pre style="color:red;padding:20px;white-space:pre-wrap">'
+    + 'ERROR: ' + msg + '\nLine: ' + line
+    + '\nSource: ' + (src||'').substring(0,200)
+    + '\nStack: ' + (err && err.stack ? err.stack.substring(0, 1000) : 'N/A') + '</pre>';
+  return true;
+};
+</script>
+
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: { extend: { colors: {
+    border: 'hsl(var(--border))', input: 'hsl(var(--input))', ring: 'hsl(var(--ring))',
+    background: 'hsl(var(--background))', foreground: 'hsl(var(--foreground))',
+    primary: { DEFAULT: 'hsl(var(--primary))', foreground: 'hsl(var(--primary-foreground))' },
+    secondary: { DEFAULT: 'hsl(var(--secondary))', foreground: 'hsl(var(--secondary-foreground))' },
+    destructive: { DEFAULT: 'hsl(var(--destructive))', foreground: 'hsl(var(--destructive-foreground))' },
+    muted: { DEFAULT: 'hsl(var(--muted))', foreground: 'hsl(var(--muted-foreground))' },
+    accent: { DEFAULT: 'hsl(var(--accent))', foreground: 'hsl(var(--accent-foreground))' },
+    card: { DEFAULT: 'hsl(var(--card))', foreground: 'hsl(var(--card-foreground))' },
+  }, borderRadius: { lg: 'var(--radius)', md: 'calc(var(--radius) - 2px)', sm: 'calc(var(--radius) - 4px)' } } }
+};
+</script>
+
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+
+<script>
+var h = React.createElement;
+var useState = React.useState;
+var useEffect = React.useEffect;
+var useRef = React.useRef;
+var useCallback = React.useCallback;
+var useMemo = React.useMemo;
+var useContext = React.useContext;
+var createContext = React.createContext;
+
+function cn() {
+  var r = [];
+  for (var i = 0; i < arguments.length; i++) {
+    var a = arguments[i];
+    if (!a) continue;
+    if (typeof a === 'string') r.push(a);
+    else if (Array.isArray(a)) { for (var j = 0; j < a.length; j++) if (a[j]) r.push(a[j]); }
+    else if (typeof a === 'object') { for (var k in a) { if (a[k]) r.push(k); } }
+  }
+  return r.join(' ');
+}
+
+function Button(p) { p=p||{}; var cls = cn('inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors h-10 px-4 py-2', p.variant==='outline'?'border border-input bg-background hover:bg-accent':'bg-primary text-primary-foreground hover:bg-primary/90', p.className); var props={}; for(var k in p){if(k!=='variant'&&k!=='size'&&k!=='asChild')props[k]=p[k];} props.className=cls; return h('button',props,p.children); }
+function Card(p) { p=p||{}; return h('div',{className:cn('rounded-lg border bg-card text-card-foreground shadow-sm',p.className)},p.children); }
+function CardHeader(p) { p=p||{}; return h('div',{className:cn('flex flex-col space-y-1.5 p-6',p.className)},p.children); }
+function CardTitle(p) { p=p||{}; return h('h3',{className:cn('text-2xl font-semibold leading-none tracking-tight',p.className)},p.children); }
+function CardDescription(p) { p=p||{}; return h('p',{className:cn('text-sm text-muted-foreground',p.className)},p.children); }
+function CardContent(p) { p=p||{}; return h('div',{className:cn('p-6 pt-0',p.className)},p.children); }
+function CardFooter(p) { p=p||{}; return h('div',{className:cn('flex items-center p-6 pt-0',p.className)},p.children); }
+function Badge(p) { p=p||{}; return h('span',{className:cn('inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold',p.className)},p.children); }
+function Separator(p) { p=p||{}; return h('div',{className:cn('shrink-0 bg-border h-[1px] w-full',p.className)}); }
+function Input(p) { p=p||{}; return h('input',{className:cn('flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm',p.className), placeholder:p.placeholder, type:p.type||'text'}); }
+
+// Router stubs
+function BrowserRouter(p) { return h('div',null,p.children); }
+function Routes(p) { return h('div',null,p.children); }
+function Route(p) { return p.element || null; }
+function Link(p) { p=p||{}; var href=p.to||p.href||'#'; return h('a',{href:href,className:p.className},p.children); }
+function NavLink(p) { return Link(p); }
+function Outlet() { return null; }
+function useNavigate() { return function(){}; }
+function useLocation() { return {pathname:'/'};}
+function useParams() { return {}; }
+
+// Query stubs
+function QueryClient() { return {}; }
+function QueryClientProvider(p) { return h('div',null,p.children); }
+
+function _iconStub(name) {
+  return function(p) {
+    p = p || {};
+    var size = p.size || 24;
+    return h('svg', {xmlns:'http://www.w3.org/2000/svg', width:size, height:size, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:2, strokeLinecap:'round', strokeLinejoin:'round', className:p.className||''},
+      h('circle',{cx:12,cy:12,r:10}), h('text',{x:12,y:16,textAnchor:'middle',fontSize:8,fill:'currentColor',stroke:'none'},name[0]));
+  };
+}
+
+var TypeScript = _iconStub('TypeScript');
+var Linkedin = _iconStub('Linkedin');
+var Node = _iconStub('Node');
+var AWS = _iconStub('AWS');
+var Agile = _iconStub('Agile');
+var Python = _iconStub('Python');
+var ArrowRight = _iconStub('ArrowRight');
+var IT = _iconStub('IT');
+var Shield = _iconStub('Shield');
+var Check = _iconStub('Check');
+var TechFlow = _iconStub('TechFlow');
+var Section = _iconStub('Section');
+var Footer = _iconStub('Footer');
+var Features = _iconStub('Features');
+var Hero = _iconStub('Hero');
+var Docker = _iconStub('Docker');
+var Services = _iconStub('Services');
+var Github = _iconStub('Github');
+var Code2 = _iconStub('Code2');
+var Navigation = _iconStub('Navigation');
+var PostgreSQL = _iconStub('PostgreSQL');
+var GraphQL = _iconStub('GraphQL');
+var Rocket = _iconStub('Rocket');
+var Zap = _iconStub('Zap');
+var Mail = _iconStub('Mail');
+var CTA = _iconStub('CTA');
+var Technologies = _iconStub('Technologies');
+</script>
+
+<script type="text/babel" data-presets="react,typescript">
+
+
+
+
+function Home() {
+  const services = [
+    {
+      icon: <Code2 className="w-8 h-8" />,
+      title: "Веб-разработка",
+      description:
+        "Создаём современные веб-приложения с использованием новейших технологий",
+    },
+    {
+      icon: <Rocket className="w-8 h-8" />,
+      title: "Мобильные приложения",
+      description:
+        "Разрабатываем нативные и кросс-платформенные мобильные решения",
+    },
+    {
+      icon: <Shield className="w-8 h-8" />,
+      title: "Безопасность",
+      description:
+        "Обеспечиваем надёжную защиту ваших данных и инфраструктуры",
+    },
+    {
+      icon: <Zap className="w-8 h-8" />,
+      title: "Оптимизация",
+      description:
+        "Повышаем производительность и масштабируемость ваших систем",
+    },
+  ];
+
+  const technologies = [
+    "React",
+    "TypeScript",
+    "Node.js",
+    "Python",
+    "Docker",
+    "AWS",
+    "PostgreSQL",
+    "GraphQL",
+  ];
+
+  const features = [
+    "Индивидуальный подход к каждому проекту",
+    "Современный стек технологий",
+    "Agile-методология разработки",
+    "Постоянная техническая поддержка",
+    "Прозрачная коммуникация",
+    "Соблюдение сроков и бюджета",
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-white">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full bg-gray-950/80 backdrop-blur-lg border-b border-gray-800 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg" />
+              <span className="text-xl font-bold">TechFlow</span>
+            </div>
+            <div className="hidden md:flex space-x-8">
+              <a
+                href="#services"
+                className="text-gray-300 hover:text-white transition-colors"
+              >
+                Услуги
+              </a>
+              <a
+                href="#technologies"
+                className="text-gray-300 hover:text-white transition-colors"
+              >
+                Технологии
+              </a>
+              <a
+                href="#contact"
+                className="text-gray-300 hover:text-white transition-colors"
+              >
+                Контакты
+              </a>
+            </div>
+            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              Связаться
+            </Button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center">
+          <Badge className="mb-6 bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20">
+            Инновационные IT-решения
+          </Badge>
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Создаём будущее
+            <br />
+            вашего бизнеса
+          </h1>
+          <p className="text-xl text-gray-400 mb-12 max-w-3xl mx-auto">
+            Разрабатываем высокопроизводительные веб и мобильные приложения,
+            которые помогают бизнесу расти и развиваться
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              size="lg"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            >
+              Начать проект
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-gray-700 hover:bg-gray-800"
+            >
+              Наши работы
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Services Section */}
+      <section id="services" className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">Наши услуги</h2>
+            <p className="text-gray-400 text-lg">
+              Комплексные решения для вашего цифрового успеха
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {services.map((service, index) => (
+              <Card
+                key={index}
+                className="bg-gray-900/50 border-gray-800 hover:border-blue-500/50 transition-all duration-300 hover:transform hover:-translate-y-2"
+              >
+                <CardContent className="p-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-xl flex items-center justify-center mb-4 text-blue-400">
+                    {service.icon}
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">
+                    {service.title}
+                  </h3>
+                  <p className="text-gray-400">{service.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Technologies Section */}
+      <section id="technologies" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-950/50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">Технологии</h2>
+            <p className="text-gray-400 text-lg">
+              Используем современный стек для создания надёжных решений
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-4">
+            {technologies.map((tech, index) => (
+              <Badge
+                key={index}
+                className="px-6 py-3 text-lg bg-gray-900 border-gray-700 hover:border-blue-500/50 transition-colors"
+              >
+                {tech}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-4xl font-bold mb-6">Почему выбирают нас</h2>
+              <p className="text-gray-400 text-lg mb-8">
+                Мы предлагаем не просто разработку, а комплексный подход к
+                созданию цифровых продуктов, которые действительно работают
+              </p>
+              <div className="space-y-4">
+                {features.map((feature, index) => (
+                  <div key={index} className="flex items-start space-x-3">
+                    <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-4 h-4" />
+                    </div>
+                    <p className="text-gray-300">{feature}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl blur-3xl opacity-20" />
+              <Card className="relative bg-gray-900/80 border-gray-800 backdrop-blur-sm">
+                <CardContent className="p-8">
+                  <div className="space-y-6">
+                    <div>
+                      <div className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                        150+
+                      </div>
+                      <p className="text-gray-400 mt-2">Реализованных проектов</p>
+                    </div>
+                    <div>
+                      <div className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                        50+
+                      </div>
+                      <p className="text-gray-400 mt-2">Довольных клиентов</p>
+                    </div>
+                    <div>
+                      <div className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                        7+
+                      </div>
+                      <p className="text-gray-400 mt-2">Лет опыта</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section id="contact" className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <Card className="relative overflow-hidden bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-500/30">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-10" />
+            <CardContent className="relative p-12 text-center">
+              <h2 className="text-4xl font-bold mb-4">
+                Готовы начать новый проект?
+              </h2>
+              <p className="text-gray-300 text-lg mb-8">
+                Свяжитесь с нами и получите бесплатную консультацию по вашему
+                проекту
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  <Mail className="mr-2 w-5 h-5" />
+                  Написать нам
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-gray-700 hover:bg-gray-800"
+                >
+                  Заказать звонок
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg" />
+                <span className="text-xl font-bold">TechFlow</span>
+              </div>
+              <p className="text-gray-400">
+                Инновационные IT-решения для вашего бизнеса
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Услуги</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Веб-разработка
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Мобильные приложения
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Консалтинг
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Компания</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    О нас
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Портфолио
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Карьера
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Контакты</h4>
+              <div className="space-y-2 text-gray-400">
+                <p>hello@techflow.dev</p>
+                <p>+7 (999) 123-45-67</p>
+                <div className="flex space-x-4 mt-4">
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    <Github className="w-5 h-5" />
+                  </a>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    <Linkedin className="w-5 h-5" />
+                  </a>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    <Mail className="w-5 h-5" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
+            <p>© 2024 TechFlow. Все права защищены.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+Home;
+
+var root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<Home />);
+</script>
+</body>
+</html>

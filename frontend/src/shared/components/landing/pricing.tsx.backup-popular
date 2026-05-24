@@ -1,0 +1,570 @@
+"use client"
+
+import { useRouter } from "next/navigation"
+import { useCallback } from "react"
+import { createPaymentAndRedirect } from "@/shared/lib/payments"
+
+import { motion, AnimatePresence } from "motion/react"
+import { fadeInUp, staggerContainer } from "@/shared/lib/animations"
+import { useReducedMotion } from "@/shared/hooks/use-reduced-motion"
+import { useHasMounted } from "@/shared/hooks/use-has-mounted"
+import { usePricingToggle, type BillingPeriod } from "@/shared/hooks/use-pricing-toggle"
+import { AVAILABLE_PLANS } from "@/shared/lib/data/settings"
+import type { SubscriptionPlan } from "@/shared/types"
+import { Check } from "lucide-react"
+import Link from "next/link"
+import { cn } from "@/shared/lib/utils"
+
+/* ------------------------------------------------------------------ */
+/*  Constants                                                          */
+/* ------------------------------------------------------------------ */
+
+const YEARLY_DISCOUNT = 0.8 // 20% off
+const LANDING_TIERS = ["free", "starter", "pro", "business", "enterprise"] as const
+
+/** All plans shown on the landing page */
+const LANDING_PLANS = AVAILABLE_PLANS.filter((p) =>
+  (LANDING_TIERS as readonly string[]).includes(p.tier),
+)
+
+const CTA_HREFS: Record<string, string> = {
+  free: "/register",
+}
+
+const PAID_PLANS = new Set(["starter", "pro", "business"])
+
+const CTA_LABELS: Record<string, string> = {
+  free: "Начать бесплатно",
+  starter: "Выбрать Starter",
+  pro: "Выбрать Pro",
+  business: "Выбрать Business",
+  enterprise: "Связаться с нами",
+}
+
+/** Early Bird pricing for first 100 users */
+const EARLY_BIRD_PRICES: Record<string, number> = {
+  starter: 12,
+  pro: 29,
+  business: 99,
+}
+
+/** Stripe Price IDs mapping */
+const STRIPE_PRICE_IDS = {
+  starter: {
+    earlyBird: {
+      monthly: "price_1T2UzgJu7HyIEuVbpT6A6bVZ",
+      yearly: "price_1T2VALJu7HyIEuVbEB4BARju",
+    },
+    regular: {
+      monthly: "price_1T2VD6Ju7HyIEuVbZWLcSFNL",
+      yearly: "price_1T2VD6Ju7HyIEuVbvOPR9lMI",
+    },
+  },
+  pro: {
+    earlyBird: {
+      monthly: "price_1T2VHRJu7HyIEuVbPaucMy5P",
+      yearly: "price_1T2VHRJu7HyIEuVbGn56LrOa",
+    },
+    regular: {
+      monthly: "price_1T2VIMJu7HyIEuVb5HYHcPJB",
+      yearly: "price_1T2VIMJu7HyIEuVbQgwJUY1H",
+    },
+  },
+  business: {
+    earlyBird: {
+      monthly: "price_1T2VKRJu7HyIEuVbZZHu7LNa",
+      yearly: "price_1T2VKRJu7HyIEuVbsH0LXFJC",
+    },
+    regular: {
+      monthly: "price_1T2VOtJu7HyIEuVbuDnGJ3yg",
+      yearly: "price_1T2VOtJu7HyIEuVbYN4V7rNr",
+    },
+  },
+} as const
+
+/** Early bird status - first 100 users get early bird pricing */
+const EARLY_BIRD_ENABLED = true // TODO: Disable after first 100 users
+
+/**
+ * Get correct Stripe price ID based on tier, period, and early bird status
+ */
+function getStripePriceId(
+  tier: string,
+  period: BillingPeriod,
+  isEarlyBird: boolean
+): string | null {
+  if (tier === "free") return null
+  
+  const tierPrices = STRIPE_PRICE_IDS[tier as keyof typeof STRIPE_PRICE_IDS]
+  if (!tierPrices) return null
+
+  const priceType = isEarlyBird ? tierPrices.earlyBird : tierPrices.regular
+  return priceType[period]
+}
+
+/* ------------------------------------------------------------------ */
+/*  Price helpers                                                      */
+/* ------------------------------------------------------------------ */
+
+function getYearlyPrice(monthlyPrice: number): number {
+  return Math.round(monthlyPrice * 12 * YEARLY_DISCOUNT)
+}
+
+function getMonthlyEquivalent(yearlyPrice: number): number {
+  return Math.round(yearlyPrice / 12)
+}
+
+function formatPrice(value: number): string {
+  return value.toLocaleString("en-US")
+}
+
+/* ------------------------------------------------------------------ */
+/*  Pricing Section                                                    */
+/* ------------------------------------------------------------------ */
+
+export function Pricing() {
+  const reduced = useReducedMotion()
+  const mounted = useHasMounted()
+  const { period, togglePeriod } = usePricingToggle()
+
+  return (
+    <section id="pricing" className="relative py-16 lg:py-24 overflow-hidden">
+      {/* Background gradient orbs */}
+      <div className="absolute top-0 left-0 w-[700px] h-[700px] bg-[image:var(--gradient-cool)] opacity-5 blur-[120px] pointer-events-none" aria-hidden="true" />
+      <div className="absolute bottom-0 right-0 w-[700px] h-[700px] bg-[image:var(--gradient-warm)] opacity-5 blur-[120px] pointer-events-none" aria-hidden="true" />
+
+      <motion.div
+        className="mx-auto max-w-[1400px] px-6 relative"
+        variants={reduced ? undefined : staggerContainer}
+        initial={!mounted || reduced ? undefined : "hidden"}
+        whileInView={!mounted || reduced ? undefined : "visible"}
+        viewport={{ once: true, amount: 0.2 }}
+      >
+        {/* Heading */}
+        <motion.div
+          variants={reduced ? undefined : fadeInUp}
+          className="mx-auto mb-12 max-w-2xl text-center"
+        >
+          <h2 className="font-heading text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+            Простые и прозрачные{" "}
+            <span className="bg-[image:var(--gradient-main)] bg-clip-text text-transparent">
+              цены
+            </span>
+          </h2>
+          <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-[image:var(--gradient-main)]" />
+          <p className="mt-4 font-body text-lg md:text-xl leading-relaxed text-muted-foreground">
+            Начните бесплатно. Масштабируйтесь, когда будете готовы.
+          </p>
+        </motion.div>
+
+        {/* Billing toggle */}
+        <motion.div
+          variants={reduced ? undefined : fadeInUp}
+          className="mb-10 flex items-center justify-center gap-3"
+        >
+          <BillingToggle
+            period={period}
+            onToggle={togglePeriod}
+            reduced={reduced}
+          />
+        </motion.div>
+
+        {/* Plan cards grid */}
+        <motion.div
+          variants={reduced ? undefined : staggerContainer}
+          className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 lg:gap-6"
+        >
+          {LANDING_PLANS.map((plan, index) => (
+            <PlanCard
+              key={plan.id}
+              plan={plan}
+              period={period}
+              index={index}
+              reduced={reduced}
+            />
+          ))}
+        </motion.div>
+      </motion.div>
+    </section>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  Billing Toggle                                                     */
+/* ------------------------------------------------------------------ */
+
+function BillingToggle({
+  period,
+  onToggle,
+  reduced,
+}: {
+  period: BillingPeriod
+  onToggle: (next: BillingPeriod) => void
+  reduced: boolean
+}) {
+  return (
+    <div
+      className="relative inline-flex items-center rounded-xl border border-border bg-muted/50 p-1"
+      role="radiogroup"
+      aria-label="Период оплаты"
+    >
+      <ToggleButton
+        label="Ежемесячно"
+        value="monthly"
+        active={period === "monthly"}
+        onClick={() => onToggle("monthly")}
+        reduced={reduced}
+      />
+      <ToggleButton
+        label="Ежегодно"
+        value="yearly"
+        active={period === "yearly"}
+        onClick={() => onToggle("yearly")}
+        reduced={reduced}
+        badge="-20%"
+      />
+    </div>
+  )
+}
+
+function ToggleButton({
+  label,
+  value,
+  active,
+  onClick,
+  reduced,
+  badge,
+}: {
+  label: string
+  value: BillingPeriod
+  active: boolean
+  onClick: () => void
+  reduced: boolean
+  badge?: string
+}) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={active}
+      onClick={onClick}
+      className={cn(
+        "relative z-10 rounded-lg px-4 py-2 text-sm font-body font-medium transition-colors",
+        active
+          ? "text-white"
+          : "text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {/* Animated background indicator */}
+      {active && (
+        reduced ? (
+          <span className="absolute inset-0 rounded-lg bg-[image:var(--gradient-main)]" />
+        ) : (
+          <motion.span
+            layoutId="billing-toggle-bg"
+            className="absolute inset-0 rounded-lg bg-[image:var(--gradient-main)]"
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+          />
+        )
+      )}
+      <span className="relative flex items-center gap-1.5">
+        {label}
+        {badge && (
+          <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-body font-bold leading-none">
+            {badge}
+          </span>
+        )}
+      </span>
+    </button>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  Plan Card                                                          */
+/* ------------------------------------------------------------------ */
+
+function PlanCard({
+  plan,
+  period,
+  index,
+  reduced,
+}: {
+  plan: SubscriptionPlan
+  period: BillingPeriod
+  index: number
+  reduced: boolean
+}) {
+  const isPopular = plan.isPopular
+  const monthlyPrice = plan.price ?? 0
+  const earlyBirdPrice = EARLY_BIRD_PRICES[plan.tier] ?? monthlyPrice
+  const hasEarlyBird = plan.tier in EARLY_BIRD_PRICES && EARLY_BIRD_ENABLED
+  
+  const yearlyTotal = getYearlyPrice(hasEarlyBird ? earlyBirdPrice : monthlyPrice)
+  const yearlyMonthly = getMonthlyEquivalent(yearlyTotal)
+  const isFree = plan.tier === "free"
+  const isEnterprise = plan.tier === "enterprise"
+
+  const displayPrice = period === "monthly" || isFree 
+    ? (hasEarlyBird ? earlyBirdPrice : monthlyPrice)
+    : yearlyMonthly
+  
+  const originalPrice = period === "monthly" || isFree
+    ? monthlyPrice
+    : getMonthlyEquivalent(getYearlyPrice(monthlyPrice))
+
+  const ctaHref = CTA_HREFS[plan.tier] ?? "/pricing"
+  const ctaLabel = CTA_LABELS[plan.tier] ?? "Выбрать"
+
+  const cardVariants = reduced
+    ? undefined
+    : {
+        hidden: { opacity: 0, y: 30 },
+        visible: {
+          opacity: 1,
+          y: 0,
+          transition: { duration: 0.5, delay: index * 0.15, ease: "easeOut" as const },
+        },
+      }
+
+  return (
+    <motion.div
+      variants={cardVariants}
+      whileHover={reduced ? undefined : {
+        y: isPopular ? -12 : -8,
+        transition: { duration: 0.3 }
+      }}
+      className={cn(
+        "group relative flex flex-col rounded-2xl border p-6 lg:p-7 transition-all duration-300 min-w-[260px]",
+        isPopular
+          ? "border-transparent bg-card/40 dark:bg-card/80 backdrop-blur-xl shadow-xl shadow-primary-glow/20"
+          : "border-border/50 dark:border-border bg-card/40 dark:bg-card/80 backdrop-blur-xl shadow-lg hover:shadow-[0_0_24px_var(--primary-glow)]",
+      )}
+    >
+      {/* Gradient border for popular plan */}
+      {isPopular && (
+        <div
+          className="pointer-events-none absolute -inset-px rounded-2xl transition-opacity duration-300 group-hover:opacity-100"
+          style={{
+            background: "var(--gradient-main)",
+            mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+            maskComposite: "exclude",
+            WebkitMaskComposite: "xor",
+            padding: "2px",
+          }}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Early Bird badge - fixed position for all paid plans */}
+      {hasEarlyBird && (
+        <div className="absolute -top-3 left-0 right-0 flex justify-center">
+          <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 px-3 py-1.5 text-xs font-body font-semibold text-white shadow-lg">
+            🔥 Early Bird
+          </span>
+        </div>
+      )}
+
+      {/* Plan name */}
+      <h3 className={cn(
+        "font-heading text-xl lg:text-2xl font-bold tracking-tight text-foreground",
+        hasEarlyBird ? "mt-4" : "mt-1",
+        isEnterprise && "text-center"
+      )}>{plan.name}</h3>
+
+      {/* Popular badge - below plan name */}
+      {isPopular && (
+        <div className="mt-2 flex justify-center">
+          <span className="inline-flex items-center rounded-full bg-[image:var(--gradient-main)] px-4 py-1 text-xs font-body font-semibold text-white shadow-[0_0_20px_var(--primary-glow)] transition-shadow duration-300 group-hover:shadow-[0_0_28px_var(--primary-glow)]">
+            &#9733; Популярный
+          </span>
+        </div>
+      )}
+
+      {/* Price display with Early Bird */}
+      <div className="mt-3">
+        {hasEarlyBird && (
+          <div className="mb-1">
+            <span className="line-through text-muted-foreground text-base lg:text-lg">
+              {formatPrice(originalPrice)} $
+            </span>
+          </div>
+        )}
+        <div className="flex items-baseline gap-1 flex-wrap">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={`${plan.id}-${period}`}
+              initial={reduced ? undefined : { opacity: 0, y: -10 }}
+              animate={reduced ? undefined : { opacity: 1, y: 0 }}
+              exit={reduced ? undefined : { opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+              className={cn(
+                "font-heading font-extrabold tracking-tight",
+                isEnterprise
+                  ? "text-xl lg:text-2xl"
+                  : "text-3xl lg:text-4xl",
+                (isPopular || hasEarlyBird) && "bg-[image:var(--gradient-main)] bg-clip-text text-transparent"
+              )}
+            >
+              {isFree ? "Бесплатно" : isEnterprise ? "Индивидуально" : `${formatPrice(displayPrice)} $`}
+            </motion.span>
+          </AnimatePresence>
+          <span className="text-sm text-muted-foreground whitespace-nowrap">
+            {isFree ? "навсегда" : isEnterprise ? "" : "/мес"}
+          </span>
+        </div>
+      </div>
+
+      {/* Yearly note: total yearly price */}
+      {!isFree && period === "yearly" && (
+        <p className="mt-2 text-sm font-body text-muted-foreground">
+          <span className="inline-flex items-center gap-1 font-semibold text-success">
+            <span>{formatPrice(yearlyTotal)} $/год</span>
+            <span className="text-xs">&#10003;</span>
+          </span>
+        </p>
+      )}
+
+      {/* Divider */}
+      <div className="my-5 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+      {/* Features */}
+      <ul className="flex-1 space-y-3" role="list" aria-label={`Возможности ${plan.name}`}>
+        {plan.features.map((feature) => (
+          <li key={feature} className="flex items-start gap-2.5 text-sm">
+            <Check
+              className={cn(
+                "mt-0.5 size-5 shrink-0 transition-transform duration-300 group-hover:scale-110",
+                isPopular ? "text-primary" : "text-success",
+              )}
+              aria-hidden="true"
+            />
+            <span className="font-body leading-relaxed text-muted-foreground break-words">{feature}</span>
+          </li>
+        ))}
+      </ul>
+
+      {/* CTA button */}
+      <PlanCTAButton
+        tier={plan.tier}
+        period={period}
+        isEarlyBird={hasEarlyBird}
+        ctaHref={ctaHref}
+        ctaLabel={ctaLabel}
+        isPopular={isPopular}
+      />
+    </motion.div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  Plan CTA Button                                                    */
+/* ------------------------------------------------------------------ */
+
+function PlanCTAButton({
+  tier,
+  period,
+  isEarlyBird,
+  ctaHref,
+  ctaLabel,
+  isPopular,
+}: {
+  tier: string
+  period: BillingPeriod
+  isEarlyBird: boolean
+  ctaHref: string
+  ctaLabel: string
+  isPopular: boolean
+}) {
+  const router = useRouter()
+
+  const handleClick = useCallback(async () => {
+    console.log("[Pricing] Button clicked, tier:", tier, "period:", period, "isEarlyBird:", isEarlyBird)
+
+    // Enterprise: contact sales
+    console.log("[Pricing] Checking enterprise tier...")
+    if (tier === "enterprise") {
+      window.location.href = "mailto:hello@viably.dev?subject=Enterprise%20Plan%20Inquiry"
+      return
+    }
+
+    if (!PAID_PLANS.has(tier)) {
+      console.log("[Pricing] Free plan, redirecting to:", ctaHref)
+      router.push(ctaHref)
+      return
+    }
+
+    const token = typeof window !== "undefined"
+      ? localStorage.getItem("viably_access_token")
+      : null
+    if (!token) { alert("Нет токена авторизации! Перенаправляю на /login"); }
+
+    if (!token) {
+      console.log("[Pricing] No token, redirecting to /login")
+      router.push("/login")
+      return
+    }
+
+    // Get correct price ID based on tier, period, and early bird status
+    const priceId = getStripePriceId(tier, period, isEarlyBird)
+    console.log("[Pricing] Price ID:", priceId)
+    if (!priceId) {
+      console.error("No price ID found for tier:", tier, period, isEarlyBird)
+      alert("Ошибка: тариф недоступен")
+      return
+    }
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || window.location.origin
+      const url = `${apiUrl}/api/stripe/create-checkout-session`
+      console.log("[Pricing] Calling API:", url)
+      console.log("[Pricing] Price ID:", priceId)
+      
+      // Direct Stripe checkout session creation
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Bearer ${token}`,
+        },
+        body: new URLSearchParams({ price_id: priceId }),
+      })
+
+      console.log("[Pricing] Response status:", res.status)
+      
+      if (!res.ok) {
+        const errorText = await res.text()
+        console.error("[Pricing] API error:", errorText)
+        throw new Error(`Failed to create checkout session: ${res.status}`)
+      }
+
+      const data = await res.json()
+      console.log("[Pricing] Response data:", data)
+      
+      if (data.url) {
+        console.log("[Pricing] Redirecting to Stripe:", data.url)
+        window.location.href = data.url
+      } else {
+        console.error("[Pricing] No URL in response")
+        alert("Ошибка: нет ссылки на оплату")
+      }
+    } catch (err) {
+      console.error("[Pricing] Payment error:", err)
+      alert(`Ошибка создания платежа: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    }
+  }, [tier, period, isEarlyBird, ctaHref, router])
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className={cn(
+        "mt-6 flex h-11 w-full items-center justify-center rounded-xl text-sm lg:text-base font-body font-semibold transition-all duration-300 cursor-pointer",
+        isPopular
+          ? "text-white bg-[image:var(--gradient-main)] bg-[length:200%_200%] bg-[position:0%_0%] shadow-[0_0_24px_var(--primary-glow)] hover:bg-[position:100%_100%] hover:shadow-[0_0_40px_var(--primary-glow)] hover:scale-105"
+          : "border-2 border-border/60 text-foreground hover:border-primary hover:bg-primary/5 hover:shadow-[0_0_16px_var(--primary-glow)]",
+      )}
+    >
+      {ctaLabel}
+    </button>
+  )
+}

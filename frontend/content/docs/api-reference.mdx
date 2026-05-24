@@ -1,0 +1,380 @@
+---
+title: "API Reference"
+description: "Документация по публичному API Viably для автоматизации генерации и деплоя проектов"
+---
+
+## Введение
+
+Viably предоставляет REST API для программного доступа к платформе. С помощью API ты можешь:
+
+- Создавать проекты автоматически
+- Запускать генерацию кода
+- Управлять деплоями
+- Получать информацию о проектах и кредитах
+
+## Базовый URL
+
+```
+https://api.viably.dev/v1
+```
+
+## Аутентификация
+
+Все запросы требуют API-ключ, который передаётся в заголовке:
+
+```http
+Authorization: Bearer YOUR_API_KEY
+```
+
+### Получение API-ключа
+
+1. Войди в [дашборд](https://viably.dev/dashboard)
+2. Перейди в **Settings** → **API Keys**
+3. Нажми **Create New Key**
+4. Сохрани ключ в безопасном месте (показывается только один раз!)
+
+**Пример запроса:**
+
+```bash
+curl -H "Authorization: Bearer vby_1234567890abcdef" \
+  https://api.viably.dev/v1/projects
+```
+
+---
+
+## Endpoints
+
+### Authentication
+
+#### `POST /auth/register`
+Регистрация нового пользователя.
+
+**Request:**
+```json
+{
+  "email": "user@example.com",
+  "password": "secure_password"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "user_123",
+  "email": "user@example.com",
+  "credits": 10
+}
+```
+
+#### `POST /auth/login`
+Вход в аккаунт.
+
+**Request:**
+```json
+{
+  "email": "user@example.com",
+  "password": "secure_password"
+}
+```
+
+**Response:**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "refresh_token_here",
+  "expires_in": 3600
+}
+```
+
+---
+
+### Projects
+
+#### `GET /projects`
+Получить список всех проектов.
+
+**Response:**
+```json
+{
+  "projects": [
+    {
+      "id": "proj_abc123",
+      "name": "My Shop Bot",
+      "template": "shop-bot",
+      "status": "deployed",
+      "created_at": "2024-02-19T10:30:00Z",
+      "updated_at": "2024-02-19T11:45:00Z"
+    }
+  ]
+}
+```
+
+#### `GET /projects/:id`
+Получить информацию о конкретном проекте.
+
+**Response:**
+```json
+{
+  "id": "proj_abc123",
+  "name": "My Shop Bot",
+  "template": "shop-bot",
+  "status": "deployed",
+  "url": "https://myshopbot.viably.app",
+  "files": [
+    {"path": "index.js", "size": 2048},
+    {"path": "package.json", "size": 512}
+  ],
+  "created_at": "2024-02-19T10:30:00Z"
+}
+```
+
+#### `POST /projects`
+Создать новый проект.
+
+**Request:**
+```json
+{
+  "name": "Pizza Delivery Bot",
+  "template": "shop-bot",
+  "prompt": "Telegram-бот для доставки пиццы с каталогом и корзиной"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "proj_xyz789",
+  "name": "Pizza Delivery Bot",
+  "status": "generating",
+  "generation_id": "gen_456"
+}
+```
+
+#### `DELETE /projects/:id`
+Удалить проект.
+
+**Response:**
+```json
+{
+  "message": "Project deleted successfully"
+}
+```
+
+---
+
+### AI Generation
+
+#### `POST /ai/generate`
+Запустить генерацию кода для проекта.
+
+**Request:**
+```json
+{
+  "project_id": "proj_xyz789",
+  "prompt": "Добавь категорию 'Десерты' в каталог",
+  "model": "gpt-4"
+}
+```
+
+**Response:**
+```json
+{
+  "generation_id": "gen_789",
+  "status": "processing",
+  "estimated_time": 45
+}
+```
+
+#### `GET /ai/generation/:id`
+Получить статус генерации.
+
+**Response:**
+```json
+{
+  "id": "gen_789",
+  "status": "completed",
+  "files": [
+    {"path": "bot.js", "content": "..."}
+  ],
+  "credits_used": 3
+}
+```
+
+---
+
+### Deploy
+
+#### `POST /deploy`
+Задеплоить проект.
+
+**Request:**
+```json
+{
+  "project_id": "proj_xyz789",
+  "env": {
+    "TELEGRAM_TOKEN": "123456:ABC-DEF...",
+    "DATABASE_URL": "postgresql://..."
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "deploy_id": "dep_abc",
+  "status": "deploying",
+  "url": "https://pizza-bot.viably.app"
+}
+```
+
+#### `GET /deploy/:id`
+Получить статус деплоя.
+
+**Response:**
+```json
+{
+  "id": "dep_abc",
+  "status": "running",
+  "url": "https://pizza-bot.viably.app",
+  "logs": "...deployment logs..."
+}
+```
+
+#### `POST /deploy/:id/restart`
+Перезапустить деплой.
+
+**Response:**
+```json
+{
+  "message": "Deploy restarted successfully",
+  "status": "restarting"
+}
+```
+
+---
+
+### Credits
+
+#### `GET /users/me/credits`
+Получить баланс кредитов.
+
+**Response:**
+```json
+{
+  "balance": 42,
+  "used_total": 18,
+  "transactions": [
+    {
+      "type": "purchase",
+      "amount": 50,
+      "date": "2024-02-15T09:00:00Z"
+    },
+    {
+      "type": "generation",
+      "amount": -3,
+      "project_id": "proj_xyz789",
+      "date": "2024-02-19T10:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+## Webhooks
+
+Viably может отправлять уведомления о событиях на твой URL.
+
+### Настройка
+
+1. Перейди в **Settings** → **Webhooks**
+2. Добавь URL (например, `https://yourapp.com/webhooks/viably`)
+3. Выбери события для подписки
+
+### События
+
+**generation.completed** — Генерация завершена  
+**deploy.running** — Деплой запущен  
+**deploy.failed** — Деплой провалился
+
+---
+
+## Rate Limiting
+
+- **Бесплатный план:** 60 запросов/минуту
+- **Pro план:** 600 запросов/минуту
+- **Team план:** без ограничений
+
+---
+
+## Примеры использования
+
+### Автоматическая генерация ботов
+
+```python
+import requests
+import time
+
+API_KEY = "vby_1234567890abcdef"
+headers = {"Authorization": f"Bearer {API_KEY}"}
+
+# Создать проект
+response = requests.post(
+    "https://api.viably.dev/v1/projects",
+    headers=headers,
+    json={
+        "name": "Support Bot",
+        "template": "faq-bot",
+        "prompt": "FAQ-бот для техподдержки SaaS"
+    }
+)
+project = response.json()
+
+# Дождаться генерации
+generation_id = project["generation_id"]
+while True:
+    gen = requests.get(
+        f"https://api.viably.dev/v1/ai/generation/{generation_id}",
+        headers=headers
+    ).json()
+    if gen["status"] == "completed":
+        break
+    time.sleep(5)
+
+# Задеплоить
+requests.post(
+    "https://api.viably.dev/v1/deploy",
+    headers=headers,
+    json={
+        "project_id": project["id"],
+        "env": {"TELEGRAM_TOKEN": "your_token"}
+    }
+)
+
+print("Bot deployed!")
+```
+
+---
+
+## Errors
+
+| Код | Описание |
+|-----|----------|
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 429 | Rate Limit Exceeded |
+| 500 | Internal Server Error |
+
+---
+
+## Поддержка
+
+- Email: api@viably.dev
+- Discord: [viably.dev/discord](https://viably.dev/discord)
+- Документация: [docs.viably.dev](https://docs.viably.dev)
+
+---
+
+**Готов автоматизировать?** Начни с [получения API-ключа](https://viably.dev/dashboard/api-keys)! 🚀

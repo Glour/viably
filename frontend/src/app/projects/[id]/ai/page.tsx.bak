@@ -1,0 +1,290 @@
+"use client"
+
+import { useEffect, useRef, useState } from "react"
+import { useParams, useRouter } from "next/navigation"
+import { ChevronLeft, Sparkles, MessageSquare, Eye } from "lucide-react"
+import Link from "next/link"
+import { motion } from "motion/react"
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from "react-resizable-panels"
+import { MainLayout } from "@/widgets/layout"
+import { FadeInUp } from "@/shared/components/motion/fade-in-up"
+import { Shimmer } from "@/shared/ui/shimmer"
+import { Button } from "@/shared/ui/button"
+import { ChatPanel } from "@/features/generation/components"
+import { ArtifactPreviewPanel } from "@/shared/components/artifacts"
+import { useConversationStore } from "@/features/generation/stores"
+import { useProject } from "@/shared/hooks/use-projects"
+import { useConversations, useCreateConversation } from "@/features/generation/api"
+import { toast } from "sonner"
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener("resize", check)
+    return () => window.removeEventListener("resize", check)
+  }, [])
+  return isMobile
+}
+
+export default function AIEditorPage() {
+  const { id: projectId } = useParams<{ id: string }>()
+  const router = useRouter()
+  const isMobile = useIsMobile()
+  const [mobileTab, setMobileTab] = useState<"chat" | "preview">("chat")
+
+  const { data: project, isLoading: isLoadingProject } = useProject(projectId)
+  const { data: conversationsData, isLoading: isLoadingConversations } = useConversations(projectId)
+  const createConversationMutation = useCreateConversation()
+
+  const {
+    currentConversation,
+    messages,
+    artifacts,
+    activeArtifactId,
+    isStreaming,
+    loadConversation,
+    reset,
+  } = useConversationStore()
+
+  const loadingRef = useRef<string | null>(null)
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    if (!projectId || isLoadingConversations || !conversationsData) return
+
+    const existingConversations = conversationsData.items
+
+    if (existingConversations.length === 0) {
+      if (createConversationMutation.isPending) return
+
+      createConversationMutation.mutate(
+        {
+          project_id: projectId,
+          title: project?.name ? `${project.name} - AI Chat` : "AI Чат",
+        },
+        {
+          onSuccess: (newConversation) => {
+            if (!mountedRef.current) return
+            if (loadingRef.current === newConversation.id) return
+            loadingRef.current = newConversation.id
+            loadConversation(newConversation.id).catch((err) => {
+              console.error("[AIEditorPage] Failed to load new conversation:", err)
+              if (mountedRef.current) {
+                loadingRef.current = null
+                toast.error("Не удалось загрузить диалог")
+              }
+            })
+          },
+          onError: () => {
+            toast.error("Не удалось создать диалог")
+          },
+        }
+      )
+    } else {
+      const latestConversation = existingConversations[0]
+      if (loadingRef.current === latestConversation.id) return
+      loadingRef.current = latestConversation.id
+      loadConversation(latestConversation.id).catch((err) => {
+        console.error("[AIEditorPage] Failed to load conversation:", err)
+        if (mountedRef.current) {
+          loadingRef.current = null
+          toast.error("Не удалось загрузить диалог")
+        }
+      })
+    }
+  }, [projectId, conversationsData, isLoadingConversations])
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      loadingRef.current = null
+      reset()
+    }
+  }, [])
+
+  // Pick up prompt from Hero page (sessionStorage)
+  const promptSentRef = useRef(false)
+  useEffect(() => {
+    if (!currentConversation || promptSentRef.current) return
+    const savedPrompt = sessionStorage.getItem("viably_prompt")
+    if (savedPrompt) {
+      promptSentRef.current = true
+      sessionStorage.removeItem("viably_prompt")
+      setTimeout(() => {
+        useConversationStore.getState().sendMessage(savedPrompt)
+      }, 500)
+    }
+  }, [currentConversation])
+
+  // Auto-switch to preview on mobile when artifacts appear
+  useEffect(() => {
+    if (isMobile && artifacts.size > 0 && !isStreaming) {
+      setMobileTab("preview")
+    }
+  }, [artifacts.size, isMobile, isStreaming])
+
+  const isLoading = isLoadingProject || isLoadingConversations
+
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="h-[calc(100vh-4rem)] flex flex-col">
+          <div className="border-b bg-background/95 backdrop-blur px-6 py-4">
+            <div className="flex items-center gap-4">
+              <Shimmer width="2rem" height="2rem" />
+              <div className="space-y-2">
+                <Shimmer width="12rem" height="1.5rem" />
+                <Shimmer width="8rem" height="1rem" />
+              </div>
+            </div>
+          </div>
+          <div className="flex-1 p-6 space-y-4">
+            <Shimmer width="100%" height="4rem" />
+            <Shimmer width="100%" height="4rem" />
+            <Shimmer width="100%" height="4rem" />
+          </div>
+        </div>
+      </MainLayout>
+    )
+  }
+
+  if (!currentConversation) {
+    return (
+      <MainLayout>
+        <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <Sparkles className="w-12 h-12 mx-auto text-muted-foreground animate-pulse" />
+            <p className="text-muted-foreground">Создаём диалог...</p>
+          </div>
+        </div>
+      </MainLayout>
+    )
+  }
+
+  const artifactsArray = Array.from(artifacts.values())
+
+  const previewContent = artifactsArray.length > 0 ? (
+    <ArtifactPreviewPanel
+      artifacts={artifactsArray}
+      activeArtifactId={activeArtifactId}
+      isStreaming={isStreaming}
+      onSelectArtifact={(id) => useConversationStore.getState().selectArtifact(id)}
+      onUpdateArtifact={async (id, update) => {
+        try {
+          await useConversationStore.getState().updateArtifact(id, update)
+          toast.success("Артефакт обновлён")
+        } catch (error) {
+          toast.error("Не удалось обновить артефакт")
+        }
+      }}
+    />
+  ) : (
+    <div className="flex-1 flex items-center justify-center p-8">
+      <div className="text-center space-y-4 max-w-sm">
+        <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-purple-500/10 to-blue-500/10 flex items-center justify-center">
+          <Sparkles className="w-8 h-8 text-purple-500" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold">Начните создавать</h2>
+          <p className="text-sm text-muted-foreground">
+            Отправьте сообщение, чтобы сгенерировать код или HTML-страницы.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+
+  return (
+    <MainLayout>
+      <div className="h-[calc(100vh-4rem)] flex flex-col">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="sticky top-0 z-40 border-b border-border/40 bg-background/95 backdrop-blur-sm px-4 md:px-6 py-3"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 md:gap-4">
+              <Link href="/projects">
+                <Button variant="ghost" size="sm" className="gap-1 px-2">
+                  <ChevronLeft className="w-4 h-4" />
+                  <span className="hidden sm:inline">Назад</span>
+                </Button>
+              </Link>
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
+                  <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-sm font-semibold truncate max-w-[150px] md:max-w-none">{project?.name}</h1>
+                  <p className="text-xs text-muted-foreground hidden md:block">AI Редактор</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile tab toggle */}
+            {isMobile && (
+              <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
+                <Button
+                  variant={mobileTab === "chat" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="h-7 px-3 text-xs gap-1.5"
+                  onClick={() => setMobileTab("chat")}
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  Чат
+                </Button>
+                <Button
+                  variant={mobileTab === "preview" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="h-7 px-3 text-xs gap-1.5"
+                  onClick={() => setMobileTab("preview")}
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  Превью
+                </Button>
+              </div>
+            )}
+
+            {!isMobile && (
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" disabled={isStreaming} className="text-xs">
+                  {messages.length} сообщений
+                </Button>
+              </div>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Main Content */}
+        <div className="flex-1 overflow-hidden">
+          {isMobile ? (
+            /* Mobile: tab-based layout */
+            <div className="h-full">
+              {mobileTab === "chat" ? (
+                <ChatPanel conversationId={currentConversation.id} className="h-full" />
+              ) : (
+                <div className="h-full flex flex-col">
+                  {previewContent}
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Desktop: resizable split panels */
+            <div className="flex h-full">
+              <div className="w-[40%] min-w-[320px] max-w-[55%] border-r flex flex-col overflow-hidden">
+                <ChatPanel conversationId={currentConversation.id} className="flex-1" />
+              </div>
+              <div className="flex-1 flex flex-col overflow-hidden">
+                {previewContent}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </MainLayout>
+  )
+}

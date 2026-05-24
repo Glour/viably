@@ -1,0 +1,83 @@
+# MDX Components Example
+
+This is an example page demonstrating all MDX components.
+
+## Features
+
+Here's what these components can do:
+
+### Syntax Highlighting
+
+```tsx
+import { Button } from '@/components/ui/button'
+
+export default function Page() {
+  return (
+    <Button variant="default" size="lg">
+      Click Me
+    </Button>
+  )
+}
+```
+
+### Python Example
+
+```python
+def calculate_credits(user_id: str) -> int:
+    """Calculate user credits."""
+    return database.query(
+        "SELECT credits FROM users WHERE id = ?",
+        [user_id]
+    )
+```
+
+### Inline Code
+
+Use `npm install` to install packages. Configure with `next.config.ts` file.
+
+## Images
+
+<Image
+  src="/placeholder.png"
+  alt="Example placeholder"
+  caption="This is a caption for the image"
+/>
+
+## Multiple Images
+
+<ImageGrid columns={2}>
+  <Image src="/image1.png" alt="Screenshot 1" />
+  <Image src="/image2.png" alt="Screenshot 2" />
+</ImageGrid>
+
+## Headings with Anchors
+
+### Level 3 Heading
+
+Hover over any heading to see the link icon.
+
+#### Level 4 Heading
+
+All headings automatically get anchor links for deep linking.
+
+##### Level 5 Heading
+
+This works at all levels.
+
+## Lists
+
+- Feature one
+- Feature two
+- Feature three
+
+1. First step
+2. Second step
+3. Third step
+
+## Emphasis
+
+This is **bold text** and this is *italic text*.
+
+## Links
+
+Visit [Viably](https://viably.ai) for more information.

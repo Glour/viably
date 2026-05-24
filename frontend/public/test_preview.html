@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+<meta charset="UTF-8">
+<style>
+:root { --background: 222.2 84% 4.9%; --foreground: 210 40% 98%; }
+body { font-family: sans-serif; background: hsl(var(--background)); color: hsl(var(--foreground)); }
+</style>
+</head>
+<body>
+<div id="root"><p>Loading...</p></div>
+
+<script>
+window.onerror = function(msg, src, line, col, err) {
+  document.getElementById('root').innerHTML = '<pre style="color:red">' + msg + '\nLine: ' + line + '\nSource: ' + src + '\nStack: ' + (err && err.stack ? err.stack.substring(0, 500) : 'N/A') + '</pre>';
+  return true;
+};
+</script>
+
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: { extend: { colors: {
+    background: 'hsl(var(--background))',
+    foreground: 'hsl(var(--foreground))',
+    primary: { DEFAULT: 'hsl(var(--primary))', foreground: 'hsl(var(--primary-foreground))' },
+  }}}
+};
+</script>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+
+<script>
+var h = React.createElement;
+function cn() { return Array.from(arguments).filter(Boolean).join(' '); }
+function Button(p) { p=p||{}; return h('button', {className: cn('px-4 py-2 rounded', p.className)}, p.children); }
+function Card(p) { p=p||{}; return h('div', {className: cn('border rounded-lg p-4', p.className)}, p.children); }
+function CardContent(p) { p=p||{}; return h('div', {className: p.className}, p.children); }
+
+// Icon stub
+function _iconStub(name) {
+  return function(p) {
+    p = p || {};
+    return h('svg', {width: p.size||24, height: p.size||24, viewBox:'0 0 24 24', className: p.className||''}, 
+      h('circle', {cx:12, cy:12, r:10, stroke:'currentColor', fill:'none', strokeWidth:2}));
+  };
+}
+var Code2 = _iconStub('Code2');
+var Rocket = _iconStub('Rocket');
+</script>
+
+<script type="text/babel" data-presets="react,typescript">
+function Home() {
+  return (
+    <div className="min-h-screen bg-slate-950 text-white p-8">
+      <h1 className="text-4xl font-bold mb-4">TechFlow</h1>
+      <p className="text-gray-400">IT Solutions</p>
+      <div className="grid grid-cols-2 gap-4 mt-8">
+        <Card className="bg-slate-800">
+          <CardContent>
+            <Code2 className="w-8 h-8 mb-2" />
+            <h3>Dev</h3>
+          </CardContent>
+        </Card>
+        <Card className="bg-slate-800">
+          <CardContent>
+            <Rocket className="w-8 h-8 mb-2" />
+            <h3>Launch</h3>
+          </CardContent>
+        </Card>
+      </div>
+      <Button className="mt-8 bg-purple-600 text-white">Get Started</Button>
+    </div>
+  );
+}
+
+var root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(React.createElement(Home));
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": ["NODE_ENV"]
+    }
+  },
+  "globalDependencies": [
+    ".env.local",
+    "next.config.ts",
+    "tsconfig.json",
+    "tailwind.config.ts"
+  ]
+}

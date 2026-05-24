@@ -1,0 +1,353 @@
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
+import useWebSocket, { ReadyState } from "react-use-websocket"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useAuthStore } from "@/features/auth/stores"
+import { getAccessToken } from "@/shared/api/tokens"
+import { env } from "@/shared/config/env"
+import { startDeploy as apiStartDeploy } from "@/features/generation/api"
+import { queryKeys } from "@/shared/api/query-keys"
+import { toast } from "sonner"
+import { useOfflineDetection } from "./use-offline-detection"
+import { useComponentCleanup } from "@/shared/hooks/useComponentCleanup"
+import {
+  DEPLOY_STEPS,
+  MAX_RECONNECT_ATTEMPTS,
+  INITIAL_RECONNECT_INTERVAL,
+  MAX_RECONNECT_INTERVAL,
+} from "@/shared/lib/data/generation"
+import type {
+  WebSocketMessage,
+  DeployProgressState,
+  StepStatus,
+} from "@/features/generation/types"
+
+/**
+ * WebSocket hook for real-time deployment progress
+ *
+ * User Story 3 (T039-T043): WebSocket Deployment Flow
+ *
+ * Architecture:
+ * Component → useDeploy → useWebSocket (shared connection) → Backend WS
+ *
+ * Features:
+ * - T039: Establish WebSocket connection (shared with useGeneration)
+ * - T040: Handle deploy_progress messages (step, progress, logs)
+ * - T041: Handle deploy_complete messages (deployment info, invalidate queries)
+ * - T042: Handle deploy_error messages
+ * - T043: React Query invalidation after deployment
+ * - Resilient reconnection (same logic as useGeneration)
+ *
+ * @param projectId - Project UUID to track deployment for
+ * @returns Hook state and control functions
+ */
+export function useDeploy(projectId: string) {
+  const queryClient = useQueryClient()
+  const user = useAuthStore((s) => s.user)
+  const token = getAccessToken()
+
+  // T067: Offline detection
+  const isOffline = useOfflineDetection()
+
+  // T017: Memory cleanup tracking with useComponentCleanup
+  const { registerResource, disposeResource } = useComponentCleanup('useDeploy')
+
+  // T069: Memoize initial steps computation to avoid recreating on every render
+  const initialSteps = useMemo(
+    () => DEPLOY_STEPS.map((s) => ({ ...s, status: "pending" as StepStatus })),
+    []
+  )
+
+  // Initial state
+  const INITIAL_STATE: DeployProgressState = useMemo(
+    () => ({
+      status: "idle",
+      currentStep: 0,
+      steps: initialSteps,
+      progress: 0,
+      deploymentInfo: null,
+      error: null,
+    }),
+    [initialSteps]
+  )
+
+  const [state, setState] = useState<DeployProgressState>(INITIAL_STATE)
+
+  // Track component lifecycle to prevent reconnection after unmount
+  const didUnmount = useRef(false)
+
+  // Track reconnection attempts and state for UI display
+  const [reconnectAttempts, setReconnectAttempts] = useState(0)
+  const [isReconnecting, setIsReconnecting] = useState(false)
+
+  // Set didUnmount flag on component unmount
+  // T017: Register WebSocket lifecycle with useComponentCleanup for tracking
+  useEffect(() => {
+    // Register WebSocket connection as external resource
+    const resourceId = registerResource({
+      type: 'websocket',
+      createdAt: Date.now(),
+      disposeFn: () => {
+        // Set didUnmount flag to prevent reconnection
+        didUnmount.current = true
+      },
+      metadata: {
+        projectId,
+      },
+    })
+
+    return () => {
+      // Manual cleanup before automatic disposal
+      didUnmount.current = true
+      disposeResource(resourceId)
+    }
+  }, [registerResource, disposeResource, projectId])
+
+  // T039: Construct WebSocket URL with user ID and auth token
+  const wsUrl =
+    user && token
+      ? `${env.NEXT_PUBLIC_WS_URL}/ws/${user.id}?token=${token}`
+      : null
+
+  // T040-T042: Handle incoming WebSocket messages via onMessage callback
+  const handleMessage = useCallback(
+    (event: MessageEvent) => {
+      const message = JSON.parse(event.data) as WebSocketMessage
+
+      // Filter: Only handle messages for this project
+      // Some message types (e.g. credits_used) don't have project_id
+      if ("project_id" in message && message.project_id !== projectId) {
+        return
+      }
+
+      switch (message.type) {
+        case "deploy_progress": {
+          // T040: Update step status, progress, and log
+          const { step, step_name: _step_name, step_status, progress, log } =
+            message.data as { step: number; step_name?: string; step_status: string; progress: number; log?: string }
+
+          // T061: Out-of-order message protection
+          setState((prev) => {
+            // Ignore messages from past steps (out-of-order delivery)
+            if (step < prev.currentStep) {
+              console.warn(`[WebSocket] Ignoring out-of-order deploy message: step ${step} received after step ${prev.currentStep}`)
+              return prev
+            }
+
+            // Map backend step_status to frontend StepStatus
+            const mappedStatus: StepStatus = step_status === "complete" ? "complete" : "running"
+
+            return {
+              ...prev,
+              status: "deploying",
+              currentStep: step,
+              progress,
+              steps: prev.steps.map((s, idx) =>
+                idx + 1 === step
+                  ? { ...s, status: mappedStatus, log }
+                  : s
+              ),
+            }
+          })
+          break
+        }
+
+        case "deploy_complete": {
+          // T041: Set deployment info and mark complete
+          const deploymentInfo = message.data
+
+          setState((prev) => ({
+            ...prev,
+            status: "success",
+            deploymentInfo,
+            progress: 100,
+            steps: prev.steps.map((s) => ({
+              ...s,
+              status: "complete" as StepStatus,
+            })),
+          }))
+
+          // T043: Invalidate React Query cache to refetch project data
+          queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) })
+          queryClient.invalidateQueries({ queryKey: queryKeys.projects.all() })
+          break
+        }
+
+        case "deploy_error": {
+          // T042: Handle deployment errors
+          const { error } = message.data
+
+          // T063: Toast notification for deploy error
+          toast.error(`Ошибка деплоя: ${error}`)
+
+          setState((prev) => ({
+            ...prev,
+            status: "error",
+            error,
+            steps: prev.steps.map((s, idx) =>
+              idx === prev.currentStep - 1
+                ? { ...s, status: "error" as StepStatus }
+                : s
+            ),
+          }))
+          break
+        }
+
+        // Handle credits_updated messages (optional, for balance sync)
+        case "credits_updated": {
+          queryClient.invalidateQueries({ queryKey: queryKeys.credits.balance })
+          break
+        }
+
+        // T060: Unknown message type handler - graceful degradation
+        default: {
+          // Ignore generation_* messages (handled by useGeneration hook)
+          if (message.type?.startsWith('generation_')) {
+            break
+          }
+
+          // Log warning for truly unknown message types
+          console.warn('[WebSocket] Unknown message type received:', message.type, message)
+          break
+        }
+      }
+    },
+    [projectId, queryClient]
+  )
+
+  // T039: Establish WebSocket connection (shared with useGeneration)
+  const { readyState } = useWebSocket<WebSocketMessage>(
+    wsUrl,
+    {
+      share: true, // Share connection with useGeneration for multi-tab sync
+
+      // T040-T042: Handle incoming WebSocket messages
+      onMessage: handleMessage,
+
+      // Smart reconnection logic (same as useGeneration)
+      shouldReconnect: (closeEvent) => {
+        // Don't reconnect if component unmounted
+        if (didUnmount.current) return false
+
+        // Don't reconnect on normal closure (e.g., user logout, intentional disconnect)
+        if (closeEvent.code === 1000) return false
+
+        // Always reconnect on abnormal closures (network issues, server restart, etc.)
+        return true
+      },
+
+      // Maximum 5 reconnection attempts
+      reconnectAttempts: MAX_RECONNECT_ATTEMPTS,
+
+      // Exponential backoff with cap
+      // Formula: baseInterval * 2^attemptNumber, capped at MAX_RECONNECT_INTERVAL
+      // Progression: 3s → 6s → 12s → 24s → 48s
+      reconnectInterval: (attemptNumber) => {
+        const interval = Math.min(
+          INITIAL_RECONNECT_INTERVAL * Math.pow(2, attemptNumber),
+          MAX_RECONNECT_INTERVAL
+        )
+
+        // Update reconnection state for UI
+        setReconnectAttempts(attemptNumber + 1)
+        setIsReconnecting(true)
+
+        return interval
+      },
+
+      // Handle reconnection failure after max attempts
+      onReconnectStop: (numAttempts) => {
+        setIsReconnecting(false)
+        setReconnectAttempts(0)
+
+        console.error(`WebSocket reconnection failed after ${numAttempts} attempts`)
+
+        // T063: Toast notification for connection failure
+        toast.error("Соединение потеряно. Проверьте интернет и обновите страницу.")
+
+        // Set error state so UI can show manual reconnect button
+        setState((prev) => ({
+          ...prev,
+          error: "Connection lost. Please check your internet and refresh the page.",
+        }))
+      },
+
+      // Reset reconnection state on successful connection
+      onOpen: () => {
+        setReconnectAttempts(0)
+        setIsReconnecting(false)
+
+        // T063: Toast notification for successful reconnection
+        if (reconnectAttempts > 0) {
+          toast.success("Соединение восстановлено")
+        }
+      },
+    },
+    // Only connect if user is authenticated
+    !!wsUrl
+  )
+
+  // Start deployment mutation
+  const startDeployMutation = useMutation({
+    mutationFn: (envVars: Record<string, string>) => {
+      // T067: Prevent mutation when offline
+      if (isOffline) {
+        toast.error("Невозможно начать деплой: нет интернета")
+        throw new Error("Offline")
+      }
+      return apiStartDeploy(projectId, envVars)
+    },
+    onSuccess: () => {
+      // Reset state to deploying on successful API call
+      setState({
+        ...INITIAL_STATE,
+        status: "deploying",
+        currentStep: 1,
+        steps: DEPLOY_STEPS.map((s, idx) => ({
+          ...s,
+          status: idx === 0 ? ("running" as StepStatus) : ("pending" as StepStatus),
+        })),
+      })
+    },
+    onError: (error: Error) => {
+      // Skip error state if offline (already shown toast)
+      if (error.message === "Offline") return
+
+      // Handle API errors (e.g., 400, 409, 401, 404)
+      setState((prev) => ({
+        ...prev,
+        status: "error",
+        error: error.message,
+      }))
+    },
+  })
+
+  // Retry deployment: reset state to idle
+  const retryDeploy = useCallback(() => {
+    setState(INITIAL_STATE)
+  }, [INITIAL_STATE])
+
+  return {
+    // Deployment state
+    status: state.status,
+    currentStep: state.currentStep,
+    steps: state.steps,
+    progress: state.progress,
+    deploymentInfo: state.deploymentInfo,
+    error: state.error,
+
+    // Control functions
+    startDeploy: startDeployMutation.mutateAsync,
+    retryDeploy,
+
+    // WebSocket connection state
+    isConnected: readyState === ReadyState.OPEN,
+    connectionState: readyState,
+
+    // Reconnection state for UI display
+    reconnectAttempts,
+    isReconnecting,
+
+    // T067: Offline state for UI
+    isOffline,
+  }
+}

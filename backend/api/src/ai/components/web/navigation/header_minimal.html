@@ -1,0 +1,50 @@
+<header>
+    <div class="container">
+        <a href="#" class="logo">Brand<span>Name</span></a>
+        <nav>
+            <a href="#features">Возможности</a>
+            <a href="#pricing">Тарифы</a>
+            <a href="#contacts">Контакты</a>
+        </nav>
+    </div>
+</header>
+
+<style>
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 16px 0;
+}
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    text-decoration: none;
+}
+.logo span {
+    color: var(--primary-light, #8b5cf6);
+}
+nav a {
+    color: #cbd5e1;
+    text-decoration: none;
+    margin-left: 32px;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+nav a:hover {
+    color: #fff;
+}
+@media (max-width: 768px) {
+    nav { display: none; }
+}
+</style>

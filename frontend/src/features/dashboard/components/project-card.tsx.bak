@@ -1,0 +1,77 @@
+"use client"
+
+import Link from "next/link"
+import { Clock } from "lucide-react"
+
+import { Badge } from "@/shared/ui/badge"
+import { formatRelativeTime } from "@/shared/lib/utils/format-relative-time"
+import type { ProjectStatus } from "@/shared/types"
+
+const STATUS_CONFIG: Record<
+  ProjectStatus,
+  { label: string; variant: "success" | "warning" | "secondary" | "destructive" }
+> = {
+  draft: { label: "Черновик", variant: "secondary" },
+  generating: { label: "Генерация", variant: "warning" },
+  generated: { label: "Сгенерирован", variant: "warning" },
+  deployed: { label: "Запущен", variant: "success" },
+  failed: { label: "Ошибка", variant: "destructive" },
+  stopped: { label: "Остановлен", variant: "destructive" },
+}
+
+const DEFAULT_EMOJI = "\u{1F916}"
+
+interface ProjectCardProps {
+  project: {
+    id: string
+    name: string
+    status: ProjectStatus
+    updatedAt?: string | null
+    createdAt: string
+  }
+}
+
+export function ProjectCard({ project }: ProjectCardProps) {
+  const status = STATUS_CONFIG[project.status] ?? STATUS_CONFIG.draft
+
+  return (
+    <Link href={`/projects/${project.id}`} className="group">
+      <div
+        className="
+          rounded-2xl p-6
+          bg-[var(--surface)] border border-[var(--border-subtle)]
+          shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)]
+          transition-all duration-200 ease-out
+          hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.1),0_2px_6px_rgba(0,0,0,0.06)]
+          cursor-pointer min-h-[160px]
+          flex flex-col
+        "
+      >
+        {/* Header */}
+        <div className="flex items-start gap-3 mb-3">
+          <span className="text-2xl">{DEFAULT_EMOJI}</span>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-heading text-base font-semibold truncate group-hover:text-primary transition-colors">
+              {project.name}
+            </h3>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
+              <Clock className="size-3" />
+              <span>
+                {project.updatedAt
+                  ? formatRelativeTime(project.updatedAt)
+                  : formatRelativeTime(project.createdAt)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Status */}
+        <div className="mt-auto">
+          <Badge variant={status.variant} className="text-xs font-semibold">
+            {status.label}
+          </Badge>
+        </div>
+      </div>
+    </Link>
+  )
+}
